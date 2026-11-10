@@ -28,6 +28,7 @@ const ROADMAP: { title: string; detail: string; status: Status }[] = [
   { title: 'Molecular shapes (VSEPR)', detail: 'Build any shape from bonds and lone pairs, then compare real molecules’ measured angles.', status: 'live' },
   { title: 'Enzymes', detail: 'Binding, active sites, induced fit, and how enzymes stabilize the transition state.', status: 'planned' },
   { title: 'Orbitals', detail: 's, p, and d orbitals, hybridization, and how σ and π bonds come from overlap.', status: 'live' },
+  { title: 'Polarity', detail: 'Bond dipoles as arrows that add up, or cancel, in look-alike pairs like CO₂ and H₂O.', status: 'live' },
   { title: 'Periodic trends', detail: 'Radius, ionization energy, and electronegativity as a 3D skyline, with the exceptions explained.', status: 'live' },
   { title: 'Practice', detail: 'Rounds of 10 visual questions. Ones you miss come back later.', status: 'live' },
   { title: 'Open your own file', detail: 'Load a PDB or mmCIF structure into the same viewer.', status: 'planned' },

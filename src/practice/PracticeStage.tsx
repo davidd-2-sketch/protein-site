@@ -8,6 +8,9 @@ import AxisLabels from '../orbitals/AxisLabels'
 import { OrbitalScene } from '../orbitals/OrbitalScene'
 import ReactionLabels from '../reactions/ReactionLabels'
 import { ReactionScene } from '../reactions/ReactionScene'
+import { byId as polarById } from '../polarity/molecules'
+import PolarityLabels from '../polarity/PolarityLabels'
+import { PolarityScene } from '../polarity/PolarityScene'
 import SymbolLabels from '../trends/SymbolLabels'
 import { TrendsScene } from '../trends/TrendsScene'
 import SceneLabelsOverlay from '../vsepr/SceneLabels'
@@ -24,6 +27,8 @@ export default function PracticeStage({ visual, revealed }: { visual: Visual; re
       return <TrendsStage visual={visual} revealed={revealed} />
     case 'sn2':
       return <Sn2Stage visual={visual} />
+    case 'polarity':
+      return <PolarityStage visual={visual} revealed={revealed} />
   }
 }
 
@@ -96,6 +101,23 @@ function Sn2Stage({ visual }: { visual: Extract<Visual, { kind: 'sn2' }> }) {
     <div className="practice-canvas" ref={host}>
       {/* Only element symbols and group names: role labels would give the answers away. */}
       {scene && <ReactionLabels scene={scene} s={visual.s} kinds={['element', 'group']} />}
+    </div>
+  )
+}
+
+function PolarityStage({ visual, revealed }: { visual: Extract<Visual, { kind: 'polarity' }>; revealed: boolean }) {
+  const [host, scene] = useScene((el) => new PolarityScene(el))
+  const molecule = polarById(visual.id)
+  useEffect(() => {
+    if (!scene) return
+    scene.setMolecule(molecule)
+    scene.setSum(false, true)
+  }, [scene, molecule])
+  // Answering slides the arrows tip to tail, showing whether they cancel.
+  useEffect(() => scene?.setSum(revealed), [scene, revealed])
+  return (
+    <div className="practice-canvas" ref={host}>
+      {scene && <PolarityLabels scene={scene} molecule={molecule} charges />}
     </div>
   )
 }

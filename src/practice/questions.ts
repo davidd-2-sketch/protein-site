@@ -18,16 +18,18 @@ import { ORBITALS } from '../orbitals/wavefunctions'
 import { SHAPES, SLOTS, shapeFor } from '../vsepr/shapes'
 import { byFormula, idealState, moleculeState } from '../vsepr/states'
 import type { SceneState } from '../vsepr/VseprScene'
+import { byId as polarById, POLAR_MOLECULES } from '../polarity/molecules'
 import type { ModuleKey } from '../lessons/place'
 import type { Quiz } from '../lessons/types'
 
-export type Topic = 'shapes' | 'orbitals' | 'trends' | 'reactions'
+export type Topic = 'shapes' | 'orbitals' | 'trends' | 'reactions' | 'polarity'
 
 export const TOPICS: { id: Topic; name: string; blurb: string }[] = [
   { id: 'shapes', name: 'Shapes', blurb: 'Name 3D shapes, count hidden lone pairs, read bond angles.' },
   { id: 'orbitals', name: 'Orbitals', blurb: 'Identify orbitals, count nodes, recognize hybrids and bonds.' },
   { id: 'trends', name: 'Trends', blurb: 'Compare two elements on the table, then see the data rise.' },
   { id: 'reactions', name: 'Reactions', blurb: 'Read frozen frames of the SN2 reaction.' },
+  { id: 'polarity', name: 'Polarity', blurb: 'Polar or nonpolar? Then watch the bond dipoles add up.' },
 ]
 
 /** What to draw, before and after answering. */
@@ -36,13 +38,15 @@ export type Visual =
   | { kind: 'orbital'; before: OrbitalView & { axes?: boolean }; after?: OrbitalView & { axes?: boolean } }
   | { kind: 'trends'; before: { props: PropId[]; flat: boolean; focus: number[] }; after: { props: PropId[]; flat: boolean; focus: number[] } }
   | { kind: 'sn2'; s: number }
+  /** A polarity molecule: bond dipoles beside the bonds, summed tip-to-tail once answered. */
+  | { kind: 'polarity'; id: string }
 
 export interface Question extends Quiz {
   id: string
   topic: Topic
   visual: Visual
   /** Where to review this idea. */
-  review: { module: ModuleKey | 'reaction'; lessonId?: string; label: string }
+  review: { module: ModuleKey | 'reaction' | 'polarity'; lessonId?: string; label: string }
 }
 
 /* ---------- small helpers ---------- */
@@ -352,6 +356,24 @@ function sn2Config(s: string): Question {
   }
 }
 
+/* ======================================================================= polarity */
+
+function polarOrNot(id: string): Question {
+  const m = polarById(id)
+  const polar = m.dipole > 0
+  return {
+    id: `polar:${id}`,
+    topic: 'polarity',
+    visual: { kind: 'polarity', id },
+    question: `${m.formula} (${m.name.toLowerCase()}): the arrows show its bond dipoles. Is the molecule polar or nonpolar?`,
+    choices: ['Polar', 'Nonpolar'],
+    answer: polar ? 0 : 1,
+    explain: `${polar ? 'Polar' : 'Nonpolar'}. ${m.why} Measured: ${m.dipole === 0 ? '0 D' : `${m.dipole.toFixed(2)} D`}.`,
+    hint: 'Imagine sliding the arrows tip to tail. Do they come back to where they started?',
+    review: { module: 'polarity', label: 'Polarity: look-alike pairs' },
+  }
+}
+
 /* ======================================================================= building rounds */
 
 /** Rebuild a question from its ID (used for review of missed questions). */
@@ -379,6 +401,8 @@ export function fromId(id: string): Question | null {
         return STAGE_FRAMES[p[0]] ? sn2Stage(p[0]) : null
       case 'sn2config':
         return sn2Config(p[0])
+      case 'polar':
+        return POLAR_MOLECULES.some((m) => m.id === p[0]) ? polarOrNot(p[0]) : null
     }
   } catch {
     /* an old or malformed ID: skip it */
@@ -412,6 +436,8 @@ export function randomId(topic: Topic): string {
       return randomCompareId()
     case 'reactions':
       return Math.random() < 0.55 ? `sn2stage:${pick(Object.keys(STAGE_FRAMES))}` : `sn2config:${pick(CONFIG_FRAMES)}`
+    case 'polarity':
+      return `polar:${pick(POLAR_MOLECULES).id}`
   }
 }
 

@@ -3,7 +3,7 @@
   NavLink automatically knows which page is active, so we can highlight it.
 */
 import { Link, NavLink } from 'react-router-dom'
-import { loadPracticePage, loadTrendsPage } from '../pages/loaders'
+import { loadPolarityPage, loadPracticePage, loadTrendsPage } from '../pages/loaders'
 import { canPrefetch, loadOrbitalsPage, loadProteinPage, loadReactionPage, loadVseprPage } from '../pages/loaders'
 import { useSoundEnabled } from '../sound/sound'
 import { useAccount } from '../account/account'
@@ -17,6 +17,7 @@ const LINKS = [
   { to: '/shapes', label: 'Shapes', load: loadVseprPage },
   { to: '/orbitals', label: 'Orbitals', load: loadOrbitalsPage },
   { to: '/trends', label: 'Trends', load: loadTrendsPage },
+  { to: '/polarity', label: 'Polarity', load: loadPolarityPage },
   { to: '/practice', label: 'Practice', load: loadPracticePage },
 ]
 

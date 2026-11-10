@@ -28,7 +28,7 @@ type Missed = Record<string, { topic: Topic; misses: number }>
 const IDLE = { kind: 'vsepr' as const, before: idealState(4, 0), after: idealState(4, 0), arcsAfter: true }
 
 export default function PracticePage() {
-  const [topics, setTopics] = useStoredState<Topic[]>('ps.practice.topics', ['shapes', 'orbitals', 'trends', 'reactions'])
+  const [topics, setTopics] = useStoredState<Topic[]>('ps.practice.topics', ['shapes', 'orbitals', 'trends', 'reactions', 'polarity'])
   const [stats, setStats] = useStoredState<Stats>('ps.practice.stats', {})
   const [missed, setMissed] = useStoredState<Missed>('ps.practice.missed', {})
   const [rounds, setRounds] = useStoredState<number>('ps.practice.rounds', 0)
@@ -220,7 +220,8 @@ function Results({ round, results, onAgain, onDone }: { round: Question[]; resul
     const seen = new Map<string, { label: string; to: string }>()
     for (const q of misses) {
       const r = q.review
-      const to = r.module === 'reaction' ? '/reaction' : `${MODULES[r.module].path}${r.lessonId ? `?lesson=${r.lessonId}&step=0` : ''}`
+      const to =
+        r.module === 'reaction' ? '/reaction' : r.module === 'polarity' ? '/polarity' : `${MODULES[r.module].path}${r.lessonId ? `?lesson=${r.lessonId}&step=0` : ''}`
       seen.set(to, { label: r.label, to })
     }
     return [...seen.values()]
