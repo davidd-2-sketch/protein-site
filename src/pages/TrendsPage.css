@@ -1,0 +1,413 @@
+/* =========================================================
+   TrendsPage.css — periodic trends
+   Shares .lesson / .quiz / .term styles from lessons.css.
+   ========================================================= */
+
+.trends-page {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: var(--bg-0);
+}
+
+.trends-backdrop {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(50% 55% at 60% 45%, rgba(43, 36, 112, 0.5), transparent 70%),
+    radial-gradient(40% 50% at 92% 10%, rgba(15, 59, 117, 0.5), transparent 70%),
+    radial-gradient(35% 45% at 10% 95%, rgba(74, 31, 110, 0.4), transparent 70%);
+}
+
+.trends-stage {
+  position: absolute;
+  inset: var(--topbar-height) 0 0 412px;
+}
+
+.trends-canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.trends-canvas canvas {
+  outline: none;
+  cursor: grab;
+}
+
+.trends-hover {
+  position: absolute;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid var(--line-strong);
+  color: var(--text-dim);
+  font-size: 12.5px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* ---------- Explore panel ---------- */
+.trends-panel {
+  bottom: 16px;
+  max-height: none;
+}
+
+.trends-title {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+}
+
+.trends-sub {
+  margin-top: var(--space-2);
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+.prop-list {
+  display: grid;
+  gap: 8px;
+}
+
+/* Each property is a big checkbox row. */
+.prop {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: var(--radius);
+  border: 1.5px solid var(--line-strong);
+  background: rgba(7, 8, 22, 0.45);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background var(--fast) var(--ease),
+    border-color var(--fast) var(--ease);
+}
+
+.prop:hover {
+  background: var(--bg-2);
+  border-color: rgba(168, 176, 255, 0.4);
+}
+
+.prop.is-on {
+  border-color: rgba(168, 176, 255, 0.5);
+  background: var(--bg-2);
+}
+
+.prop-check {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  border-radius: 5px;
+  border: 1.5px solid var(--text-faint);
+  color: var(--accent-ink);
+  font: 700 12px/1 var(--font-sans);
+}
+
+.prop-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.prop-name {
+  font-weight: 600;
+  font-size: 14.5px;
+}
+
+.prop-unit {
+  color: var(--text-faint);
+  font-weight: 400;
+  font-size: 12.5px;
+}
+
+.prop-blurb {
+  color: var(--text-dim);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.trends-panel .lesson-note p + p {
+  margin-top: var(--space-2);
+}
+
+/* ---------- Toggles ---------- */
+.trends-toggles {
+  position: absolute;
+  z-index: 5;
+  top: calc(var(--topbar-height) + 16px);
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 6px;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-dim);
+  font: 500 13px/1 var(--font-sans);
+  cursor: pointer;
+}
+
+.toggle:hover {
+  background: var(--bg-2);
+  color: var(--text);
+}
+
+.toggle-track {
+  position: relative;
+  flex-shrink: 0;
+  width: 28px;
+  height: 16px;
+  border-radius: 8px;
+  background: var(--bg-3);
+  border: 1px solid var(--line-strong);
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  transition: transform var(--fast) var(--ease);
+}
+
+.toggle.is-on {
+  color: var(--text);
+}
+
+.toggle.is-on .toggle-track {
+  background: rgba(94, 228, 255, 0.25);
+  border-color: var(--line-accent);
+}
+
+.toggle.is-on .toggle-thumb {
+  transform: translateX(12px);
+  background: var(--accent);
+}
+
+.tool-btn {
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-dim);
+  font: 500 13px/1 var(--font-sans);
+  cursor: pointer;
+}
+
+.tool-btn:hover {
+  background: var(--bg-2);
+  color: var(--text);
+}
+
+/* ---------- Element card (right) ---------- */
+.element-card {
+  position: absolute;
+  z-index: 5;
+  top: calc(var(--topbar-height) + 72px);
+  right: 16px;
+  width: 300px;
+  padding: var(--space-5);
+  animation: card-in var(--medium) var(--ease);
+}
+
+.element-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.element-close:hover {
+  color: var(--text);
+  background: var(--bg-2);
+}
+
+.element-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-right: 36px;
+}
+
+.element-symbol {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line-accent);
+  color: var(--accent);
+  font: 600 22px/1 var(--font-sans);
+}
+
+.element-head h2 {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.element-meta {
+  margin-top: 2px;
+  color: var(--text-faint);
+  font-size: 12.5px;
+}
+
+.element-facts {
+  margin: var(--space-4) 0 0;
+  display: grid;
+  gap: 8px;
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--line);
+}
+
+.element-facts > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: 13.5px;
+}
+
+.element-facts dt {
+  color: var(--text-faint);
+  flex-shrink: 0;
+}
+
+.element-facts dd {
+  margin: 0;
+  text-align: right;
+}
+
+.element-values {
+  list-style: none;
+  margin: 0;
+  padding: var(--space-3) 0 0;
+  display: grid;
+  gap: var(--space-3);
+  border-top: 1px solid var(--line);
+}
+
+.element-values li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 8px;
+  font-size: 13.5px;
+}
+
+.element-value-name {
+  color: var(--text-dim);
+}
+
+.element-bar {
+  grid-column: 1 / -1;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--bg-3);
+  overflow: hidden;
+}
+
+.element-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+}
+
+.element-missing,
+.element-note {
+  grid-column: 1 / -1;
+  color: var(--text-faint);
+  font-size: 12px;
+}
+
+.element-note {
+  margin-top: var(--space-3);
+}
+
+/* ---------- Element symbols on the table ---------- */
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.symbol {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: #fff;
+  font: 600 11px/1.3 var(--font-sans);
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.95), 0 0 1px #000;
+  will-change: transform;
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+}
+
+@media (max-width: 800px) {
+  .trends-stage {
+    inset: var(--topbar-height) 0 46% 0;
+  }
+  .trends-panel {
+    top: auto;
+    bottom: 8px;
+    max-height: 44%;
+  }
+  .trends-toggles,
+  .trends-hover {
+    display: none;
+  }
+  .element-card {
+    top: calc(var(--topbar-height) + 8px);
+    left: 8px;
+    right: 8px;
+    width: auto;
+  }
+  .symbol {
+    font-size: 8px;
+  }
+}
+
+/* When an element's card is open, the table makes room for it instead of being covered. */
+@media (min-width: 1001px) {
+  .has-card .trends-stage {
+    right: 324px;
+  }
+}

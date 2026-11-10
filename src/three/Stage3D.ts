@@ -110,6 +110,13 @@ export class Stage3D {
     this.requestRender()
   }
 
+  /** Point the camera at the origin from a given direction, framing a sphere of `radius`. */
+  lookFrom(direction: THREE.Vector3, radius: number) {
+    this.camera.position.copy(direction.clone().normalize())
+    this.controls.target.set(0, 0, 0)
+    this.fit(radius)
+  }
+
   setAutoRotate(on: boolean) {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     this.controls.autoRotate = on && !reduced

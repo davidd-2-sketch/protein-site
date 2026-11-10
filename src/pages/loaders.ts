@@ -10,6 +10,7 @@ export const loadProteinPage = () => import('./ProteinPage')
 export const loadReactionPage = () => import('./ReactionPage')
 export const loadVseprPage = () => import('./VseprPage')
 export const loadOrbitalsPage = () => import('./OrbitalsPage')
+export const loadTrendsPage = () => import('./TrendsPage')
 
 type NetworkInfo = { saveData?: boolean; effectiveType?: string }
 
@@ -27,6 +28,7 @@ export function prefetchWhenIdle() {
     void loadReactionPage() // small: shares the 3D engine already loaded by the home page
     void loadVseprPage() // small: same 3D engine
     void loadOrbitalsPage() // small: same 3D engine
+    void loadTrendsPage() // small: same 3D engine
     void loadProteinPage() // large: Mol*
   }
   const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }

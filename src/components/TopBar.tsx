@@ -3,6 +3,7 @@
   NavLink automatically knows which page is active, so we can highlight it.
 */
 import { Link, NavLink } from 'react-router-dom'
+import { loadTrendsPage } from '../pages/loaders'
 import { canPrefetch, loadOrbitalsPage, loadProteinPage, loadReactionPage, loadVseprPage } from '../pages/loaders'
 import { useSoundEnabled } from '../sound/sound'
 import './TopBar.css'
@@ -13,6 +14,7 @@ const LINKS = [
   { to: '/reaction', label: 'Reactions', load: loadReactionPage },
   { to: '/shapes', label: 'Shapes', load: loadVseprPage },
   { to: '/orbitals', label: 'Orbitals', load: loadOrbitalsPage },
+  { to: '/trends', label: 'Trends', load: loadTrendsPage },
 ]
 
 export default function TopBar() {
