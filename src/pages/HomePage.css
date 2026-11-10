@@ -1,0 +1,352 @@
+/* =========================================================
+   HomePage.css
+   ========================================================= */
+
+.home {
+  position: relative;
+  min-height: 100%;
+  overflow: hidden;
+}
+
+/* Everything except the background sits above it. */
+.home > :not(.atmosphere) {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- Hero ---------- */
+.hero {
+  padding-top: calc(var(--topbar-height) + 88px);
+  padding-bottom: var(--space-8);
+  display: grid;
+  grid-template-columns: 1fr 1.02fr;
+  gap: var(--space-8);
+  align-items: center;
+}
+
+.hero-copy {
+  animation: rise var(--slow) var(--ease) both;
+}
+
+.hero h1 {
+  font-size: clamp(46px, 5.8vw, 80px);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  /* A subtle top-to-bottom tint: white fading into lavender. */
+  background: linear-gradient(180deg, #ffffff 30%, #c4c8f5 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero-sub {
+  margin-top: var(--space-5);
+  max-width: 480px;
+  color: var(--text-dim);
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.hero-actions {
+  margin-top: var(--space-6);
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.hero-note {
+  margin-top: var(--space-5);
+  color: var(--text-faint);
+  font-size: 14px;
+}
+
+.hero-visual {
+  animation: rise var(--slow) var(--ease) 120ms both;
+}
+
+/* ---------- Sections ---------- */
+.section {
+  padding-top: var(--space-9);
+  /* PERFORMANCE: the browser skips layout and painting for sections that are off screen. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 600px;
+}
+
+.section-title {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  margin-bottom: var(--space-6);
+}
+
+/* ---------- Viewer cards ---------- */
+.viewer-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-5);
+}
+
+.viewer-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  background: var(--glass); /* static background behind these cards, so blur is cheap here */
+  backdrop-filter: blur(var(--panel-blur));
+  -webkit-backdrop-filter: blur(var(--panel-blur));
+  overflow: hidden;
+  transition:
+    border-color var(--medium) var(--ease),
+    transform var(--medium) var(--ease),
+    box-shadow var(--medium) var(--ease);
+}
+
+.viewer-card:hover {
+  border-color: rgba(168, 176, 255, 0.32);
+  transform: translateY(-3px);
+  box-shadow: 0 24px 60px -30px rgba(94, 100, 255, 0.45);
+}
+
+.viewer-art {
+  border-bottom: 1px solid var(--line);
+  background: radial-gradient(ellipse at 50% 60%, rgba(94, 100, 255, 0.12), transparent 70%), rgba(7, 8, 22, 0.6);
+}
+
+.viewer-art svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 230px;
+}
+
+.viewer-body {
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+  flex: 1;
+}
+
+.viewer-body h3 {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+}
+
+.viewer-text {
+  color: var(--text-dim);
+}
+
+.viewer-specs {
+  margin: var(--space-2) 0 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4) var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line);
+}
+
+.viewer-specs dt {
+  color: var(--text-faint);
+  font-size: 12.5px;
+}
+
+.viewer-specs dd {
+  margin: 2px 0 0;
+  font: 400 14px/1.4 var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+.viewer-cta {
+  margin-top: auto;
+  padding-top: var(--space-3);
+  font-weight: 500;
+  font-size: 14.5px;
+  color: var(--accent);
+}
+
+.viewer-cta .arrow {
+  display: inline-block;
+  transition: transform var(--fast) var(--ease);
+}
+
+.viewer-card:hover .viewer-cta .arrow {
+  transform: translateX(4px);
+}
+
+/* ---------- Why this exists ---------- */
+.why-quote {
+  margin: 0;
+  max-width: 760px;
+  padding-left: var(--space-6);
+  border-left: 2px solid var(--violet);
+}
+
+.why-quote p {
+  font-size: clamp(20px, 2.2vw, 26px);
+  line-height: 1.5;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.why-quote footer {
+  margin-top: var(--space-4);
+  color: var(--text-faint);
+  font-size: 14px;
+}
+
+/* ---------- Roadmap ---------- */
+.roadmap {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+}
+
+.roadmap-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: rgba(13, 15, 36, 0.5);
+}
+
+.roadmap-row h3 {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.roadmap-row p {
+  color: var(--text-dim);
+  font-size: 14px;
+  flex: 1;
+}
+
+/* Status: text label + a distinct dot shape, never color alone. */
+.status {
+  margin-top: var(--space-2);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-faint);
+}
+
+.status::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+}
+
+.status-live {
+  color: var(--signal-ok);
+}
+
+.status-live::before {
+  background: currentColor;
+}
+
+.status-next {
+  color: var(--accent);
+}
+
+.status-next::before {
+  background: linear-gradient(90deg, currentColor 50%, transparent 50%);
+}
+
+/* ---------- Accuracy ---------- */
+.accuracy {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: var(--space-7);
+}
+
+.accuracy-intro {
+  color: var(--text-dim);
+  font-size: 16px;
+  max-width: 380px;
+}
+
+.accuracy-list {
+  margin: 0;
+  display: grid;
+  gap: var(--space-5);
+}
+
+.accuracy-list dd {
+  margin: var(--space-2) 0 0;
+  color: var(--text-dim);
+  font-size: 15px;
+}
+
+/* ---------- Footer ---------- */
+.footer {
+  margin-top: var(--space-9);
+  border-top: 1px solid var(--line);
+  padding: var(--space-6) 0 var(--space-7);
+}
+
+.footer-inner {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+  color: var(--text-faint);
+  font-size: 14px;
+}
+
+.footer a {
+  color: var(--text-dim);
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 3px;
+}
+
+.footer a:hover {
+  color: var(--text);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1000px) {
+  .hero,
+  .viewer-grid,
+  .accuracy {
+    grid-template-columns: 1fr;
+  }
+  .hero {
+    gap: var(--space-7);
+    padding-top: calc(var(--topbar-height) + 56px);
+  }
+  .roadmap {
+    grid-template-columns: 1fr 1fr;
+  }
+  .accuracy {
+    gap: var(--space-5);
+  }
+}
+
+@media (max-width: 600px) {
+  .roadmap {
+    grid-template-columns: 1fr;
+  }
+  .why-quote {
+    padding-left: var(--space-4);
+  }
+}

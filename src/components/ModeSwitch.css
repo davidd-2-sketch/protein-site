@@ -1,0 +1,34 @@
+.mode-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+  padding: 3px;
+  border-radius: var(--radius);
+  background: rgba(7, 8, 22, 0.55);
+  border: 1px solid var(--line);
+  flex-shrink: 0;
+}
+
+.mode-btn {
+  height: 34px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-dim);
+  font: 500 14px/1 var(--font-sans);
+  cursor: pointer;
+  transition:
+    background var(--fast) var(--ease),
+    color var(--fast) var(--ease);
+}
+
+.mode-btn:hover {
+  color: var(--text);
+}
+
+/* The active mode is filled AND underlined-by-shape (inset ring), not just recolored. */
+.mode-btn.is-active {
+  background: var(--bg-3);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--line-accent);
+}

@@ -1,0 +1,226 @@
+/*
+  global.css — base styles shared by every page, plus reusable building blocks
+  (panels, buttons, tags, section headers). Page-specific styles live next to each page.
+*/
+
+@import './theme.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box; /* width includes padding + border: far more predictable */
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg-0);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.6;
+  letter-spacing: -0.006em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'ss01', 'cv11'; /* Geist's cleaner alternate letterforms */
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin: 0;
+  text-wrap: balance; /* avoids awkward one-word last lines */
+}
+
+p {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+sub,
+sup {
+  font-size: 0.72em;
+  line-height: 0;
+}
+
+code,
+.mono {
+  font-family: var(--font-mono);
+  letter-spacing: 0;
+}
+
+::selection {
+  background: rgba(94, 228, 255, 0.25);
+}
+
+/* Keyboard focus ring: invisible for mouse users, always visible for Tab users. */
+:focus-visible {
+  outline: 1.5px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Centered page column. */
+.container {
+  width: 100%;
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+/* ---------- Panel: the standard surface for cards and overlays ---------- */
+/* No backdrop blur here on purpose: panels float over moving 3D scenes (see theme.css). */
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  height: 40px;
+  padding: 0 18px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line-strong);
+  background: var(--bg-1);
+  color: var(--text);
+  font: 500 14px/1 var(--font-sans);
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition:
+    background var(--fast) var(--ease),
+    border-color var(--fast) var(--ease),
+    color var(--fast) var(--ease),
+    transform var(--fast) var(--ease);
+}
+
+.btn:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+  background: var(--bg-2);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn-primary {
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--bg-0);
+}
+
+.btn-primary:hover {
+  background: #ffffff;
+  border-color: #ffffff;
+}
+
+.btn .arrow {
+  transition: transform var(--fast) var(--ease);
+}
+
+.btn:hover .arrow {
+  transform: translateX(3px);
+}
+
+/* ---------- Tags (small labels) ---------- */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line-strong);
+  color: var(--text-dim);
+  font: 500 11px/1 var(--font-mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* The tag's shape (square vs. diamond) differs too, so meaning never relies on color alone. */
+.tag::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: currentColor;
+}
+
+.tag-experimental {
+  color: var(--signal-ok);
+  border-color: rgba(79, 227, 176, 0.35);
+}
+
+.tag-illustrative {
+  color: var(--signal-model);
+  border-color: rgba(185, 166, 255, 0.35);
+}
+
+.tag-illustrative::before {
+  transform: rotate(45deg) scale(0.85);
+}
+
+.tag-neutral::before {
+  display: none;
+}
+
+/* Keyboard key, e.g. <kbd>Space</kbd> */
+kbd {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 6px;
+  border: 1px solid var(--line-strong);
+  border-bottom-width: 2px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-2);
+  color: var(--text-dim);
+  font: 500 11px/1 var(--font-mono);
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 0 var(--space-4);
+  }
+}
+
+/* Respect users who ask their operating system to reduce motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

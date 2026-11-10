@@ -1,0 +1,655 @@
+/* =========================================================
+   ProteinPage.css — full-screen viewer with floating panels
+   ========================================================= */
+
+.protein-page {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: var(--bg-0);
+}
+
+/* Deep indigo/blue atmosphere behind the (transparent) 3D canvas. */
+.protein-backdrop {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(55% 60% at 55% 45%, rgba(43, 36, 112, 0.55), transparent 70%),
+    radial-gradient(40% 50% at 90% 10%, rgba(15, 59, 117, 0.55), transparent 70%),
+    radial-gradient(35% 45% at 10% 95%, rgba(74, 31, 110, 0.4), transparent 70%);
+}
+
+/* The 3D area. Starts right of the lessons panel when it's open (on wider screens). */
+.stage {
+  position: absolute;
+  inset: 0;
+}
+
+@media (min-width: 801px) {
+  .has-lessons .stage {
+    left: 412px; /* lessons panel width (380) + margin (16) + gap (16) */
+  }
+}
+
+.protein-canvas {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity var(--slow) var(--ease);
+}
+
+.protein-canvas.is-ready {
+  opacity: 1;
+}
+
+/* Brief dip while a new view is built: reads as a soft crossfade. */
+.protein-canvas.is-ready.is-switching {
+  opacity: 0.55;
+  transition-duration: 120ms;
+}
+
+.protein-canvas canvas {
+  outline: none;
+}
+
+.protein-error {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: var(--space-6);
+  max-width: 420px;
+  text-align: center;
+}
+
+.protein-error p {
+  margin-top: var(--space-3);
+  color: var(--text-dim);
+}
+
+/* ---------- Floating panels share this ---------- */
+.info-panel,
+.toolbar,
+.sequence {
+  position: absolute;
+  z-index: 5;
+  box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.7);
+}
+
+/* Small title card shown when lessons are hidden */
+.title-card {
+  position: absolute;
+  z-index: 5;
+  top: calc(var(--topbar-height) + 16px);
+  left: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+  border: 1px solid var(--line-strong);
+}
+
+.title-card {
+  width: 300px;
+  align-items: stretch;
+}
+
+.title-card-hint {
+  color: var(--text-dim);
+  font-size: 13.5px;
+}
+
+.title-card-name {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.title-card-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.title-card-meta a:hover {
+  color: var(--accent);
+}
+
+/* =========================================================
+   Floating labels on atoms
+   ========================================================= */
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.overlay-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.overlay-lines line {
+  stroke: var(--electron);
+  stroke-width: 2;
+  stroke-dasharray: 5 5;
+}
+
+.overlay-label,
+.overlay-line-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  will-change: transform;
+}
+
+/* The label sits just above-right of its atom, with a short leader dot. */
+.overlay-label span {
+  position: absolute;
+  left: 10px;
+  bottom: 8px;
+  white-space: nowrap;
+  padding: 4px 9px;
+  border-radius: 6px;
+  background: rgba(13, 15, 36, 0.88);
+  border: 1px solid var(--line-strong);
+  color: var(--text);
+  font: 500 12.5px/1.2 var(--font-sans);
+}
+
+.overlay-label::before {
+  content: '';
+  position: absolute;
+  left: -3px;
+  top: -3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text);
+  box-shadow: 0 0 0 2px rgba(13, 15, 36, 0.8);
+}
+
+.overlay-label.tone-accent span {
+  border-color: var(--line-accent);
+  color: var(--accent);
+}
+
+.overlay-label.tone-accent::before {
+  background: var(--accent);
+}
+
+.overlay-label.tone-warm span {
+  border-color: rgba(255, 154, 61, 0.55);
+  color: #ffb877;
+}
+
+.overlay-label.tone-warm::before {
+  background: #ff9a3d;
+}
+
+.overlay-line-label span {
+  position: absolute;
+  transform: translate(-50%, -150%);
+  white-space: nowrap;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(13, 15, 36, 0.9);
+  border: 1px solid rgba(255, 201, 77, 0.5);
+  color: var(--electron);
+  font: 500 12px/1.2 var(--font-mono);
+}
+
+/* =========================================================
+   Info panel (right)
+   ========================================================= */
+.info-panel {
+  top: calc(var(--topbar-height) + 16px);
+  right: 16px;
+  width: 330px;
+  max-height: calc(100% - var(--topbar-height) - 104px);
+  overflow-y: auto;
+  padding: var(--space-5);
+  animation: slide-in var(--medium) var(--ease);
+}
+
+.info-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.info-close:hover {
+  color: var(--text);
+  background: var(--bg-2);
+}
+
+.info-kicker {
+  color: var(--text-faint);
+  font-size: 12.5px;
+  padding-right: 36px;
+}
+
+.info-title {
+  margin-top: var(--space-2);
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.info-code {
+  margin-left: 6px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-faint);
+  letter-spacing: 0;
+}
+
+.info-plain {
+  margin-top: var(--space-3);
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+.info-facts {
+  margin: var(--space-4) 0 0;
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4) 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.info-facts > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.info-facts dt {
+  color: var(--text-faint);
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.info-facts dd {
+  margin: 0;
+  font-size: 13.5px;
+  text-align: right;
+}
+
+.info-text {
+  margin-top: var(--space-4);
+  color: var(--text-dim);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.info-callout {
+  margin-top: var(--space-4);
+  padding: var(--space-4);
+  border-radius: var(--radius);
+  background: rgba(94, 228, 255, 0.07);
+  border: 1px solid rgba(94, 228, 255, 0.25);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+
+.info-callout-title {
+  margin-bottom: 4px;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.info-atom {
+  margin-top: var(--space-4);
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  font-size: 14px;
+}
+
+.info-atom-symbol {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line-accent);
+  color: var(--accent);
+  font-size: 15px;
+}
+
+.info-dim {
+  color: var(--text-faint);
+  font-size: 13px;
+}
+
+.info-footnote {
+  margin-top: var(--space-3);
+  color: var(--text-faint);
+  font-size: 12px;
+}
+
+.info-focus {
+  margin-top: var(--space-5);
+  height: 34px;
+}
+
+/* =========================================================
+   Bottom: toolbar + "More" menu
+   ========================================================= */
+.protein-bottom {
+  position: absolute;
+  z-index: 6;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+  max-width: calc(100% - 32px);
+}
+
+.toolbar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 6px;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--line-strong);
+  flex-shrink: 0;
+}
+
+.segmented {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.segmented-btn,
+.tool-btn {
+  height: 34px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-dim);
+  font: 500 13.5px/1 var(--font-sans);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background var(--fast) var(--ease),
+    color var(--fast) var(--ease);
+}
+
+.segmented-btn:hover,
+.tool-btn:hover {
+  background: var(--bg-2);
+  color: var(--text);
+}
+
+.segmented-btn.is-active,
+.tool-btn.is-on {
+  background: var(--bg-3);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+}
+
+.more {
+  position: relative;
+}
+
+.more-menu {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 280px;
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--panel-solid);
+  animation: rise-in var(--fast) var(--ease);
+}
+
+.more-heading {
+  padding: var(--space-2) var(--space-2) 4px;
+  color: var(--text-faint);
+  font-size: 12px;
+}
+
+.more-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text);
+  font: 500 14px/1.3 var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+}
+
+.more-item:hover {
+  background: var(--bg-2);
+}
+
+.more-item.is-active {
+  background: var(--bg-3);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+}
+
+.more-hint {
+  color: var(--text-faint);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+/* =========================================================
+   Sequence strip
+   ========================================================= */
+.sequence-wrap {
+  position: absolute;
+  z-index: 5;
+  left: 412px; /* lessons panel width (380) + margin (16) + gap (16) */
+  right: 16px;
+  bottom: 76px;
+  display: flex;
+  justify-content: center;
+}
+
+.sequence {
+  position: relative;
+  width: 100%;
+  max-width: 860px;
+  padding: var(--space-3) var(--space-4) var(--space-2);
+  animation: rise-in var(--medium) var(--ease);
+}
+
+.sequence-ends {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-faint);
+  font-size: 11px;
+  margin-bottom: 4px;
+}
+
+.sequence-letters {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 18px;
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  /* Fade the right edge so it's clear the sequence continues (scroll sideways). */
+  mask-image: linear-gradient(90deg, #000 90%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, #000 90%, transparent);
+}
+
+.sequence-letters li {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.sequence-letter {
+  width: 15px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.sequence-letter:hover,
+.sequence-letter:focus-visible {
+  background: rgba(255, 255, 255, 0.12);
+  outline-offset: 0;
+}
+
+.sequence-tick {
+  position: absolute;
+  left: 50%;
+  top: 26px;
+  transform: translateX(-50%);
+  color: var(--text-faint);
+  font-size: 9.5px;
+}
+
+/* =========================================================
+   Readout + legend (bottom-right)
+   ========================================================= */
+.readout {
+  position: absolute;
+  z-index: 4;
+  right: 24px;
+  bottom: 24px;
+  max-width: 260px;
+  text-align: right;
+  pointer-events: none;
+}
+
+.readout-hover {
+  font-size: 12px;
+  color: var(--text-dim);
+  min-height: 18px;
+}
+
+.legend-list {
+  list-style: none;
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--text-dim);
+}
+
+.legend-list li {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.legend-chip {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.legend-chip.is-wide {
+  width: 34px;
+}
+
+/* While the info panel is open on smaller screens, it needs the right side. */
+@media (max-width: 1440px) {
+  .has-pick .readout {
+    display: none;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* =========================================================
+   Phones / small tablets: panels become bottom sheets
+   ========================================================= */
+@media (max-width: 800px) {
+  .title-card {
+    left: 8px;
+    top: calc(var(--topbar-height) + 8px);
+    padding: var(--space-3) var(--space-4);
+  }
+  .title-card-name {
+    font-size: 18px;
+  }
+  .info-panel {
+    left: 8px;
+    right: 8px;
+    width: auto;
+    top: calc(var(--topbar-height) + 8px);
+    max-height: 40%;
+  }
+  .protein-bottom {
+    bottom: 8px;
+  }
+  .readout,
+  .sequence-wrap {
+    display: none;
+  }
+}
+
+/* The protein toolbar is centered on the page, so leave room under the lesson panel. */
+.protein-page .lesson {
+  max-height: calc(100% - var(--topbar-height) - 104px);
+}

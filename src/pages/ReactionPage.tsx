@@ -1,0 +1,273 @@
+/*
+  ReactionPage.tsx — the animated SN2 mechanism viewer.
+
+  One number drives everything: s, the reaction progress (0 → 1).
+    • The 3D scene moves atoms, bonds, and arrows to match s.
+    • The left panel shows the step that s is in (with three depth levels).
+    • The energy diagram's dot sits at s.
+    • The timeline plays s forward, or lets you drag it anywhere.
+
+  Layout (laptop):
+    ┌──────────── 3D stage ──────────────────────────────┐
+    │ [Step panel]         [floating labels] [toggles]   │
+    │                                                    │
+    │       [ ▶  ───────●─────────────  ¼× ½× 1× ]  [⌁]  │
+    └────────────────────────────────────────────────────┘
+*/
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { DepthSwitch } from '../lessons/LessonPanel'
+import RichText from '../lessons/RichText'
+import { useStoredState } from '../lessons/progress'
+import type { Depth } from '../lessons/types'
+import EnergyDiagram from '../reactions/EnergyDiagram'
+import { ReactionScene } from '../reactions/ReactionScene'
+import Timeline from '../reactions/Timeline'
+import { DURATION_SECONDS, type Speed } from '../reactions/playback'
+import { SN2_LABELS, SN2_STEPS, stepAt } from '../reactions/sn2'
+import { configuration, sn2Atoms } from '../reactions/sn2Geometry'
+import './ReactionPage.css'
+
+/* Where clicking a step jumps to on the reaction coordinate. */
+const STEP_STOPS = [0.06, 0.32, 0.5, 0.72, 1]
+
+export default function ReactionPage() {
+  const hostRef = useRef<HTMLDivElement>(null)
+  const [scene, setScene] = useState<ReactionScene | null>(null)
+  const [s, setS] = useState(0)
+  const [playing, setPlaying] = useState(false)
+  const [speed, setSpeed] = useState<Speed>(0.5)
+  const [depth, setDepth] = useStoredState<Depth>('ps.depth', 'standard')
+  const [showArrows, setShowArrows] = useState(true)
+  const [showLabels, setShowLabels] = useState(true)
+
+  const stepIndex = Math.max(0, stepAt(s))
+  const step = SN2_STEPS[stepIndex]
+  // R/S only changes twice during the reaction; memo keeps the same value between frames.
+  const config = useMemo(() => configuration(sn2Atoms(s)), [s])
+
+  /* ---------- Create the 3D scene once ---------- */
+  useEffect(() => {
+    const sc = new ReactionScene(hostRef.current!)
+    setScene(sc)
+    return () => {
+      sc.dispose()
+      setScene(null)
+    }
+  }, [])
+
+  useEffect(() => scene?.setProgress(s), [scene, s])
+  useEffect(() => scene?.setOptions({ arrows: showArrows }), [scene, showArrows])
+
+  /* ---------- Playback: advance s in real time while playing ---------- */
+  // The loop reads the latest s through a ref, so it doesn't restart every frame.
+  const sRef = useRef(s)
+  useEffect(() => {
+    sRef.current = s
+  }, [s])
+  useEffect(() => {
+    if (!playing) return
+    let last = performance.now()
+    let id = 0
+    const tick = (now: number) => {
+      const dt = (now - last) / 1000
+      last = now
+      const next = Math.min(1, sRef.current + (dt * speed) / DURATION_SECONDS)
+      sRef.current = next
+      setS(next)
+      if (next >= 1) setPlaying(false)
+      else id = requestAnimationFrame(tick)
+    }
+    id = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(id)
+  }, [playing, speed])
+
+  const togglePlay = useCallback(() => {
+    if (s >= 1) setS(0) // replay from the start
+    setPlaying((p) => !p || s >= 1)
+  }, [s])
+
+  const seek = useCallback((v: number) => {
+    setPlaying(false)
+    setS(v)
+  }, [])
+
+  /* Keyboard: Space plays/pauses, ← → step through the reaction in small increments. */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement
+      if (el.tagName === 'INPUT' || el.tagName === 'BUTTON' || e.metaKey || e.ctrlKey) return
+      if (e.key === ' ') {
+        e.preventDefault()
+        togglePlay()
+      }
+      if (e.key === 'ArrowRight') seek(Math.min(1, s + 0.02))
+      if (e.key === 'ArrowLeft') seek(Math.max(0, s - 0.02))
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [togglePlay, seek, s])
+
+  return (
+    <div className="reaction-page">
+      <div className="reaction-backdrop" aria-hidden="true" />
+
+      <div className="reaction-stage">
+        <div
+          ref={hostRef}
+          className="reaction-canvas"
+          role="img"
+          aria-label={`3D animation of an SN2 reaction, currently at: ${step.title}. Drag to rotate, scroll to zoom.`}
+        />
+        {scene && showLabels && <ReactionLabels scene={scene} s={s} />}
+      </div>
+
+      {/* ===== Left: what's happening now ===== */}
+      <ReactionPanel stepIndex={stepIndex} depth={depth} config={config} onDepth={setDepth} onSeek={seek} />
+
+      {/* ===== Top-right: what to show ===== */}
+      <div className="reaction-toggles panel" role="group" aria-label="Show or hide">
+        <Toggle label="Electron arrows" on={showArrows} onChange={setShowArrows} />
+        <Toggle label="Labels" on={showLabels} onChange={setShowLabels} />
+        <button className="tool-btn" onClick={() => scene?.resetCamera()}>
+          Reset view
+        </button>
+      </div>
+
+      {/* ===== Bottom: timeline + energy diagram ===== */}
+      <div className="reaction-bottom">
+        <Timeline
+          s={s}
+          playing={playing}
+          speed={speed}
+          steps={SN2_STEPS}
+          onSeek={seek}
+          onTogglePlay={togglePlay}
+          onSpeed={setSpeed}
+        />
+      </div>
+      <div className="reaction-energy">
+        <EnergyDiagram s={s} onSeek={seek} />
+      </div>
+    </div>
+  )
+}
+
+/*
+  The explanation panel. PERFORMANCE: wrapped in memo(), so during playback (60 updates
+  per second) React skips it entirely unless the step, depth level, or R/S label changes.
+*/
+const ReactionPanel = memo(function ReactionPanel(props: {
+  stepIndex: number
+  depth: Depth
+  config: 'R' | 'S' | null
+  onDepth: (d: Depth) => void
+  onSeek: (s: number) => void
+}) {
+  const { stepIndex, depth, config, onDepth } = props
+  const seek = props.onSeek
+  return (
+  <section className="lesson reaction-panel panel" aria-label="Reaction explanation">
+    <header className="reaction-head">
+      <div className="reaction-tags">
+        <span className="tag tag-illustrative">Illustrative motion</span>
+      </div>
+      <h1>
+        S<sub>N</sub>2 substitution
+      </h1>
+      <p className="reaction-equation">
+        HO⁻ + (S)-2-bromobutane → (R)-butan-2-ol + Br⁻
+      </p>
+    </header>
+
+    <ol className="reaction-steps" aria-label="Steps">
+      {SN2_STEPS.map((st, i) => (
+        <li key={st.title}>
+          <button
+            className={`reaction-step ${i === stepIndex ? 'is-current' : ''} ${i < stepIndex ? 'is-done' : ''}`}
+            onClick={() => seek(STEP_STOPS[i])}
+            aria-current={i === stepIndex ? 'step' : undefined}
+          >
+            <span className="reaction-step-num">{i + 1}</span>
+            <span className="sr-only">{st.title}</span>
+          </button>
+        </li>
+      ))}
+    </ol>
+
+    <div className="lesson-body" key={stepIndex}>
+      <p className="lesson-kicker">
+        Step {stepIndex + 1} of {SN2_STEPS.length}
+      </p>
+      <h2>{SN2_STEPS[stepIndex].title}</h2>
+      <p className="lesson-text">
+        <RichText text={SN2_STEPS[stepIndex].text[depth]} />
+      </p>
+    </div>
+
+    <dl className="reaction-facts">
+      <div>
+        <dt>Configuration at C2</dt>
+        <dd className="mono">{config ? `(${config})` : 'flat, no R/S'}</dd>
+      </div>
+      <div>
+        <dt>Mechanism</dt>
+        <dd>One step (concerted)</dd>
+      </div>
+    </dl>
+
+    <DepthSwitch depth={depth} onDepth={onDepth} />
+
+    <p className="lesson-note">
+      Illustrative motion: starting and ending shapes use standard bond lengths and angles. The path between them
+      and the transition-state distances are approximate. The energy diagram shows the shape, not real values.
+    </p>
+  </section>
+  )
+})
+
+/* ---------- Small on/off switch ---------- */
+function Toggle({ label, on, onChange }: { label: string; on: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <button className={`toggle ${on ? 'is-on' : ''}`} role="switch" aria-checked={on} onClick={() => onChange(!on)}>
+      <span className="toggle-track" aria-hidden="true">
+        <span className="toggle-thumb" />
+      </span>
+      {label}
+    </button>
+  )
+}
+
+/* ---------- Floating labels pinned to atoms ---------- */
+function ReactionLabels({ scene, s }: { scene: ReactionScene; s: number }) {
+  // A short "signature" of which labels are visible. It changes only a few times per
+  // playthrough, so the list below (and the effect that positions it) rarely rebuilds.
+  const visibleKey = SN2_LABELS.map((l) => (s >= l.from && s <= l.to ? 1 : 0)).join('')
+  const active = useMemo(() => SN2_LABELS.filter((_, i) => visibleKey[i] === '1'), [visibleKey])
+  const refs = useRef<(HTMLDivElement | null)[]>([])
+
+  // Re-position after every redraw (the camera or atoms may have moved).
+  useEffect(() => {
+    const place = () => {
+      active.forEach((l, i) => {
+        const el = refs.current[i]
+        const p = scene.atomPosition(l.atom)
+        if (!el || !p) return
+        const q = scene.project(p)
+        el.style.visibility = q.behind ? 'hidden' : 'visible'
+        el.style.transform = `translate(${q.x}px, ${q.y}px)`
+      })
+    }
+    place()
+    return scene.onRender(place)
+  }, [scene, active])
+
+  return (
+    <div className="overlay" aria-hidden="true">
+      {active.map((l, i) => (
+        <div key={`${l.text}-${l.atom}`} ref={(el) => void (refs.current[i] = el)} className={`rx-label rx-${l.kind}`}>
+          <span>{l.text}</span>
+        </div>
+      ))}
+    </div>
+  )
+}

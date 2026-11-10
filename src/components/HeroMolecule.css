@@ -1,0 +1,223 @@
+/* The "specimen" panel: styled like a precision lab instrument. */
+.specimen {
+  margin: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+  overflow: hidden;
+  /* A very faint inner highlight on the top edge makes the panel feel machined. */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 40px 90px -40px rgba(40, 30, 140, 0.55);
+}
+
+.specimen-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 40px;
+  padding: 0 var(--space-4);
+  border-bottom: 1px solid var(--line);
+  color: var(--text-faint);
+  font: 500 11px/1 var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.specimen-id {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-dim);
+}
+
+.live-dot {
+  position: relative;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* PERFORMANCE: the pulse ring animates only transform + opacity, which the graphics chip
+   handles without repainting the page. (Animating box-shadow forced a repaint every frame.) */
+.live-dot::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 1.5px solid var(--accent);
+  animation: pulse 2.4s ease-out infinite;
+}
+
+@keyframes pulse {
+  from {
+    transform: scale(0.6);
+    opacity: 0.6;
+  }
+  to {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+/* The 3D stage: a faint measurement grid behind the molecule. */
+.specimen-stage {
+  position: relative;
+  aspect-ratio: 1 / 0.86;
+  background:
+    radial-gradient(ellipse at 50% 45%, rgba(94, 100, 255, 0.14), transparent 65%),
+    linear-gradient(var(--line) 1px, transparent 1px) 0 0 / 32px 32px,
+    linear-gradient(90deg, var(--line) 1px, transparent 1px) 0 0 / 32px 32px;
+}
+
+.specimen-canvas {
+  position: absolute;
+  inset: 0;
+  cursor: grab;
+  opacity: 0;
+  transition: opacity var(--slow) var(--ease);
+}
+
+.specimen-canvas:active {
+  cursor: grabbing;
+}
+
+.specimen-canvas.is-ready {
+  opacity: 1;
+}
+
+/* Viewfinder corner brackets */
+.corner {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--text-faint);
+  border-style: solid;
+  border-width: 0;
+  pointer-events: none;
+}
+.corner.tl { top: 14px; left: 14px; border-top-width: 1px; border-left-width: 1px; }
+.corner.tr { top: 14px; right: 14px; border-top-width: 1px; border-right-width: 1px; }
+.corner.bl { bottom: 14px; left: 14px; border-bottom-width: 1px; border-left-width: 1px; }
+.corner.br { bottom: 14px; right: 14px; border-bottom-width: 1px; border-right-width: 1px; }
+
+/* Hover readout, bottom-left of the stage */
+.specimen-hover {
+  position: absolute;
+  left: 22px;
+  bottom: 22px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  pointer-events: none;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.hover-symbol {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line-accent);
+  border-radius: var(--radius-sm);
+  background: rgba(7, 8, 22, 0.75);
+  color: var(--accent);
+  font: 500 15px/1 var(--font-mono);
+}
+
+.hover-meta {
+  display: block;
+  color: var(--text-faint);
+  font: 400 11px/1.5 var(--font-mono);
+}
+
+.hover-hint {
+  color: var(--text-faint);
+  font: 400 11px/1 var(--font-mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Readout strip: 4 cells separated by hairlines */
+.specimen-readout {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 0.6fr 1.4fr;
+  border-top: 1px solid var(--line);
+}
+
+.specimen-readout > div {
+  padding: 12px var(--space-4);
+  border-right: 1px solid var(--line);
+}
+
+.specimen-readout > div:last-child {
+  border-right: 0;
+}
+
+.specimen-readout dt {
+  color: var(--text-faint);
+  font: 500 10px/1 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 7px;
+}
+
+.specimen-readout dd {
+  margin: 0;
+  font: 400 13px/1.2 var(--font-mono);
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.readout-model {
+  color: var(--signal-model) !important;
+}
+
+/* Element color legend */
+.legend {
+  list-style: none;
+  margin: 0;
+  padding: 10px var(--space-4);
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  border-top: 1px solid var(--line);
+  font: 500 12px/1 var(--font-mono);
+  color: var(--text-dim);
+}
+
+.legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.legend-name {
+  color: var(--text-faint);
+  font-weight: 400;
+}
+
+@media (max-width: 560px) {
+  .specimen-readout {
+    grid-template-columns: 1fr 1fr;
+  }
+  .specimen-readout > div:nth-child(2) {
+    border-right: 0;
+  }
+  .specimen-readout > div:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--line);
+  }
+  .legend-name {
+    display: none;
+  }
+}
