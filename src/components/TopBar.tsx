@@ -6,6 +6,8 @@ import { Link, NavLink } from 'react-router-dom'
 import { loadPracticePage, loadTrendsPage } from '../pages/loaders'
 import { canPrefetch, loadOrbitalsPage, loadProteinPage, loadReactionPage, loadVseprPage } from '../pages/loaders'
 import { useSoundEnabled } from '../sound/sound'
+import { useAccount } from '../account/account'
+import { loadProgressPage } from '../pages/loaders'
 import './TopBar.css'
 
 /* Plain topic names (no numbers): each says what you'll learn there. */
@@ -20,6 +22,7 @@ const LINKS = [
 
 export default function TopBar() {
   const [soundOn, setSoundOn] = useSoundEnabled()
+  const { user, status } = useAccount()
   return (
     <header className="topbar">
       {/* "Skip to content" lets keyboard users jump past the navigation. */}
@@ -48,6 +51,16 @@ export default function TopBar() {
             </NavLink>
           ))}
           <span className="nav-divider" aria-hidden="true" />
+          {/* Progress (and the account, which lives on that page). A dot shows sync status when signed in. */}
+          <NavLink
+            to="/progress"
+            className="nav-link"
+            onMouseEnter={() => canPrefetch() && void loadProgressPage()}
+            title={user ? `Signed in as ${user.email}` : 'Your progress (sign in to sync)'}
+          >
+            {user && <span className={`sync-dot is-${status}`} aria-hidden="true" />}
+            {user ? 'Account' : 'Progress'}
+          </NavLink>
           {/* Sound is off until the student turns it on. The label names the action. */}
           <button
             className={`sound-btn ${soundOn ? 'is-on' : ''}`}

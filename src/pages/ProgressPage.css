@@ -1,0 +1,220 @@
+/* ProgressPage.css — a normal scrolling page (no 3D) */
+.progress-page {
+  padding-top: calc(var(--topbar-height) + 48px);
+  padding-bottom: var(--space-8);
+}
+
+.progress-head h1 {
+  font-size: clamp(32px, 4vw, 44px);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+
+.progress-head p,
+.progress-sub {
+  margin-top: var(--space-2);
+  color: var(--text-dim);
+}
+
+.progress-empty {
+  color: var(--text-dim);
+}
+
+.progress-empty a {
+  color: var(--accent);
+}
+
+.continue-card {
+  margin-top: var(--space-6);
+  display: grid;
+  gap: 4px;
+  max-width: 560px;
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line-accent);
+  background: linear-gradient(135deg, rgba(94, 228, 255, 0.1), rgba(167, 139, 250, 0.08));
+  transition: transform var(--medium) var(--ease);
+}
+
+.continue-card:hover {
+  transform: translateY(-2px);
+}
+
+.continue-label {
+  color: var(--accent);
+  font: 600 12px/1 var(--font-sans);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.continue-title {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.continue-meta {
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+.progress-section {
+  margin-top: var(--space-8);
+}
+
+.progress-section h2 {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.progress-count {
+  color: var(--text-faint);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.module-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-4);
+}
+
+.module-card {
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line-strong);
+  background: var(--panel);
+}
+
+.module-card header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.module-card h3 {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.module-card header span {
+  color: var(--text-faint);
+  font-size: 13px;
+}
+
+.module-bar,
+.stat-bar {
+  display: block;
+  height: 5px;
+  margin: var(--space-3) 0;
+  border-radius: 3px;
+  background: var(--bg-3);
+  overflow: hidden;
+}
+
+.module-bar span,
+.stat-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--signal-ok);
+}
+
+.module-card ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.module-card a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 4px;
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+.module-card a:hover {
+  background: var(--bg-2);
+  color: var(--text);
+}
+
+.lesson-mark {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid var(--line-strong);
+  font: 700 10px/1 var(--font-sans);
+}
+
+.module-card a.is-done {
+  color: var(--text);
+}
+
+.module-card a.is-done .lesson-mark {
+  border-color: var(--signal-ok);
+  background: var(--signal-ok);
+  color: var(--accent-ink);
+}
+
+.practice-stats {
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+  max-width: 640px;
+}
+
+.practice-stats li {
+  display: grid;
+  grid-template-columns: 110px 1fr 200px;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: 14px;
+}
+
+.practice-stats .stat-bar {
+  margin: 0;
+}
+
+.stat-value {
+  color: var(--text-dim);
+  font-size: 12.5px;
+}
+
+.progress-reset .btn.is-danger {
+  border-color: rgba(255, 107, 138, 0.6);
+  color: #ff9db1;
+}
+
+@media (max-width: 1000px) {
+  .module-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .module-grid {
+    grid-template-columns: 1fr;
+  }
+  .practice-stats li {
+    grid-template-columns: 90px 1fr;
+  }
+  .stat-value {
+    grid-column: 1 / -1;
+  }
+}

@@ -16,6 +16,8 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import Atmosphere from '../components/Atmosphere'
 import HeroMolecule from '../components/HeroMolecule'
+import { MODULES, placeLink, type Place } from '../lessons/place'
+import { useStoredState } from '../lessons/progress'
 import './HomePage.css'
 
 type Status = 'live' | 'next' | 'planned'
@@ -56,7 +58,8 @@ export default function HomePage() {
               </span>
             </Link>
           </div>
-          <p className="hero-note">Free. No account. Runs entirely in your browser.</p>
+          <ContinueCard />
+          <p className="hero-note">Free. No account needed. Runs entirely in your browser.</p>
         </div>
 
         <div className="hero-visual">
@@ -305,5 +308,19 @@ function Sn2Art() {
       <text x="72" y="90" fill="var(--text-dim)" fontFamily="var(--font-mono)" fontSize="11">δ−</text>
       <text x="230" y="86" fill="var(--text-dim)" fontFamily="var(--font-mono)" fontSize="11">δ−</text>
     </svg>
+  )
+}
+
+/* "Continue where you left off": only shown once the student has opened a lesson. */
+function ContinueCard() {
+  const [last] = useStoredState<Place | null>('ps.last', null)
+  if (!last) return null
+  return (
+    <Link to={placeLink(last)} className="home-continue">
+      <span className="home-continue-label">Continue where you left off</span>
+      <span>
+        {MODULES[last.module].name} · {last.lessonTitle} · step {last.step + 1} of {last.steps} <span className="arrow">→</span>
+      </span>
+    </Link>
   )
 }

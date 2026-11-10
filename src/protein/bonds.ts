@@ -14,3 +14,7 @@ export function isPeptideBond(a: AtomInfo, b: AtomInfo) {
 
 /** Backbone atoms shared by every amino acid. Everything else in a residue is side chain. */
 export const BACKBONE = new Set(['N', 'CA', 'C', 'O', 'OXT'])
+
+/* Hydrophobic residues (nonpolar aliphatic + aromatic, Lehninger grouping; Tyr excluded
+   because its OH makes it partly polar, Gly excluded because it has no side chain). */
+export const HYDROPHOBIC = ['ALA', 'VAL', 'LEU', 'ILE', 'MET', 'PRO', 'PHE', 'TRP']

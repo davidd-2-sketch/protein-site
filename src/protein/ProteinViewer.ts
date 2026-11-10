@@ -108,9 +108,9 @@ const HIGHLIGHT_CARBON = '#5ee4ff'
 const HEME_CARBON = '#c9cde6'
 const DETAIL_CARBON = '#aab1d6'
 
-/* Hydrophobic residues (nonpolar aliphatic + aromatic, Lehninger grouping; Tyr excluded
-   because its OH makes it partly polar, Gly excluded because it has no side chain). */
-export const HYDROPHOBIC = ['ALA', 'VAL', 'LEU', 'ILE', 'MET', 'PRO', 'PHE', 'TRP']
+// HYDROPHOBIC lives in bonds.ts (a tiny file), so lesson data can use it without loading Mol*.
+import { HYDROPHOBIC } from './bonds'
+export { HYDROPHOBIC }
 
 /* ---------------------------------------------------------------- selection helpers */
 // These build Mol* "MolScript" expressions: little queries like "all atoms in chain A".

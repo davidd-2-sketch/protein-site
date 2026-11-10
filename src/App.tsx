@@ -10,7 +10,8 @@ import TopBar from './components/TopBar'
 import LoadingScreen from './components/LoadingScreen'
 import HomePage from './pages/HomePage'
 import { installClickSounds } from './sound/sound'
-import { loadPracticePage, loadTrendsPage } from './pages/loaders'
+import { initAccount } from './account/account'
+import { loadPracticePage, loadProgressPage, loadTrendsPage } from './pages/loaders'
 import { loadOrbitalsPage, loadProteinPage, loadReactionPage, loadVseprPage, prefetchWhenIdle } from './pages/loaders'
 
 /*
@@ -24,12 +25,15 @@ const VseprPage = lazy(loadVseprPage)
 const OrbitalsPage = lazy(loadOrbitalsPage)
 const TrendsPage = lazy(loadTrendsPage)
 const PracticePage = lazy(loadPracticePage)
+const ProgressPage = lazy(loadProgressPage)
 
 export default function App() {
   // Quietly download the viewers in the background once the first page has settled.
   useEffect(() => prefetchWhenIdle(), [])
   // One listener gives every button and link a soft tap (only when sound is switched on).
   useEffect(() => installClickSounds(), [])
+  // Check for a signed-in student and start syncing their progress (does nothing if accounts are off).
+  useEffect(() => initAccount(), [])
 
   return (
     <>
@@ -44,6 +48,7 @@ export default function App() {
             <Route path="/orbitals" element={<OrbitalsPage />} />
             <Route path="/trends" element={<TrendsPage />} />
             <Route path="/practice" element={<PracticePage />} />
+            <Route path="/progress" element={<ProgressPage />} />
             {/* Any unknown URL falls back to the home page. */}
             <Route path="*" element={<HomePage />} />
           </Routes>

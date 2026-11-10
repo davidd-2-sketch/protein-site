@@ -15,8 +15,8 @@
     • Heme residue numbers: 142 (α chains), 148 (β chains).
 */
 import type { ChainId } from '../protein/hemoglobin'
-import { BACKBONE, isPeptideBond } from '../protein/bonds'
-import { HYDROPHOBIC, type AtomRef, type ResidueRef } from '../protein/ProteinViewer'
+import { BACKBONE, HYDROPHOBIC, isPeptideBond } from '../protein/bonds'
+import type { AtomRef, ResidueRef } from '../protein/ProteinViewer'
 import type { Lesson } from './types'
 
 const at = (chain: ChainId, seq: number, atom: string): AtomRef => ({ chain, seq, atom })
