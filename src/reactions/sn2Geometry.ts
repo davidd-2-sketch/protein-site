@@ -21,6 +21,7 @@
   All distances in ångströms (Å). This file has no imports, so it can also be run directly
   by a test script to check the stereochemistry.
 */
+import { BULGE, pos, v, type ArrowSpec, type Mechanism } from './mechanism'
 
 export type Vec = [number, number, number]
 
@@ -203,3 +204,33 @@ export function configuration(atoms: ReactionAtom[]): 'R' | 'S' | null {
   const triple = dot(a, cross(b, c))
   return triple < 0 ? 'R' : 'S'
 }
+
+/* ---------- SN2 as a Mechanism (what ReactionScene plays) ---------- */
+
+/** The two curved arrows: O lone pair → C, and C–Br electrons → Br. Shown before the TS, fading at it. */
+function sn2Arrows(s: number, atoms: ReactionAtom[]): ArrowSpec[] {
+  const C = pos(atoms, 'C2')
+  const O = pos(atoms, 'O')
+  const Br = pos(atoms, 'Br')
+  const opacity = smoothstep(0.04, 0.12, s) * (1 - smoothstep(0.46, 0.56, s))
+  const oToC = v.norm(v.sub(C, O))
+  const cToBr = v.norm(v.sub(Br, C))
+  return [
+    {
+      tail: v.add(v.add(O, v.scale(oToC, 0.42)), v.scale(BULGE, 0.25)),
+      tip: v.add(C, v.scale(oToC, -0.5)),
+      bow: Math.max(0.6, v.dist(O, C) * 0.28),
+      opacity,
+      travel: smoothstep(0.18, 0.5, s),
+    },
+    {
+      tail: v.lerp(C, Br, 0.5),
+      tip: v.add(v.add(Br, v.scale(cToBr, -0.1)), v.scale(BULGE, 0.48)),
+      bow: 0.55,
+      opacity,
+      travel: smoothstep(0.3, 0.62, s),
+    },
+  ]
+}
+
+export const SN2: Mechanism = { atoms: sn2Atoms, bonds: sn2Bonds, arrows: sn2Arrows, extent: { halfW: 6.2, halfH: 3.4 } }

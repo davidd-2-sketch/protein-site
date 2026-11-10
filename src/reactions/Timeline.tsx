@@ -13,12 +13,14 @@ interface Props {
   steps: ReactionStep[]
   /** Positions (0–1) where playback pauses for a question; shown as small "?" marks. */
   marks?: number[]
+  /** The key moment marked on the track (null = none). Default: SN2's transition state at the middle. */
+  middle?: { at: number; label: string } | null
   onSeek: (s: number) => void
   onTogglePlay: () => void
   onSpeed: (s: Speed) => void
 }
 
-export default function Timeline({ s, playing, speed, steps, marks = [], onSeek, onTogglePlay, onSpeed }: Props) {
+export default function Timeline({ s, playing, speed, steps, marks = [], middle = { at: 0.5, label: 'Transition state' }, onSeek, onTogglePlay, onSpeed }: Props) {
   return (
     <div className="timeline panel">
       <button className="play-btn" onClick={onTogglePlay} aria-label={playing ? 'Pause' : s >= 1 ? 'Replay' : 'Play'}>
@@ -31,7 +33,7 @@ export default function Timeline({ s, playing, speed, steps, marks = [], onSeek,
           {steps.slice(1).map((st) => (
             <span key={st.title} className="scrub-tick" style={{ left: `${st.from * 100}%` }} />
           ))}
-          <span className="scrub-ts" style={{ left: '50%' }} />
+          {middle && <span className="scrub-ts" style={{ left: `${middle.at * 100}%` }} />}
           {marks.map((m) => (
             <span key={m} className={`scrub-q ${s > m ? 'is-passed' : ''}`} style={{ left: `${m * 100}%` }}>
               ?
@@ -49,7 +51,7 @@ export default function Timeline({ s, playing, speed, steps, marks = [], onSeek,
         />
         <div className="scrub-labels" aria-hidden="true">
           <span>Reactants</span>
-          <span>Transition state</span>
+          {middle && <span>{middle.label}</span>}
           <span>Products</span>
         </div>
       </div>

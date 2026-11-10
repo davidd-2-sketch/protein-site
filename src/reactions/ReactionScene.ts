@@ -1,6 +1,7 @@
 /*
   ReactionScene.ts — the 3D view for an animated reaction (built on Three.js).
 
+  It plays any Mechanism (SN2 by default, SN1, ...; see mechanism.ts).
   The page tells it one number, the reaction progress s (0 → 1), with setProgress(s).
   The scene then:
     • moves every atom to its position at s,
@@ -15,7 +16,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 import { elementStyle } from '../three/elements'
 import { countFrame } from '../dev/frameCounter'
-import { clamp01, smoothstep, sn2Atoms, sn2Bonds, type Vec } from './sn2Geometry'
+import type { Mechanism } from './mechanism'
+import { clamp01, SN2, type Vec } from './sn2Geometry'
 
 const ballRadius = (el: string) => 0.17 + 0.2 * elementStyle(el).covalentRadius
 const BOND_RADIUS = 0.09
@@ -84,7 +86,8 @@ export class ReactionScene {
   private atomMeshes = new Map<string, THREE.Mesh>()
   private solidBonds = new Map<string, [THREE.Mesh, THREE.Mesh]>()
   private dashedBonds = new Map<string, THREE.Mesh[]>()
-  private arrows = [new CurvedArrow(), new CurvedArrow()]
+  private arrows: CurvedArrow[] = []
+  private mechanism: Mechanism
   private electrons: THREE.Mesh[] = []
   private materials = new Map<string, THREE.MeshPhysicalMaterial>()
   private dashMaterial: THREE.MeshStandardMaterial
@@ -97,8 +100,9 @@ export class ReactionScene {
   private renderListeners: (() => void)[] = []
   private disposed = false
 
-  constructor(container: HTMLElement) {
+  constructor(container: HTMLElement, mechanism: Mechanism = SN2) {
     this.container = container
+    this.mechanism = mechanism
 
     // ---------- Renderer (same quality settings as the home-page molecule) ----------
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
@@ -212,17 +216,18 @@ export class ReactionScene {
     const sphere = new THREE.SphereGeometry(1, 48, 32)
     const cylinder = new THREE.CylinderGeometry(1, 1, 1, 24, 1, true)
 
-    for (const atom of sn2Atoms(0)) {
+    const atoms0 = this.mechanism.atoms(0)
+    for (const atom of atoms0) {
       const mesh = new THREE.Mesh(sphere, this.materialFor(atom.element))
       mesh.scale.setScalar(ballRadius(atom.element))
       this.atomMeshes.set(atom.id, mesh)
       this.scene.add(mesh)
     }
 
-    for (const bond of sn2Bonds(0)) {
+    for (const bond of this.mechanism.bonds(0)) {
       const key = `${bond.a}-${bond.b}`
-      const elA = sn2Atoms(0).find((a) => a.id === bond.a)!.element
-      const elB = sn2Atoms(0).find((a) => a.id === bond.b)!.element
+      const elA = atoms0.find((a) => a.id === bond.a)!.element
+      const elB = atoms0.find((a) => a.id === bond.b)!.element
       const halves: [THREE.Mesh, THREE.Mesh] = [new THREE.Mesh(cylinder, this.materialFor(elA)), new THREE.Mesh(cylinder, this.materialFor(elB))]
       halves.forEach((h) => this.scene.add(h))
       this.solidBonds.set(key, halves)
@@ -231,12 +236,13 @@ export class ReactionScene {
       this.dashedBonds.set(key, dashes)
     }
 
+    // One arrow per arrow the mechanism ever draws, each with an electron pair (two small glowing spheres).
+    this.arrows = this.mechanism.arrows(0, atoms0).map(() => new CurvedArrow())
     this.arrows.forEach((a) => this.scene.add(a.group))
 
-    // Two pairs of electrons (two small glowing spheres each) that travel along the arrows.
     const eMat = new THREE.MeshStandardMaterial({ color: ELECTRON, emissive: ELECTRON, emissiveIntensity: 1.2, transparent: true })
     const eGeo = new THREE.SphereGeometry(0.075, 16, 12)
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 2 * this.arrows.length; i++) {
       const e = new THREE.Mesh(eGeo, eMat)
       this.electrons.push(e)
       this.scene.add(e)
@@ -246,13 +252,14 @@ export class ReactionScene {
   /** Place everything for the current progress s. */
   private update() {
     const s = this.s
-    for (const atom of sn2Atoms(s)) {
+    const atoms = this.mechanism.atoms(s)
+    for (const atom of atoms) {
       const p = new THREE.Vector3(...(atom.position as Vec))
       this.positions.set(atom.id, p)
       this.atomMeshes.get(atom.id)!.position.copy(p)
     }
 
-    for (const bond of sn2Bonds(s)) {
+    for (const bond of this.mechanism.bonds(s)) {
       const key = `${bond.a}-${bond.b}`
       const a = this.positions.get(bond.a)!
       const b = this.positions.get(bond.b)!
@@ -276,54 +283,34 @@ export class ReactionScene {
       }
     }
 
-    this.updateArrows()
+    this.updateArrows(atoms)
   }
 
   /** Curved arrows + travelling electron pairs. */
-  private updateArrows() {
-    const s = this.s
-    const P = (id: string) => this.positions.get(id)!.clone()
-    const C = P('C2')
-    const O = P('O')
-    const Br = P('Br')
-
-    // Arrows show while the electrons are "about to move", then fade at the transition state.
-    const show = this.options.arrows ? smoothstep(0.04, 0.12, s) * (1 - smoothstep(0.46, 0.56, s)) : 0
-
-    // Arrow 1: lone pair on O → carbon (new C–O bond).
-    const oToC = C.clone().sub(O).normalize()
-    const tail1 = O.clone().addScaledVector(oToC, 0.42).addScaledVector(BULGE, 0.25)
-    const tip1 = C.clone().addScaledVector(oToC, -0.5)
-    this.arrows[0].update(tail1, tip1, Math.max(0.6, O.distanceTo(C) * 0.28), show)
-
-    // Arrow 2: electrons in the C–Br bond → bromine.
-    const cToBr = Br.clone().sub(C).normalize()
-    const tail2 = C.clone().lerp(Br, 0.5)
-    const tip2 = Br.clone().addScaledVector(cToBr, -0.1).addScaledVector(BULGE, 0.48)
-    this.arrows[1].update(tail2, tip2, 0.55, show)
-
-    // Electron pairs travel along each arrow's path.
-    const travel = [smoothstep(0.18, 0.5, s), smoothstep(0.3, 0.62, s)]
-    const visible = [travel[0] > 0 && travel[0] < 1, travel[1] > 0 && travel[1] < 1]
-    const curves = [this.arrows[0].curve, this.arrows[1].curve]
+  private updateArrows(atoms: ReturnType<Mechanism['atoms']>) {
+    const V = (p: readonly number[]) => new THREE.Vector3(p[0], p[1], p[2])
     const side = new THREE.Vector3(0, 0, 1)
-    for (let k = 0; k < 2; k++) {
-      const point = curves[k].getPoint(Math.min(travel[k], 0.98))
-      const tangent = curves[k].getTangent(Math.min(travel[k], 0.98))
-      const offset = side.clone().cross(tangent).normalize().multiplyScalar(0.09)
-      const on = visible[k] && this.options.arrows
-      this.electrons[2 * k].visible = this.electrons[2 * k + 1].visible = on
-      this.electrons[2 * k].position.copy(point).add(offset)
-      this.electrons[2 * k + 1].position.copy(point).sub(offset)
-    }
+    this.mechanism.arrows(this.s, atoms).forEach((spec, k) => {
+      const arrow = this.arrows[k]
+      arrow.update(V(spec.tail), V(spec.tip), spec.bow, this.options.arrows ? spec.opacity : 0)
+      // The electron pair rides along the arrow while that step's electrons are moving.
+      const t = Math.min(spec.travel, 0.98)
+      const on = this.options.arrows && spec.travel > 0 && spec.travel < 1
+      const [e1, e2] = [this.electrons[2 * k], this.electrons[2 * k + 1]]
+      e1.visible = e2.visible = on
+      if (!on) return
+      const point = arrow.curve.getPoint(t)
+      const offset = side.clone().cross(arrow.curve.getTangent(t)).normalize().multiplyScalar(0.09)
+      e1.position.copy(point).add(offset)
+      e2.position.copy(point).sub(offset)
+    })
   }
 
   /* ----------------------------------------------------------- camera, size, loop */
 
-  /** Pull the camera back just enough to fit the whole reaction (x from about −5.6 to +5.6 Å). */
+  /** Pull the camera back just enough to fit the whole reaction (the mechanism's extent). */
   private fitCamera() {
-    const halfW = 6.2
-    const halfH = 3.4
+    const { halfW, halfH } = this.mechanism.extent
     const vFov = THREE.MathUtils.degToRad(this.camera.fov / 2)
     const dist = Math.max(halfH / Math.tan(vFov), halfW / (Math.tan(vFov) * this.camera.aspect))
     const dir = this.camera.position.clone().sub(this.controls.target).normalize()
