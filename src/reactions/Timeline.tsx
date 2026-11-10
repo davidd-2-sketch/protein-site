@@ -11,12 +11,14 @@ interface Props {
   playing: boolean
   speed: Speed
   steps: ReactionStep[]
+  /** Positions (0–1) where playback pauses for a question; shown as small "?" marks. */
+  marks?: number[]
   onSeek: (s: number) => void
   onTogglePlay: () => void
   onSpeed: (s: Speed) => void
 }
 
-export default function Timeline({ s, playing, speed, steps, onSeek, onTogglePlay, onSpeed }: Props) {
+export default function Timeline({ s, playing, speed, steps, marks = [], onSeek, onTogglePlay, onSpeed }: Props) {
   return (
     <div className="timeline panel">
       <button className="play-btn" onClick={onTogglePlay} aria-label={playing ? 'Pause' : s >= 1 ? 'Replay' : 'Play'}>
@@ -30,6 +32,11 @@ export default function Timeline({ s, playing, speed, steps, onSeek, onTogglePla
             <span key={st.title} className="scrub-tick" style={{ left: `${st.from * 100}%` }} />
           ))}
           <span className="scrub-ts" style={{ left: '50%' }} />
+          {marks.map((m) => (
+            <span key={m} className={`scrub-q ${s > m ? 'is-passed' : ''}`} style={{ left: `${m * 100}%` }}>
+              ?
+            </span>
+          ))}
         </div>
         <input
           type="range"

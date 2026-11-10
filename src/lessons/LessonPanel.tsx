@@ -221,13 +221,16 @@ export function DepthSwitch({ depth, onDepth }: { depth: Depth; onDepth: (d: Dep
 
 /* ---------- Quiz: predict / check yourself ---------- */
 
-function QuizBox(props: {
+export function QuizBox(props: {
   quiz: Quiz
   /** "Question {number} of {total}" within this lesson. */
   number: number
   total: number
   /** True when answering makes the 3D model appear (predict, then reveal). */
   reveals: boolean
+  /** Optional wording overrides for the small label and the "pick an answer" line. */
+  label?: string
+  prompt?: string
   onDone: () => void
 }) {
   const { quiz } = props
@@ -261,7 +264,7 @@ function QuizBox(props: {
   return (
     <div className={`quiz is-${result}`}>
       <div className="quiz-top">
-        <span className="quiz-label">{props.reveals ? 'Predict first' : 'Check yourself'}</span>
+        <span className="quiz-label">{props.label ?? (props.reveals ? 'Predict first' : 'Check yourself')}</span>
         <span className="quiz-count">
           Question {props.number} of {props.total}
         </span>
@@ -298,7 +301,7 @@ function QuizBox(props: {
 
       <div role="status" aria-live="polite" ref={feedbackRef} className="quiz-status">
         {!solved && tried.length === 0 && (
-          <p className="quiz-prompt">{props.reveals ? 'Pick an answer to reveal the 3D model.' : 'Pick an answer.'}</p>
+          <p className="quiz-prompt">{props.prompt ?? (props.reveals ? 'Pick an answer to reveal the 3D model.' : 'Pick an answer.')}</p>
         )}
 
         {!solved && tried.length > 0 && (

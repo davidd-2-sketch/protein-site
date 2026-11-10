@@ -15,7 +15,7 @@
     └────────────────────────────────────────────────────┘
 */
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { DepthSwitch } from '../lessons/LessonPanel'
+import { DepthSwitch, QuizBox } from '../lessons/LessonPanel'
 import RichText from '../lessons/RichText'
 import { useStoredState } from '../lessons/progress'
 import type { Depth } from '../lessons/types'
@@ -23,7 +23,7 @@ import EnergyDiagram from '../reactions/EnergyDiagram'
 import { ReactionScene } from '../reactions/ReactionScene'
 import Timeline from '../reactions/Timeline'
 import { DURATION_SECONDS, type Speed } from '../reactions/playback'
-import { SN2_LABELS, SN2_STEPS, stepAt } from '../reactions/sn2'
+import { SN2_CHECKPOINTS, SN2_LABELS, SN2_STEPS, stepAt } from '../reactions/sn2'
 import { configuration, sn2Atoms } from '../reactions/sn2Geometry'
 import './ReactionPage.css'
 
@@ -39,6 +39,14 @@ export default function ReactionPage() {
   const [depth, setDepth] = useStoredState<Depth>('ps.depth', 'standard')
   const [showArrows, setShowArrows] = useState(true)
   const [showLabels, setShowLabels] = useState(true)
+
+  // Pause-and-ask: while playing, stop at each checkpoint and ask a prediction question.
+  const [questionsOn, setQuestionsOn] = useStoredState('ps.sn2.questions', true)
+  /** Which checkpoint is on screen right now (null = none). */
+  const [asking, setAsking] = useState<number | null>(null)
+  /** Checkpoints already answered or skipped: playback won't stop at these again. */
+  const [passed, setPassed] = useState<number[]>([])
+  const [answered, setAnswered] = useState(false)
 
   const stepIndex = Math.max(0, stepAt(s))
   const step = SN2_STEPS[stepIndex]
@@ -71,25 +79,48 @@ export default function ReactionPage() {
     const tick = (now: number) => {
       const dt = (now - last) / 1000
       last = now
-      const next = Math.min(1, sRef.current + (dt * speed) / DURATION_SECONDS)
+      let next = Math.min(1, sRef.current + (dt * speed) / DURATION_SECONDS)
+      // Did this frame cross a question that hasn't been asked yet? Stop exactly on it.
+      const hit = questionsOn ? SN2_CHECKPOINTS.findIndex((c, i) => !passed.includes(i) && sRef.current < c.at && next >= c.at) : -1
+      if (hit >= 0) next = SN2_CHECKPOINTS[hit].at
       sRef.current = next
       setS(next)
-      if (next >= 1) setPlaying(false)
+      if (hit >= 0) {
+        setAsking(hit)
+        setAnswered(false)
+        setPlaying(false)
+      } else if (next >= 1) setPlaying(false)
       else id = requestAnimationFrame(tick)
     }
     id = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(id)
-  }, [playing, speed])
+  }, [playing, speed, questionsOn, passed])
+
+  /** Leave the current question (answered or skipped) so playback can move past it. */
+  const closeQuestion = useCallback(() => {
+    if (asking !== null) setPassed((p) => (p.includes(asking) ? p : [...p, asking]))
+    setAsking(null)
+  }, [asking])
 
   const togglePlay = useCallback(() => {
+    closeQuestion() // pressing play on a question skips it
     if (s >= 1) setS(0) // replay from the start
     setPlaying((p) => !p || s >= 1)
-  }, [s])
+  }, [s, closeQuestion])
 
-  const seek = useCallback((v: number) => {
-    setPlaying(false)
-    setS(v)
-  }, [])
+  const seek = useCallback(
+    (v: number) => {
+      closeQuestion()
+      setPlaying(false)
+      setS(v)
+    },
+    [closeQuestion],
+  )
+
+  const continueAfterAnswer = useCallback(() => {
+    closeQuestion()
+    setPlaying(true)
+  }, [closeQuestion])
 
   /* Keyboard: Space plays/pauses, ← → step through the reaction in small increments. */
   useEffect(() => {
@@ -122,10 +153,21 @@ export default function ReactionPage() {
       </div>
 
       {/* ===== Left: what's happening now ===== */}
-      <ReactionPanel stepIndex={stepIndex} depth={depth} config={config} onDepth={setDepth} onSeek={seek} />
+      <ReactionPanel
+        stepIndex={stepIndex}
+        depth={depth}
+        config={config}
+        asking={questionsOn ? asking : null}
+        answered={answered}
+        onAnswered={() => setAnswered(true)}
+        onContinue={continueAfterAnswer}
+        onDepth={setDepth}
+        onSeek={seek}
+      />
 
       {/* ===== Top-right: what to show ===== */}
       <div className="reaction-toggles panel" role="group" aria-label="Show or hide">
+        <Toggle label="Questions" on={questionsOn} onChange={setQuestionsOn} />
         <Toggle label="Electron arrows" on={showArrows} onChange={setShowArrows} />
         <Toggle label="Labels" on={showLabels} onChange={setShowLabels} />
         <button className="tool-btn" onClick={() => scene?.resetCamera()}>
@@ -140,6 +182,7 @@ export default function ReactionPage() {
           playing={playing}
           speed={speed}
           steps={SN2_STEPS}
+          marks={questionsOn ? SN2_CHECKPOINTS.map((c) => c.at) : []}
           onSeek={seek}
           onTogglePlay={togglePlay}
           onSpeed={setSpeed}
@@ -160,10 +203,15 @@ const ReactionPanel = memo(function ReactionPanel(props: {
   stepIndex: number
   depth: Depth
   config: 'R' | 'S' | null
+  /** Index of the question being asked right now, or null. */
+  asking: number | null
+  answered: boolean
+  onAnswered: () => void
+  onContinue: () => void
   onDepth: (d: Depth) => void
   onSeek: (s: number) => void
 }) {
-  const { stepIndex, depth, config, onDepth } = props
+  const { stepIndex, depth, config, onDepth, asking } = props
   const seek = props.onSeek
   return (
   <section className="lesson reaction-panel panel" aria-label="Reaction explanation">
@@ -194,15 +242,34 @@ const ReactionPanel = memo(function ReactionPanel(props: {
       ))}
     </ol>
 
-    <div className="lesson-body" key={stepIndex}>
-      <p className="lesson-kicker">
-        Step {stepIndex + 1} of {SN2_STEPS.length}
-      </p>
-      <h2>{SN2_STEPS[stepIndex].title}</h2>
-      <p className="lesson-text">
-        <RichText text={SN2_STEPS[stepIndex].text[depth]} />
-      </p>
-    </div>
+    {asking !== null ? (
+      // The reaction is paused on a question: it takes the place of the step text.
+      <div className="lesson-body reaction-question" key={`q${asking}`}>
+        <p className="lesson-kicker">Paused for a question</p>
+        <QuizBox
+          quiz={SN2_CHECKPOINTS[asking].quiz}
+          number={asking + 1}
+          total={SN2_CHECKPOINTS.length}
+          reveals={false}
+          label="Predict first"
+          prompt="Pick an answer, then watch what happens."
+          onDone={props.onAnswered}
+        />
+        <button className={`btn ${props.answered ? 'btn-primary' : ''} reaction-continue`} onClick={props.onContinue}>
+          {props.answered ? 'Watch what happens' : 'Skip and keep playing'} <span className="arrow">→</span>
+        </button>
+      </div>
+    ) : (
+      <div className="lesson-body" key={stepIndex}>
+        <p className="lesson-kicker">
+          Step {stepIndex + 1} of {SN2_STEPS.length}
+        </p>
+        <h2>{SN2_STEPS[stepIndex].title}</h2>
+        <p className="lesson-text">
+          <RichText text={SN2_STEPS[stepIndex].text[depth]} />
+        </p>
+      </div>
+    )}
 
     <dl className="reaction-facts">
       <div>

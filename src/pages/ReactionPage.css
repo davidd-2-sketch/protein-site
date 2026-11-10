@@ -21,7 +21,8 @@
 /* 3D area: starts to the right of the explanation panel on laptops. */
 .reaction-stage {
   position: absolute;
-  inset: var(--topbar-height) 0 150px 412px;
+  /* Bottom inset clears the timeline AND the energy diagram, so neither covers the molecule. */
+  inset: var(--topbar-height) 0 200px 412px;
 }
 
 .reaction-canvas {
@@ -269,6 +270,27 @@
   background: var(--line-strong);
 }
 
+/* Where playback pauses for a question */
+.scrub-q {
+  position: absolute;
+  top: -22px;
+  transform: translateX(-50%);
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid var(--violet);
+  background: var(--bg-0);
+  color: #cbbcff;
+  font: 600 10px/1 var(--font-sans);
+}
+
+.scrub-q.is-passed {
+  border-color: var(--line-strong);
+  color: var(--text-faint);
+}
+
 /* The transition state gets a small diamond marker */
 .scrub-ts {
   position: absolute;
@@ -505,11 +527,20 @@
 /* ---------- Smaller laptops ---------- */
 @media (max-width: 1200px) {
   .reaction-bottom {
+    right: 272px;
+  }
+  .reaction-energy {
+    width: 240px;
+  }
+}
+
+/* Narrow windows: no room beside the timeline, so the energy diagram is hidden. */
+@media (max-width: 1000px) {
+  .reaction-bottom {
     right: 16px;
   }
   .reaction-energy {
-    bottom: 104px;
-    width: 280px;
+    display: none;
   }
 }
 
@@ -537,4 +568,17 @@
   .reaction-panel .lesson-note {
     display: none;
   }
+}
+
+/* ---------- Pause-and-ask question in the left panel ---------- */
+.reaction-question .quiz {
+  margin-top: var(--space-3);
+}
+
+.reaction-continue {
+  margin-top: var(--space-4);
+}
+
+.timeline {
+  padding-top: 26px; /* room for the "?" marks above the track */
 }

@@ -7,7 +7,7 @@ import { useMemo } from 'react'
 import { energyAt } from './sn2'
 
 const W = 300
-const H = 160
+const H = 132
 const PAD = { l: 28, r: 12, t: 22, b: 26 }
 const xOf = (s: number) => PAD.l + s * (W - PAD.l - PAD.r)
 // Energy goes from −0.6 (products) to 1 (TS); map to the chart's height.

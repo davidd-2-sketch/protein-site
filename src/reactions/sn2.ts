@@ -14,7 +14,7 @@
     • pKa of HBr ≈ −9, so Br⁻ is a very weak base and a good leaving group.
     • A secondary halide with a strong base like HO⁻ also undergoes E2; we say so.
 */
-import type { Depth } from '../lessons/types'
+import type { Depth, Quiz } from '../lessons/types'
 
 export interface ReactionStep {
   title: string
@@ -137,3 +137,54 @@ export function energyAt(s: number) {
   if (s <= 0.5) return 0.5 * (1 - Math.cos(Math.PI * (s / 0.5)))
   return 1 - 1.6 * 0.5 * (1 - Math.cos(Math.PI * ((s - 0.5) / 0.5)))
 }
+
+/* ---------- Pause-and-ask questions ----------
+   While the reaction plays, it pauses at each `at` and asks the student to predict what
+   happens next. Answers are standard SN2 facts (see the notes at the top of this file). */
+
+export interface Checkpoint {
+  /** Where on the reaction coordinate playback pauses. */
+  at: number
+  quiz: Quiz
+}
+
+export const SN2_CHECKPOINTS: Checkpoint[] = [
+  {
+    at: 0.13,
+    quiz: {
+      // The view already shows hydroxide on the far side, so this asks WHY, not which side.
+      question: 'Hydroxide is lined up on the side opposite bromine. Why does it attack from there?',
+      choices: [
+        'Bromine’s electrons block the front, and the back is where the new bond can form',
+        'It is attracted to the hydrogens on that side',
+        'No reason: any side works equally well',
+      ],
+      answer: 0,
+      explain:
+        'This is [[backside attack]]. Bromine is large and electron-rich, so it repels hydroxide from the front, and the empty orbital that accepts hydroxide’s electrons points out the back of the carbon.',
+      hint: 'Hydroxide is negatively charged. What would push it away from the front?',
+    },
+  },
+  {
+    at: 0.36,
+    quiz: {
+      question: 'The C–O bond is starting to form. When does the C–Br bond break?',
+      choices: ['First: bromide leaves before hydroxide arrives', 'At the same time, in one step', 'Later, in a separate second step'],
+      answer: 1,
+      explain:
+        'At the same time. S_N2 is concerted: one bond forms as the other breaks, through a single [[transition state]] with no intermediate. That is why the rate depends on both reactants.',
+      hint: 'Look at the energy diagram: how many humps does this reaction have?',
+    },
+  },
+  {
+    at: 0.5,
+    quiz: {
+      question: 'This is the transition state: the three groups on carbon lie flat. Where do they go next?',
+      choices: ['Back to where they started', 'Over to the other side, like an umbrella flipping in the wind', 'They stay flat'],
+      answer: 1,
+      explain:
+        'They flip to the other side. This [[inversion of configuration]] is the signature of S_N2: here the (S) starting material becomes the (R) product.',
+      hint: 'Hydroxide is pushing in from the left, and bromide is leaving to the right.',
+    },
+  },
+]
