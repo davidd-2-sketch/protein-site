@@ -21,6 +21,7 @@ every time you save a file, the page updates by itself. Press `Ctrl + C` in Term
 | `npm install` | Re-downloads the code libraries (only needed on a new computer or after deleting `node_modules`) |
 | `npm run build` | Makes the final, optimized website in the `dist/` folder, and checks for type errors |
 | `npm run lint` | Scans the code for common mistakes |
+| `npm test` | Runs the automated science checks in `tests/` (stereochemistry, angles, orbital nodes, element data, residue numbers). Run it after any change to science content. |
 
 ## Where things live
 

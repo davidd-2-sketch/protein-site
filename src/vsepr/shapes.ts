@@ -117,7 +117,7 @@ export function isValid(bonds: number, lone: number) {
   return bonds >= 2 && sn >= 2 && sn <= 6 && LONE_SLOTS[sn]?.[lone] !== undefined
 }
 
-/* ---------- The 12 shapes ---------- */
+/* ---------- The 13 shapes (linear and bent each occur twice) ---------- */
 
 const shape = (bonds: number, lone: number, name: string, idealAngles: string, arcs: [number, number][], text: Record<Depth, string>): ShapeInfo => ({
   bonds,
