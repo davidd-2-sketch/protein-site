@@ -165,7 +165,8 @@ export class OrbitalScene {
               }))
         const leftover = view.leftover
           ? set.leftover.flatMap((id) =>
-              both(id, ORBITALS[id].fn, ORBITALS[id].extent).map((p) => ({ ...p, color: p.sign > 0 ? '#9aa3c4' : '#6a7090', opacity: 0.55 })),
+              // Leftover p orbitals: faint and without the mesh pattern, so the hybrids stay readable.
+              both(id, ORBITALS[id].fn, ORBITALS[id].extent).map((p) => ({ ...p, color: p.sign > 0 ? '#9aa3c4' : '#6a7090', opacity: 0.28, pattern: false })),
             )
           : []
         return [...hybrids, ...leftover]

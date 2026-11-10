@@ -18,32 +18,13 @@ import type { Depth } from '../lessons/types'
 import { useLessons } from '../lessons/useLessons'
 import { VSEPR_LESSONS, type VseprView } from '../vsepr/lessons'
 import { MOLECULES, type Molecule } from '../vsepr/molecules'
-import { HYBRID_FOOTNOTE, SLOTS, idealDomains, isValid, shapeFor, type ShapeInfo } from '../vsepr/shapes'
+import { HYBRID_FOOTNOTE, SLOTS, isValid, shapeFor, type ShapeInfo } from '../vsepr/shapes'
 import { VseprScene, type SceneState } from '../vsepr/VseprScene'
 import ModeSwitch from '../components/ModeSwitch'
+import SceneLabelsOverlay from '../vsepr/SceneLabels'
+import { byFormula, idealState, moleculeState } from '../vsepr/states'
 import './VseprPage.css'
 
-/** "109.5°" from a 3D angle; drops a trailing ".0". */
-const fmtAngle = (deg: number) => `${deg.toFixed(1).replace(/\.0$/, '')}°`
-const byFormula = (f?: string) => MOLECULES.find((m) => m.formula === f) ?? null
-
-/** An ideal shape with given counts (generic A/X atoms unless elements are given). */
-function idealState(bonds: number, lone: number, central = 'A', ligand = 'X'): SceneState {
-  const domains = idealDomains(bonds, lone)
-  const shape = shapeFor(bonds, lone)
-  const bondDirs = domains.filter((d) => d.kind === 'bond').map((d) => d.dir)
-  // Lone pairs squeeze bond angles, so for those shapes the drawn (ideal) angle is an upper
-  // limit: label it "< 109.5°" rather than "109.5°" so nobody memorizes the wrong number.
-  const squeezed = /less|squeezed/.test(shape.idealAngles)
-  const arcs = shape.arcs.map(([i, j]): [number, number, string] => {
-    const [a, b] = [bondDirs[i], bondDirs[j]]
-    const angle = (Math.acos(Math.max(-1, Math.min(1, a[0] * b[0] + a[1] * b[1] + a[2] * b[2]))) * 180) / Math.PI
-    return [i, j, `${squeezed ? '< ' : ''}${fmtAngle(angle)}`]
-  })
-  return { central, ligand, order: 1, domains, arcs }
-}
-
-const moleculeState = (m: Molecule): SceneState => ({ central: m.central, ligand: m.ligand, order: m.order, domains: m.domains, arcs: m.arcs })
 
 /** What the 3D view shows, plus the shape facts that go with it. */
 function sceneFor(view: VseprView, builder: { bonds: number; lone: number } | null) {
@@ -70,6 +51,10 @@ export default function VseprPage() {
   const [mode, setMode] = useStoredState<'lessons' | 'explore'>('ps.vsepr.mode', 'lessons')
   const [depth, setDepth] = useStoredState<Depth>('ps.depth', 'standard')
   const L = useLessons(VSEPR_LESSONS, 'vsepr')
+  // Arriving from a "continue" link always shows the lesson.
+  useEffect(() => {
+    if (L.fromLink) setMode('lessons')
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Explore-mode choices
   const [exploreView, setExploreView] = useState<VseprView>({ molecule: 'CH₄' })
@@ -382,45 +367,3 @@ function Toggle({ label, on, onChange }: { label: string; on: boolean; onChange:
   )
 }
 
-/* ---------- HTML labels for atoms and angles, moved after every redraw ---------- */
-
-function SceneLabelsOverlay({ scene }: { scene: VseprScene }) {
-  const [signature, setSignature] = useState('')
-  const atomRefs = useRef<(HTMLSpanElement | null)[]>([])
-  const arcRefs = useRef<(HTMLSpanElement | null)[]>([])
-
-  useEffect(() => {
-    const place = () => {
-      const { atoms, arcs } = scene.getLabels()
-      // Re-render the list only when WHICH labels exist changes (rare); otherwise just move them.
-      const sig = atoms.map((a) => a.text).join(',') + '|' + arcs.map((a) => a.text).join(',')
-      setSignature((prev) => (prev === sig ? prev : sig))
-      atoms.forEach((a, i) => move(atomRefs.current[i], scene.stage.project(a.position)))
-      arcs.forEach((a, i) => move(arcRefs.current[i], scene.stage.project(a.position)))
-    }
-    place()
-    return scene.stage.onAfterRender(place)
-  }, [scene, signature])
-
-  const { atoms, arcs } = scene.getLabels()
-  return (
-    <div className="overlay" aria-hidden="true">
-      {atoms.map((a, i) => (
-        <span key={`a${i}`} ref={(el) => void (atomRefs.current[i] = el)} className="v-atom">
-          {a.text}
-        </span>
-      ))}
-      {arcs.map((a, i) => (
-        <span key={`r${i}`} ref={(el) => void (arcRefs.current[i] = el)} className="v-angle">
-          {a.text}
-        </span>
-      ))}
-    </div>
-  )
-}
-
-function move(el: HTMLElement | null, p: { x: number; y: number; behind: boolean }) {
-  if (!el) return
-  el.style.visibility = p.behind ? 'hidden' : 'visible'
-  el.style.transform = `translate(${p.x}px, ${p.y}px) translate(-50%, -50%)`
-}

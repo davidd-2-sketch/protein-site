@@ -11,6 +11,7 @@ export const loadReactionPage = () => import('./ReactionPage')
 export const loadVseprPage = () => import('./VseprPage')
 export const loadOrbitalsPage = () => import('./OrbitalsPage')
 export const loadTrendsPage = () => import('./TrendsPage')
+export const loadPracticePage = () => import('./PracticePage')
 
 type NetworkInfo = { saveData?: boolean; effectiveType?: string }
 

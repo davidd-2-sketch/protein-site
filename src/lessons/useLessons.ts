@@ -9,21 +9,29 @@
     L.open('lesson-id'), L.goTo(2), L.exit()
     L.report(input)   // tell it what the student did; it checks the step's task
 */
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { readLessonLink, rememberPlace, type ModuleKey } from './place'
 import { play } from '../sound/sound'
 import { useStoredState } from './progress'
 import type { TaskStatus } from './LessonPanel'
 import type { BaseStep, Lesson } from './types'
 
-export function useLessons<V, P>(lessons: Lesson<BaseStep<V, P>>[], key: string) {
+export function useLessons<V, P>(lessons: Lesson<BaseStep<V, P>>[], key: ModuleKey) {
   const [completed, setCompleted] = useStoredState<string[]>(`ps.${key}.completed`, [])
-  const [lessonId, setLessonId] = useState<string | null>(null)
-  const [stepIndex, setStepIndex] = useState(0)
+  // Opened from a "continue" link? Start at that lesson and step.
+  const [link] = useState(() => readLessonLink(lessons.map((l) => l.id)))
+  const [lessonId, setLessonId] = useState<string | null>(link?.lessonId ?? null)
+  const [stepIndex, setStepIndex] = useState(link?.step ?? 0)
   const [taskStatus, setTaskStatus] = useState<TaskStatus>('waiting')
   const [revealed, setRevealed] = useState(false)
 
   const lesson = lessons.find((l) => l.id === lessonId) ?? null
-  const step = lesson ? lesson.steps[stepIndex] : null
+  const step = lesson ? (lesson.steps[stepIndex] ?? null) : null
+
+  // Remember this step so the home page can offer "Continue where you left off".
+  useEffect(() => {
+    if (lesson && step) rememberPlace({ module: key, lessonId: lesson.id, lessonTitle: lesson.title, step: stepIndex, steps: lesson.steps.length })
+  }, [key, lesson, step, stepIndex])
 
   const markDone = useCallback(
     (id: string) => {
@@ -70,6 +78,8 @@ export function useLessons<V, P>(lessons: Lesson<BaseStep<V, P>>[], key: string)
   )
 
   return {
+    /** True if this page was opened from a lesson link (so the page should show Lessons mode). */
+    fromLink: link !== null,
     lessons,
     lesson,
     step,

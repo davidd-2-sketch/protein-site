@@ -34,6 +34,7 @@ import { PROTEIN_LESSONS } from '../lessons/proteinLessons'
 import { useStoredState } from '../lessons/progress'
 import type { Depth, LessonStep } from '../lessons/types'
 import ModeSwitch from '../components/ModeSwitch'
+import { readLessonLink, rememberPlace } from '../lessons/place'
 import { play } from '../sound/sound'
 import './ProteinPage.css'
 
@@ -76,15 +77,24 @@ export default function ProteinPage() {
   const [lessonsOpen, setLessonsOpen] = useStoredState('ps.lessonsOpen', true)
   const [depth, setDepth] = useStoredState<Depth>('ps.depth', 'standard')
   const [completed, setCompleted] = useStoredState<string[]>('ps.completedLessons', [])
-  const [lessonId, setLessonId] = useState<string | null>(null)
-  const [stepIndex, setStepIndex] = useState(0)
+  // Opened from a "continue" link? Start at that lesson and step.
+  const [link] = useState(() => readLessonLink(PROTEIN_LESSONS.map((l) => l.id)))
+  const [lessonId, setLessonId] = useState<string | null>(link?.lessonId ?? null)
+  const [stepIndex, setStepIndex] = useState(link?.step ?? 0)
   const [taskStatus, setTaskStatus] = useState<TaskStatus>('waiting')
 
   const [pick, setPick] = useState<PickInfo | null>(null)
   const [hoverLabel, setHoverLabel] = useState<string | null>(null)
 
   const lesson = PROTEIN_LESSONS.find((l) => l.id === lessonId) ?? null
-  const step = lesson ? lesson.steps[stepIndex] : null
+  const step = lesson ? (lesson.steps[stepIndex] ?? null) : null
+
+  useEffect(() => {
+    if (link) setLessonsOpen(true)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (lesson && step) rememberPlace({ module: 'protein', lessonId: lesson.id, lessonTitle: lesson.title, step: stepIndex, steps: lesson.steps.length })
+  }, [lesson, step, stepIndex])
 
   const view: ViewState = useMemo(
     () => (step ? lessonView(step) : { chains: ALL_CHAINS, style, color, hemes: true }),

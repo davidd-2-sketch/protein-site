@@ -23,8 +23,9 @@ import EnergyDiagram from '../reactions/EnergyDiagram'
 import { ReactionScene } from '../reactions/ReactionScene'
 import Timeline from '../reactions/Timeline'
 import { DURATION_SECONDS, type Speed } from '../reactions/playback'
-import { SN2_CHECKPOINTS, SN2_LABELS, SN2_STEPS, stepAt } from '../reactions/sn2'
+import { SN2_CHECKPOINTS, SN2_STEPS, stepAt } from '../reactions/sn2'
 import { configuration, sn2Atoms } from '../reactions/sn2Geometry'
+import ReactionLabels from '../reactions/ReactionLabels'
 import './ReactionPage.css'
 
 /* Where clicking a step jumps to on the reaction coordinate. */
@@ -304,37 +305,3 @@ function Toggle({ label, on, onChange }: { label: string; on: boolean; onChange:
   )
 }
 
-/* ---------- Floating labels pinned to atoms ---------- */
-function ReactionLabels({ scene, s }: { scene: ReactionScene; s: number }) {
-  // A short "signature" of which labels are visible. It changes only a few times per
-  // playthrough, so the list below (and the effect that positions it) rarely rebuilds.
-  const visibleKey = SN2_LABELS.map((l) => (s >= l.from && s <= l.to ? 1 : 0)).join('')
-  const active = useMemo(() => SN2_LABELS.filter((_, i) => visibleKey[i] === '1'), [visibleKey])
-  const refs = useRef<(HTMLDivElement | null)[]>([])
-
-  // Re-position after every redraw (the camera or atoms may have moved).
-  useEffect(() => {
-    const place = () => {
-      active.forEach((l, i) => {
-        const el = refs.current[i]
-        const p = scene.atomPosition(l.atom)
-        if (!el || !p) return
-        const q = scene.project(p)
-        el.style.visibility = q.behind ? 'hidden' : 'visible'
-        el.style.transform = `translate(${q.x}px, ${q.y}px)`
-      })
-    }
-    place()
-    return scene.onRender(place)
-  }, [scene, active])
-
-  return (
-    <div className="overlay" aria-hidden="true">
-      {active.map((l, i) => (
-        <div key={`${l.text}-${l.atom}`} ref={(el) => void (refs.current[i] = el)} className={`rx-label rx-${l.kind}`}>
-          <span>{l.text}</span>
-        </div>
-      ))}
-    </div>
-  )
-}

@@ -10,7 +10,7 @@ import TopBar from './components/TopBar'
 import LoadingScreen from './components/LoadingScreen'
 import HomePage from './pages/HomePage'
 import { installClickSounds } from './sound/sound'
-import { loadTrendsPage } from './pages/loaders'
+import { loadPracticePage, loadTrendsPage } from './pages/loaders'
 import { loadOrbitalsPage, loadProteinPage, loadReactionPage, loadVseprPage, prefetchWhenIdle } from './pages/loaders'
 
 /*
@@ -23,6 +23,7 @@ const ReactionPage = lazy(loadReactionPage)
 const VseprPage = lazy(loadVseprPage)
 const OrbitalsPage = lazy(loadOrbitalsPage)
 const TrendsPage = lazy(loadTrendsPage)
+const PracticePage = lazy(loadPracticePage)
 
 export default function App() {
   // Quietly download the viewers in the background once the first page has settled.
@@ -42,6 +43,7 @@ export default function App() {
             <Route path="/shapes" element={<VseprPage />} />
             <Route path="/orbitals" element={<OrbitalsPage />} />
             <Route path="/trends" element={<TrendsPage />} />
+            <Route path="/practice" element={<PracticePage />} />
             {/* Any unknown URL falls back to the home page. */}
             <Route path="*" element={<HomePage />} />
           </Routes>

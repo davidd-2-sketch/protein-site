@@ -18,6 +18,7 @@ import { ORBITAL_LESSONS } from '../orbitals/lessons'
 import { OrbitalScene, type OrbitalView } from '../orbitals/OrbitalScene'
 import { BONDS, ORBITALS } from '../orbitals/wavefunctions'
 import ModeSwitch from '../components/ModeSwitch'
+import AxisLabels from '../orbitals/AxisLabels'
 import './OrbitalsPage.css'
 
 type ExploreChoice = { label: string; view: OrbitalView }
@@ -59,6 +60,10 @@ export default function OrbitalsPage() {
   const [mode, setMode] = useStoredState<'lessons' | 'explore'>('ps.orbitals.mode', 'lessons')
   const [depth, setDepth] = useStoredState<Depth>('ps.depth', 'standard')
   const L = useLessons(ORBITAL_LESSONS, 'orbitals')
+  // Arriving from a "continue" link always shows the lesson.
+  useEffect(() => {
+    if (L.fromLink) setMode('lessons')
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const [explore, setExplore] = useState<ExploreChoice>(EXPLORE[0].items[0])
   const [cutaway, setCutaway] = useState(false)
@@ -203,28 +208,3 @@ function Toggle({ label, on, onChange }: { label: string; on: boolean; onChange:
   )
 }
 
-/** x / y / z labels at the ends of the axes, moved after each redraw. */
-function AxisLabels({ scene }: { scene: OrbitalScene }) {
-  const refs = useRef<(HTMLSpanElement | null)[]>([])
-  useEffect(() => {
-    const place = () =>
-      scene.axisLabelPositions().forEach((a, i) => {
-        const el = refs.current[i]
-        if (!el) return
-        const p = scene.stage.project(a.position)
-        el.style.visibility = p.behind ? 'hidden' : 'visible'
-        el.style.transform = `translate(${p.x}px, ${p.y}px) translate(-50%, -50%)`
-      })
-    place()
-    return scene.stage.onAfterRender(place)
-  }, [scene])
-  return (
-    <div className="overlay" aria-hidden="true">
-      {['x', 'y', 'z'].map((t, i) => (
-        <span key={t} ref={(el) => void (refs.current[i] = el)} className="axis-label">
-          {t}
-        </span>
-      ))}
-    </div>
-  )
-}

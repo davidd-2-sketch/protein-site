@@ -232,6 +232,8 @@ export function QuizBox(props: {
   label?: string
   prompt?: string
   onDone: () => void
+  /** Called once when the question ends: true if it was answered right on the first try. */
+  onResult?: (firstTry: boolean) => void
 }) {
   const { quiz } = props
   // Wrong answers tried so far, and how the question ended (if it has).
@@ -251,6 +253,7 @@ export function QuizBox(props: {
       setResult('right')
       play('correct')
       props.onDone()
+      props.onResult?.(tried.length === 0)
     } else {
       setTried([...tried, i])
       play('wrong')
@@ -259,6 +262,7 @@ export function QuizBox(props: {
   const reveal = () => {
     setResult('shown')
     props.onDone()
+    props.onResult?.(false)
   }
 
   return (
