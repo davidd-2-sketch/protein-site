@@ -7,6 +7,10 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import './styles/global.css'
 import App from './App'
+import { applyPageClass } from './perf/quality'
+
+// Mark the page as 'fast' graphics if this computer needs it (switches off decorative motion).
+applyPageClass()
 
 createRoot(document.getElementById('root')!).render(
   // StrictMode runs extra checks during development to catch bugs early.

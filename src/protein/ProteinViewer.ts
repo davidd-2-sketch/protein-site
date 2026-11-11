@@ -16,6 +16,7 @@
   To change what's on screen, we add or delete nodes in that tree. We batch all
   changes for one view into a single "update" so the screen swaps in one frame.
 */
+import { frameWatcher, settings as quality } from '../perf/quality'
 import { PluginContext } from 'molstar/lib/mol-plugin/context'
 import { DefaultPluginSpec, PluginSpec } from 'molstar/lib/mol-plugin/spec'
 import { PluginConfig } from 'molstar/lib/mol-plugin/config'
@@ -195,7 +196,8 @@ export class ProteinViewer {
         // PERFORMANCE: Retina screens have 2× pixel density, which means 4× the pixels to shade.
         // Cap the effective density at 1.5× (about 44% fewer pixels). Mol*'s "temporal
         // multisampling" sharpens edges again whenever the model stops moving.
-        [PluginConfig.General.PixelScale, Math.min(1, 1.5 / (window.devicePixelRatio || 1))],
+        // On the 'fast' graphics profile: 1× pixels (no extra density at all).
+        [PluginConfig.General.PixelScale, Math.min(1, quality().maxPixelRatio / (window.devicePixelRatio || 1))],
         // Don't force the high-power graphics chip (on some laptops that's a hotter, separate GPU).
         [PluginConfig.General.PowerPreference, 'default'],
         [PluginConfig.Viewport.ShowAnimation, false],
@@ -221,7 +223,12 @@ export class ProteinViewer {
     }
 
     const viewer = new ProteinViewer(plugin, root)
-    plugin.canvas3d?.didDraw.subscribe(() => countFrame('protein'))
+    // On Auto, if the protein draws slowly while moving, switch it to the fast profile.
+    const watcher = frameWatcher(() => viewer.applyRenderQuality())
+    plugin.canvas3d?.didDraw.subscribe(() => {
+      watcher.frame(performance.now())
+      countFrame('protein')
+    })
     viewer.resizeObserver = new ResizeObserver(() => plugin.handleResize())
     viewer.resizeObserver.observe(root)
     viewer.applyRenderQuality()
@@ -355,8 +362,10 @@ export class ProteinViewer {
     const type = view.style === 'surface' ? 'gaussian-surface' : view.style
     const typeParams: Record<string, unknown> = {}
     // 'higher' (not 'highest'): fewer triangles, no visible difference at normal zoom.
-    if (type === 'cartoon') Object.assign(typeParams, { quality: 'higher', sizeFactor: 0.25 })
-    if (type === 'gaussian-surface') Object.assign(typeParams, { quality: 'high', smoothness: 1.5 })
+    // Fewer triangles on the 'fast' graphics profile (same shapes, slightly less smooth).
+    const fast = quality().fast
+    if (type === 'cartoon') Object.assign(typeParams, { quality: fast ? 'medium' : 'higher', sizeFactor: 0.25 })
+    if (type === 'gaussian-surface') Object.assign(typeParams, { quality: fast ? 'low' : 'high', smoothness: 1.5 })
     if (type === 'ball-and-stick') Object.assign(typeParams, { sizeFactor: 0.22 })
 
     switch (view.color) {
@@ -545,8 +554,12 @@ export class ProteinViewer {
     const canvas3d = this.plugin.canvas3d
     if (!canvas3d) return
     const pp = PostprocessingParams
+    // 'fast' graphics profile: skip the soft shadows, the outlines, and the extra sharpening
+    // passes after the model stops moving. Each of those re-processes every pixel.
+    const fast = quality().fast
     canvas3d.setProps({
       transparentBackground: true,
+      multiSample: { ...canvas3d.props.multiSample, mode: fast ? 'off' : 'temporal' },
       renderer: {
         ...canvas3d.props.renderer,
         backgroundColor: hex('#070816'),
@@ -557,12 +570,16 @@ export class ProteinViewer {
       },
       postprocessing: {
         ...canvas3d.props.postprocessing,
-        occlusion: {
+        occlusion: fast
+          ? { name: 'off', params: {} }
+          : {
           name: 'on',
           // 16 samples (Mol*'s default is 32): visually almost identical, half the work per pixel.
           params: { ...pp.occlusion.map('on').defaultValue, samples: 16, radius: 5, bias: 0.8, blurKernelSize: 13, resolutionScale: 1 },
         },
-        outline: {
+        outline: fast
+          ? { name: 'off', params: {} }
+          : {
           name: 'on',
           params: { ...pp.outline.map('on').defaultValue, scale: 1, threshold: 0.33, color: hex('#05060f') },
         },

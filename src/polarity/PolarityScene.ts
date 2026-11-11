@@ -14,6 +14,7 @@
 import * as THREE from 'three'
 import { Stage3D } from '../three/Stage3D'
 import { elementStyle } from '../three/elements'
+import { glossy, sphereGeometry } from '../three/quality3d'
 import { bondDipoles, displayScale, netDipole, partialCharges, type PolarMolecule, type Vec } from './molecules'
 
 const BOND_ARROW = '#5ee4ff'
@@ -172,13 +173,13 @@ export class PolarityScene {
 
   setMolecule(m: PolarMolecule) {
     this.clear()
-    const sphere = new THREE.SphereGeometry(1, 40, 28)
+    const sphere = sphereGeometry(1, 0.85)
     const cyl = new THREE.CylinderGeometry(1, 1, 1, 20)
     const up = new THREE.Vector3(0, 1, 0)
 
     // Atoms (smallish balls, so arrows beside the bonds stay visible).
     for (const a of m.atoms) {
-      const mat = new THREE.MeshPhysicalMaterial({ color: elementStyle(a.el).color, roughness: 0.32, clearcoat: 0.55, clearcoatRoughness: 0.18 })
+      const mat = glossy({ color: elementStyle(a.el).color, roughness: 0.32, clearcoat: 0.55, clearcoatRoughness: 0.18 })
       this.materials.push(mat)
       const mesh = new THREE.Mesh(sphere, mat)
       mesh.scale.setScalar(0.16 + 0.17 * elementStyle(a.el).covalentRadius)
@@ -187,7 +188,7 @@ export class PolarityScene {
     }
 
     // Bonds (double bonds as two thinner sticks).
-    const bondMat = new THREE.MeshPhysicalMaterial({ color: '#c8cde6', roughness: 0.35, clearcoat: 0.4 })
+    const bondMat = glossy({ color: '#c8cde6', roughness: 0.35, clearcoat: 0.4 })
     this.materials.push(bondMat)
     for (const [i, j, order] of m.bonds) {
       const a = V(m.atoms[i].pos)

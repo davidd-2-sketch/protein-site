@@ -12,7 +12,7 @@ import HomePage from './pages/HomePage'
 import { installClickSounds } from './sound/sound'
 import { initAccount } from './account/account'
 import { loadPolarityPage, loadPracticePage, loadProgressPage, loadTrendsPage } from './pages/loaders'
-import { loadOrbitalsPage, loadProteinPage, loadReactionPage, loadVseprPage, prefetchWhenIdle } from './pages/loaders'
+import { installLinkPrefetch, loadOrbitalsPage, loadProteinPage, loadReactionPage, loadVseprPage, prefetchWhenIdle } from './pages/loaders'
 
 /*
   lazy() = "don't download this page's code until someone visits it".
@@ -32,6 +32,8 @@ export default function App() {
   const { pathname } = useLocation()
   // Quietly download the viewers in the background once the first page has settled.
   useEffect(() => prefetchWhenIdle(), [])
+  // ...and any page the moment a student points at a link to it.
+  useEffect(() => installLinkPrefetch(), [])
   // One listener gives every button and link a soft tap (only when sound is switched on).
   useEffect(() => installClickSounds(), [])
   // Check for a signed-in student and start syncing their progress (does nothing if accounts are off).

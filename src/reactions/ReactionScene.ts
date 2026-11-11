@@ -13,9 +13,9 @@
 */
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
-import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 import { elementStyle } from '../three/elements'
 import { countFrame } from '../dev/frameCounter'
+import { addLighting, createRenderer, glossy, sphereGeometry, watchRenderer, type GlossyMaterial } from '../three/quality3d'
 import type { Mechanism } from './mechanism'
 import { clamp01, SN2, type Vec } from './sn2Geometry'
 
@@ -89,7 +89,8 @@ export class ReactionScene {
   private arrows: CurvedArrow[] = []
   private mechanism: Mechanism
   private electrons: THREE.Mesh[] = []
-  private materials = new Map<string, THREE.MeshPhysicalMaterial>()
+  private materials = new Map<string, GlossyMaterial>()
+  private watcher: ReturnType<typeof watchRenderer>
   private dashMaterial: THREE.MeshStandardMaterial
   private positions = new Map<string, THREE.Vector3>()
   private s = 0
@@ -105,22 +106,10 @@ export class ReactionScene {
     this.mechanism = mechanism
 
     // ---------- Renderer (same quality settings as the home-page molecule) ----------
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
-    this.renderer.outputColorSpace = THREE.SRGBColorSpace
-    this.renderer.toneMapping = THREE.NeutralToneMapping
-    this.renderer.domElement.style.display = 'block'
-    container.appendChild(this.renderer.domElement)
-
-    const pmrem = new THREE.PMREMGenerator(this.renderer)
-    this.scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture
-    this.scene.environmentIntensity = 0.55
-    pmrem.dispose()
-    const key = new THREE.DirectionalLight('#ffffff', 2.2)
-    key.position.set(-4, 6, 8)
-    const rim = new THREE.DirectionalLight('#8fe9ff', 1.2)
-    rim.position.set(6, -2, -8)
-    this.scene.add(key, rim, new THREE.AmbientLight('#ffffff', 0.15))
+    // Renderer and lights follow the device's graphics profile (fast or detailed).
+    this.renderer = createRenderer(container)
+    addLighting(this.scene, this.renderer)
+    this.watcher = watchRenderer(this.renderer, () => (this.needsRender = true))
 
     // Classic textbook view: nucleophile on the left, leaving group on the right,
     // seen slightly from above and to the side so the 3D "umbrella" is visible.
@@ -205,7 +194,7 @@ export class ReactionScene {
   private materialFor(element: string) {
     let m = this.materials.get(element)
     if (!m) {
-      m = new THREE.MeshPhysicalMaterial({ color: elementStyle(element).color, roughness: 0.32, clearcoat: 0.55, clearcoatRoughness: 0.18 })
+      m = glossy({ color: elementStyle(element).color, roughness: 0.32, clearcoat: 0.55, clearcoatRoughness: 0.18 })
       this.materials.set(element, m)
     }
     return m
@@ -213,7 +202,7 @@ export class ReactionScene {
 
   /** Create every mesh once. Later frames only move them (much faster than rebuilding). */
   private build() {
-    const sphere = new THREE.SphereGeometry(1, 48, 32)
+    const sphere = sphereGeometry()
     const cylinder = new THREE.CylinderGeometry(1, 1, 1, 24, 1, true)
 
     const atoms0 = this.mechanism.atoms(0)
@@ -337,6 +326,7 @@ export class ReactionScene {
     if (!this.needsRender) return
     this.needsRender = false
     this.renderer.render(this.scene, this.camera)
+    this.watcher.frame(performance.now())
     countFrame('reaction')
     this.renderListeners.forEach((fn) => fn())
   }

@@ -15,7 +15,8 @@ import { useCallback, useSyncExternalStore } from 'react'
 const PREFIX = 'ps.'
 const META = 'ps.__meta' // { key: last-changed time in ms }
 /** Device-only settings that should never be synced to an account. */
-const DEVICE_ONLY = new Set(['ps.sound', 'ps.lessonsOpen', META])
+// Settings about THIS computer (sound, graphics) are never synced to other devices.
+const DEVICE_ONLY = new Set(['ps.sound', 'ps.lessonsOpen', 'ps.quality', 'ps.quality.slowDevice', META])
 
 /* ---------- raw storage, always wrapped so blocked storage can't crash the site ---------- */
 

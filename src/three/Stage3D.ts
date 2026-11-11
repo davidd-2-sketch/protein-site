@@ -12,8 +12,8 @@
 */
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
-import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 import { countFrame } from '../dev/frameCounter'
+import { addLighting, createRenderer, watchRenderer } from './quality3d'
 
 export class Stage3D {
   readonly scene = new THREE.Scene()
@@ -32,26 +32,15 @@ export class Stage3D {
   private defaultDirection = new THREE.Vector3(0.35, 0.3, 1).normalize()
 
   private name: string
+  private watcher: ReturnType<typeof watchRenderer>
 
   constructor(container: HTMLElement, name = 'stage') {
     this.container = container
     this.name = name
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
-    this.renderer.outputColorSpace = THREE.SRGBColorSpace
-    this.renderer.toneMapping = THREE.NeutralToneMapping
-    this.renderer.domElement.style.display = 'block'
-    container.appendChild(this.renderer.domElement)
-
-    const pmrem = new THREE.PMREMGenerator(this.renderer)
-    this.scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture
-    this.scene.environmentIntensity = 0.55
-    pmrem.dispose()
-    const key = new THREE.DirectionalLight('#ffffff', 2.2)
-    key.position.set(-4, 6, 8)
-    const rim = new THREE.DirectionalLight('#8fe9ff', 1.2)
-    rim.position.set(6, -2, -8)
-    this.scene.add(key, rim, new THREE.AmbientLight('#ffffff', 0.15))
+    // Renderer and lights follow the device's graphics profile (fast or detailed).
+    this.renderer = createRenderer(container)
+    addLighting(this.scene, this.renderer)
+    this.watcher = watchRenderer(this.renderer, () => this.requestRender())
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement)
     this.controls.enableDamping = true
@@ -159,6 +148,7 @@ export class Stage3D {
     if (!this.needsRender) return
     this.needsRender = false
     this.renderer.render(this.scene, this.camera)
+    this.watcher.frame(performance.now())
     countFrame(this.name)
     this.afterRender.forEach((fn) => fn())
   }

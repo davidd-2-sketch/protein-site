@@ -14,6 +14,7 @@
 import * as THREE from 'three'
 import { Stage3D } from '../three/Stage3D'
 import { elementStyle } from '../three/elements'
+import { glossy, sphereGeometry, type GlossyMaterial } from '../three/quality3d'
 import type { Domain } from './shapes'
 
 const MAX = 6
@@ -56,8 +57,8 @@ export class VseprScene {
   private central: THREE.Mesh
   private arcLines: THREE.Line[] = []
   private hull: THREE.LineSegments
-  private materials = new Map<string, THREE.MeshPhysicalMaterial>()
-  private bondMaterial = new THREE.MeshPhysicalMaterial({ color: '#c8cde6', roughness: 0.35, clearcoat: 0.4 })
+  private materials = new Map<string, GlossyMaterial>()
+  private bondMaterial = glossy({ color: '#c8cde6', roughness: 0.35, clearcoat: 0.4 })
   // Lone-pair "cloud": mostly self-lit (emissive) so it glows gold instead of looking
   // muddy where it's translucent over the dark background.
   // Lone-pair "cloud": a tiny custom shader. It's brightest where the cloud faces you and
@@ -97,10 +98,10 @@ export class VseprScene {
 
   constructor(container: HTMLElement) {
     this.stage = new Stage3D(container, 'vsepr')
-    const sphere = new THREE.SphereGeometry(1, 48, 32)
+    const sphere = sphereGeometry()
     const cylinder = new THREE.CylinderGeometry(1, 1, 1, 24, 1, true)
     // A lone pair is drawn as a stretched, translucent sphere (an electron "cloud").
-    const lobeGeo = new THREE.SphereGeometry(1, 32, 24)
+    const lobeGeo = sphereGeometry(1, 0.7)
 
     this.central = new THREE.Mesh(sphere, this.material('A'))
     this.stage.scene.add(this.central)
@@ -220,7 +221,7 @@ export class VseprScene {
   private material(el: string) {
     let m = this.materials.get(el)
     if (!m) {
-      m = new THREE.MeshPhysicalMaterial({ color: elementStyle(el).color, roughness: 0.32, clearcoat: 0.55, clearcoatRoughness: 0.18 })
+      m = glossy({ color: elementStyle(el).color, roughness: 0.32, clearcoat: 0.55, clearcoatRoughness: 0.18 })
       this.materials.set(el, m)
     }
     return m

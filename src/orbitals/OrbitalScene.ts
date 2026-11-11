@@ -20,6 +20,8 @@ import * as THREE from 'three'
 import { MarchingCubes } from 'three/examples/jsm/objects/MarchingCubes.js'
 import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 import { Stage3D } from '../three/Stage3D'
+import { glossy } from '../three/quality3d'
+import { settings } from '../perf/quality'
 import { BOHR, BONDS, HYBRID_SETS, ORBITALS, hybrid, isoForFraction, sampleGrid, type Fn } from './wavefunctions'
 
 export type OrbitalView = (
@@ -38,7 +40,6 @@ const PLUS = '#4f8bff'
 const MINUS = '#ff8a3d'
 /** Colors to tell several orbitals apart when shown together (phase shown by the mesh pattern). */
 const SET_COLORS = ['#5ee4ff', '#b9a6ff', '#4fe3b0', '#ffc94d', '#ff7ab0']
-const N = 64 // grid resolution per side
 
 /** One surface to draw: which function, which sign, and how. */
 interface Piece {
@@ -64,12 +65,17 @@ export class OrbitalScene {
   private token = 0
   private cutaway = false
   private onBusy: (busy: boolean) => void
+  /**
+   * Grid points per side: 64 on detailed computers, 40 on fast ones (4× fewer calculations).
+   * The surface still encloses 90% of the probability; it is just slightly less smooth.
+   */
+  private n = settings().orbitalGrid
 
   constructor(container: HTMLElement, onBusy: (busy: boolean) => void = () => {}) {
     this.onBusy = onBusy
     this.stage = new Stage3D(container, 'orbitals')
     this.stage.renderer.localClippingEnabled = true
-    this.gen = new MarchingCubes(N, new THREE.MeshBasicMaterial(), false, false, 160000)
+    this.gen = new MarchingCubes(this.n, new THREE.MeshBasicMaterial(), false, false, 160000)
     this.axes = makeAxes()
     this.stage.scene.add(this.group, this.nuclei, this.axes)
     this.stage.fit(4, true)
@@ -197,7 +203,7 @@ export class OrbitalScene {
     if (geo) return geo
     // Sample once; reuse the same samples for the 90% threshold (computed once per function,
     // shared by both phases) and for building the surface.
-    const values = sampleGrid(p.fn, N, p.extent)
+    const values = sampleGrid(p.fn, this.n, p.extent)
     let iso = this.isoCache.get(p.isoKey)
     if (iso === undefined) {
       iso = isoForFraction(values, 0.9)
@@ -229,7 +235,7 @@ export class OrbitalScene {
     const opacity = p.opacity ?? 1
     const surface = new THREE.Mesh(
       geo,
-      new THREE.MeshPhysicalMaterial({
+      glossy({
         color: p.color,
         roughness: 0.35,
         clearcoat: 0.3,

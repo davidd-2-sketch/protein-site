@@ -15,9 +15,10 @@
     • High-detail spheres (64×48 segments) → perfectly round silhouettes.
     • "Neutral" tone mapping → bright highlights roll off gently while colors stay accurate.
 */
+import { addLighting, createRenderer, glossy, sphereGeometry, watchRenderer, type GlossyMaterial } from './quality3d'
+import { settings } from '../perf/quality'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
-import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 import { elementStyle } from './elements'
 import type { MoleculeData } from './types'
 import { countFrame } from '../dev/frameCounter'
@@ -52,7 +53,8 @@ export class MoleculeScene {
   private controls: OrbitControls
   private root = new THREE.Group() // everything molecular hangs off this group
   private atomMeshes: THREE.Mesh[] = []
-  private materials = new Map<string, THREE.MeshPhysicalMaterial>()
+  private materials = new Map<string, GlossyMaterial>()
+  private watcher: ReturnType<typeof watchRenderer>
   private raycaster = new THREE.Raycaster()
   private pointer = new THREE.Vector2()
   private pointerInside = false
@@ -78,28 +80,12 @@ export class MoleculeScene {
     this.options = options
 
     // ---------- Renderer ----------
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' })
-    // Sharp on Retina, but capped at 1.5× (2× would mean ~78% more pixels to shade).
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
-    this.renderer.outputColorSpace = THREE.SRGBColorSpace
-    this.renderer.toneMapping = THREE.NeutralToneMapping
+    // Sharpness, edge smoothing and lighting follow the device's graphics profile:
+    // detailed computers get reflections from a virtual room; slower ones get cheaper lights.
+    this.renderer = createRenderer(container)
     this.renderer.toneMappingExposure = 1.05
-    this.renderer.domElement.style.display = 'block'
-    container.appendChild(this.renderer.domElement)
-
-    // ---------- Lighting ----------
-    // A virtual "room" gives soft, realistic reflections on every glossy atom.
-    const pmrem = new THREE.PMREMGenerator(this.renderer)
-    this.scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture
-    this.scene.environmentIntensity = 0.55
-    pmrem.dispose()
-
-    // Key light (main, from upper left) + cool rim light (from behind) to outline edges.
-    const key = new THREE.DirectionalLight('#ffffff', 2.2)
-    key.position.set(-4, 6, 8)
-    const rim = new THREE.DirectionalLight('#8fe9ff', 1.4)
-    rim.position.set(6, -2, -8)
-    this.scene.add(key, rim, new THREE.AmbientLight('#ffffff', 0.15))
+    addLighting(this.scene, this.renderer, 1.4)
+    this.watcher = watchRenderer(this.renderer, () => (this.needsRender = true))
     this.scene.add(this.root)
 
     // ---------- Camera controls ----------
@@ -165,7 +151,7 @@ export class MoleculeScene {
     this.bondCounts = neighbors.map((n) => n.length)
 
     // ---------- Atoms ----------
-    const sphere = new THREE.SphereGeometry(1, 64, 48)
+    const sphere = sphereGeometry(1, 1.3)
     data.atoms.forEach(([element], i) => {
       const mesh = new THREE.Mesh(sphere, this.materialFor(element))
       mesh.position.copy(positions[i])
@@ -177,7 +163,7 @@ export class MoleculeScene {
 
     // ---------- Bonds ----------
     // Each bond is drawn as two half-cylinders, each colored like the atom it touches.
-    const cylinder = new THREE.CylinderGeometry(1, 1, 1, 32, 1, true)
+    const cylinder = new THREE.CylinderGeometry(1, 1, 1, settings().fast ? 12 : 32, 1, true)
     data.bonds.forEach(([a, b, order]) => {
       const pa = positions[a]
       const pb = positions[b]
@@ -226,7 +212,7 @@ export class MoleculeScene {
   private materialFor(element: string) {
     let m = this.materials.get(element)
     if (!m) {
-      m = new THREE.MeshPhysicalMaterial({
+      m = glossy({
         color: elementStyle(element).color,
         roughness: 0.32,
         metalness: 0.0,
@@ -344,6 +330,7 @@ export class MoleculeScene {
     this.lastRender = now
     this.needsRender = false
     this.renderer.render(this.scene, this.camera)
+    this.watcher.frame(now)
     countFrame('hero')
   }
 }

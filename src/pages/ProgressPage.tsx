@@ -6,6 +6,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import AccountPanel from '../account/AccountPanel'
+import { SlidingPill } from '../components/motion'
+import { currentSetting, looksWeak, profile, setQualitySetting, useQuality, type QualitySetting } from '../perf/quality'
 import { accountsEnabled } from '../account/supabase'
 import { MODULES, placeLink, type ModuleKey, type Place } from '../lessons/place'
 import { setItem, snapshot, useStoredState } from '../lessons/progress'
@@ -15,6 +17,7 @@ import { ORBITAL_LESSONS } from '../orbitals/lessons'
 import { TOPICS, type Topic } from '../practice/questions'
 import { TREND_LESSONS } from '../trends/lessons'
 import { VSEPR_LESSONS } from '../vsepr/lessons'
+import '../components/ModeSwitch.css'
 import './ProgressPage.css'
 
 /* Each module's lessons and the key its finished-lessons list is saved under. */
@@ -102,6 +105,11 @@ export default function ProgressPage() {
         <AccountPanel />
       </section>
 
+      <section className="progress-section" aria-labelledby="device-title">
+        <h2 id="device-title">This device</h2>
+        <GraphicsSetting />
+      </section>
+
       <ResetProgress />
     </div>
   )
@@ -163,7 +171,7 @@ function ResetProgress() {
   const reset = () => {
     for (const key of Object.keys(snapshot().data)) setItem(key, null)
     try {
-      for (const key of Object.keys(localStorage)) if (key.startsWith('ps.') && key !== 'ps.sound') localStorage.removeItem(key)
+      for (const key of Object.keys(localStorage)) if (key.startsWith('ps.') && key !== 'ps.sound' && !key.startsWith('ps.quality')) localStorage.removeItem(key) // keep device settings
     } catch {
       /* storage unavailable */
     }
@@ -176,5 +184,40 @@ function ResetProgress() {
       </button>
       {armed && <p className="progress-sub">This can’t be undone. Progress saved to your account (if any) is not affected.</p>}
     </section>
+  )
+}
+
+/** Auto / Faster / Detailed graphics. Saved on this device only. */
+function GraphicsSetting() {
+  useQuality() // re-render when it changes
+  const setting = currentSetting()
+  const options: { id: QualitySetting; label: string }[] = [
+    { id: 'auto', label: 'Auto' },
+    { id: 'fast', label: 'Faster' },
+    { id: 'detailed', label: 'Detailed' },
+  ]
+  const using = profile() === 'fast' ? 'faster' : 'detailed'
+  return (
+    <div className="graphics-setting">
+      <div className="graphics-row">
+        <span id="graphics-label">3D graphics</span>
+        <div className="mode-switch is-three has-pill" role="radiogroup" aria-labelledby="graphics-label">
+          <SlidingPill active={setting} />
+          {options.map((o) => (
+            <button key={o.id} role="radio" aria-checked={setting === o.id} className={`mode-btn ${setting === o.id ? 'is-active' : ''}`} onClick={() => setQualitySetting(o.id)}>
+              {o.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <p className="progress-sub">
+        {setting === 'auto'
+          ? `Auto is using ${using} graphics${using === 'faster' ? (looksWeak() ? ', because this computer’s graphics are limited' : ', because 3D views ran slowly here') : ''}.`
+          : setting === 'fast'
+            ? 'Faster: simpler lighting and fewer details, so 3D views stay smooth on older computers and Chromebooks.'
+            : 'Detailed: reflections, soft shadows, and extra sharpness. Best on newer computers.'}{' '}
+        Applies to 3D views you open from now on.
+      </p>
+    </div>
   )
 }

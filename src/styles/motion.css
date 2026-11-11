@@ -387,3 +387,24 @@ div[class$='-backdrop']::after {
   flex-direction: column;
   gap: var(--space-4);
 }
+
+/* =========================================================
+   'Fast' graphics profile (perf/quality.ts): switch off purely decorative motion
+   and effects, so the computer's effort goes into the 3D model itself.
+   ========================================================= */
+.perf-fast div[class$='-backdrop'],
+.perf-fast div[class$='-backdrop']::after,
+.perf-fast .atmosphere-haze {
+  animation: none;
+  will-change: auto;
+}
+
+.perf-fast .viewer-card,
+.perf-fast [class*='glass'] {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.perf-fast canvas {
+  animation: none;
+}
