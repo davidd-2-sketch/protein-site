@@ -4,6 +4,7 @@
 */
 
 @import './theme.css';
+@import './motion.css';
 
 *,
 *::before,

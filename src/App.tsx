@@ -5,7 +5,7 @@
   <Routes> looks at the URL and picks which page component to show.
 */
 import { lazy, Suspense, useEffect } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes, useLocation } from 'react-router-dom'
 import TopBar from './components/TopBar'
 import LoadingScreen from './components/LoadingScreen'
 import HomePage from './pages/HomePage'
@@ -29,6 +29,7 @@ const PracticePage = lazy(loadPracticePage)
 const ProgressPage = lazy(loadProgressPage)
 
 export default function App() {
+  const { pathname } = useLocation()
   // Quietly download the viewers in the background once the first page has settled.
   useEffect(() => prefetchWhenIdle(), [])
   // One listener gives every button and link a soft tap (only when sound is switched on).
@@ -41,6 +42,8 @@ export default function App() {
       <TopBar />
       <main id="main">
         <Suspense fallback={<LoadingScreen label="Loading viewer" />}>
+          {/* key: each new page fades in instead of popping in. */}
+          <div className="page-fade" key={pathname}>
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/protein" element={<ProteinPage />} />
@@ -54,6 +57,7 @@ export default function App() {
             {/* Any unknown URL falls back to the home page. */}
             <Route path="*" element={<HomePage />} />
           </Routes>
+          </div>
         </Suspense>
       </main>
     </>

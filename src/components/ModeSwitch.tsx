@@ -2,6 +2,7 @@
   ModeSwitch.tsx — the "Lessons | Explore" switch at the top of every viewer's left panel.
   Same control, same place, on every page, so students always know how to change modes.
 */
+import { SlidingPill } from './motion'
 import './ModeSwitch.css'
 
 export type Mode = 'lessons' | 'explore'
@@ -12,7 +13,8 @@ export default function ModeSwitch({ mode, onChange }: { mode: Mode; onChange: (
     { id: 'explore', label: 'Explore', hint: 'Look around freely' },
   ]
   return (
-    <div className="mode-switch" role="radiogroup" aria-label="Mode">
+    <div className="mode-switch has-pill" role="radiogroup" aria-label="Mode">
+      <SlidingPill active={mode} />
       {options.map((o) => (
         <button
           key={o.id}

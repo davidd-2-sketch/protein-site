@@ -8,6 +8,7 @@
 */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { QuizBox } from '../lessons/LessonPanel'
+import { SlidingPill, StepTransition } from '../components/motion'
 import { useStoredState } from '../lessons/progress'
 import { bondDipoles, byId, PAIRS, type PolarMolecule } from '../polarity/molecules'
 import PolarityLabels from '../polarity/PolarityLabels'
@@ -66,7 +67,8 @@ export default function PolarityPage() {
         />
         {scene && <PolarityLabels scene={scene} molecule={molecule} charges={charges} />}
 
-        <div className="pol-steps panel" role="radiogroup" aria-label="Arrows">
+        <div className="pol-steps panel has-pill" role="radiogroup" aria-label="Arrows">
+          <SlidingPill active={summed} />
           <button role="radio" aria-checked={!summed} className={`pol-step ${!summed ? 'is-active' : ''}`} onClick={() => setSummed(false)}>
             <span className="pol-step-num">1</span> Bond dipoles
           </button>
@@ -110,6 +112,7 @@ export default function PolarityPage() {
           })}
         </div>
 
+        <StepTransition id={molecule.id} order={PAIRS.indexOf(pair) * 2 + which}>
         <QuizBox
           key={molecule.id}
           quiz={{
@@ -129,6 +132,7 @@ export default function PolarityPage() {
             if (!done.includes(molecule.id)) setDone([...done, molecule.id])
           }}
         />
+        </StepTransition>
 
         <Facts molecule={molecule} />
 

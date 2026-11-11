@@ -3,6 +3,7 @@
   The scrubber is a real <input type="range">, so it works with the keyboard
   and screen readers out of the box.
 */
+import { SlidingPill } from '../components/motion'
 import { SPEEDS, type Speed } from './playback'
 import type { ReactionStep } from './sn2'
 
@@ -56,7 +57,8 @@ export default function Timeline({ s, playing, speed, steps, marks = [], middle 
         </div>
       </div>
 
-      <div className="speed" role="radiogroup" aria-label="Playback speed">
+      <div className="speed has-pill" role="radiogroup" aria-label="Playback speed">
+        <SlidingPill active={speed} />
         {SPEEDS.map((sp) => (
           <button key={sp} role="radio" aria-checked={speed === sp} className={`speed-btn ${speed === sp ? 'is-active' : ''}`} onClick={() => onSpeed(sp)}>
             {sp === 0.25 ? '¼×' : sp === 0.5 ? '½×' : '1×'}

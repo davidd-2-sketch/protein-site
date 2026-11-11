@@ -14,6 +14,7 @@ import {
   useAccount,
 } from './account'
 import { accountsEnabled } from './supabase'
+import { SlidingPill } from '../components/motion'
 import './AccountPanel.css'
 
 type Tab = 'link' | 'password' | 'create' | 'forgot'
@@ -125,7 +126,8 @@ function SignInForm() {
         Optional: sign in to keep your progress in sync across devices. Everything on the site works without an
         account.
       </p>
-      <div className="account-tabs" role="tablist" aria-label="Ways to sign in">
+      <div className="account-tabs has-pill" role="tablist" aria-label="Ways to sign in">
+        <SlidingPill active={tab} />
         {tabs.map((t) => (
           <button
             key={t.id}

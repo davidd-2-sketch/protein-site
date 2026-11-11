@@ -10,6 +10,8 @@
 */
 import { useEffect, useRef, useState } from 'react'
 import ModeSwitch from '../components/ModeSwitch'
+import { CheckIcon, CrossIcon, SlidingPill, SmoothHeight, StepTransition } from '../components/motion'
+import { revealInPanel } from '../components/revealInPanel'
 import { play } from '../sound/sound'
 import RichText from './RichText'
 import './lessons.css'
@@ -81,7 +83,9 @@ export default function LessonPanel(p: Props) {
       {/* At the top, so it's always visible even when Back/Next are pinned over a long step. */}
       <DepthSwitch depth={p.depth} onDepth={p.onDepth} />
 
-      <div className="lesson-body" key={stepKey}>
+      {/* Steps slide like pages: forward to the left, back to the right. */}
+      <StepTransition id={stepKey} order={stepIndex}>
+        <div className="lesson-body">
         <h2>{step.title}</h2>
         <p className="lesson-text">
           <RichText text={step.text[p.depth]} />
@@ -117,7 +121,8 @@ export default function LessonPanel(p: Props) {
         )}
 
         {step.note && <p className="lesson-note">{step.note}</p>}
-      </div>
+        </div>
+      </StepTransition>
 
       <nav className="lesson-nav" aria-label="Lesson navigation">
         <button className="btn" onClick={() => p.onStep(stepIndex - 1)} disabled={stepIndex === 0}>
@@ -202,7 +207,8 @@ export function DepthSwitch({ depth, onDepth }: { depth: Depth; onDepth: (d: Dep
       <span className="depth-label" id="depth-label">
         Explanations
       </span>
-      <div className="depth-options" role="radiogroup" aria-labelledby="depth-label">
+      <div className="depth-options has-pill" role="radiogroup" aria-labelledby="depth-label">
+        <SlidingPill active={depth} />
         {DEPTHS.map((d) => (
           <button
             key={d.id}
@@ -241,9 +247,13 @@ export function QuizBox(props: {
   const [result, setResult] = useState<'open' | 'right' | 'shown'>('open')
   const solved = result !== 'open'
   // After each answer, scroll the feedback into view so it's never hidden below the fold.
+  // It runs once the feedback area has finished growing (onSettled below), with a timer as
+  // a fallback for when the height doesn't change.
   const feedbackRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    if (tried.length || solved) feedbackRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    if (!tried.length && !solved) return
+    const t = window.setTimeout(() => revealInPanel(feedbackRef.current), 340)
+    return () => window.clearTimeout(t)
   }, [tried.length, solved])
   const lastWrong = !solved && tried.length ? tried[tried.length - 1] : -1
 
@@ -293,7 +303,7 @@ export function QuizBox(props: {
             >
               {/* The bubble shows A/B/C, then ✓ or ✕: a symbol, not just a color. */}
               <span className="quiz-letter" aria-hidden="true">
-                {isAnswer ? '✓' : isTried ? '✕' : String.fromCharCode(65 + i)}
+                {isAnswer ? <CheckIcon /> : isTried ? <CrossIcon /> : String.fromCharCode(65 + i)}
               </span>
               <span className="quiz-choice-text">
                 <RichText text={c} />
@@ -303,6 +313,8 @@ export function QuizBox(props: {
         })}
       </div>
 
+      {/* The feedback area grows and shrinks smoothly as its message changes. */}
+      <SmoothHeight onSettled={() => revealInPanel(feedbackRef.current)}>
       <div role="status" aria-live="polite" ref={feedbackRef} className="quiz-status">
         {!solved && tried.length === 0 && (
           <p className="quiz-prompt">{props.prompt ?? (props.reveals ? 'Pick an answer to reveal the 3D model.' : 'Pick an answer.')}</p>
@@ -331,6 +343,7 @@ export function QuizBox(props: {
           </div>
         )}
       </div>
+      </SmoothHeight>
     </div>
   )
 }

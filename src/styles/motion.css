@@ -1,0 +1,389 @@
+/*
+  motion.css — how things move and glow across the whole site.
+
+  Principles:
+    • Snappy: most transitions take 150–260 ms.
+    • Springy: presses squash a little, releases overshoot slightly and settle.
+    • Never overlapping: content leaves, THEN new content arrives (see components/motion.tsx).
+    • Only transform and opacity are animated where possible: those are cheap for the GPU.
+    • "Reduce motion" turns all of it off (global.css).
+*/
+
+/* =========================================================
+   Panels: glassy depth with a faint gradient edge
+   ========================================================= */
+.panel {
+  /* Two backgrounds: the panel fill inside the border, the gradient edge under the border. */
+  background:
+    var(--panel-bg) padding-box,
+    var(--panel-edge) border-box;
+  border: 1px solid transparent;
+  box-shadow: var(--shadow-panel);
+}
+
+/* Side panels and floating controls arrive with a short glide when a page opens. */
+.lesson {
+  animation: panel-in 420ms var(--spring-soft) both;
+}
+
+[class$='-toggles'].panel,
+.timeline.panel,
+.energy.panel,
+.pol-steps.panel {
+  animation: fade-up 380ms var(--ease) 80ms both;
+}
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* =========================================================
+   Buttons: lift on hover, squash on press, spring back
+   ========================================================= */
+.btn {
+  position: relative;
+  isolation: isolate;
+  transition:
+    background var(--fast) var(--ease),
+    border-color var(--fast) var(--ease),
+    color var(--medium) var(--ease),
+    box-shadow var(--medium) var(--ease),
+    transform 260ms var(--spring);
+}
+
+/* The gradient fill lives on a layer that fades in, so "Skip" can smoothly become "Next". */
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--accent-grad);
+  opacity: 0;
+  transition: opacity var(--medium) var(--ease);
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.96);
+  transition-duration: 80ms;
+}
+
+.btn-primary,
+.btn-primary:hover {
+  background: var(--bg-1);
+  border-color: transparent;
+  color: #08112a;
+  box-shadow: 0 8px 22px -10px rgba(120, 170, 255, 0.65);
+}
+
+.btn-primary::before {
+  opacity: 1;
+}
+
+.btn-primary:hover:not(:disabled) {
+  box-shadow: 0 12px 30px -10px rgba(140, 160, 255, 0.85);
+}
+
+.btn-primary:hover::before {
+  filter: brightness(1.08) saturate(1.1);
+}
+
+/* Small round play button on the reaction timeline gets the same gradient. */
+.play-btn {
+  background: var(--accent-grad) !important;
+  color: #08112a !important;
+  box-shadow: 0 6px 18px -8px rgba(120, 170, 255, 0.7);
+  transition: transform 260ms var(--spring), box-shadow var(--medium) var(--ease);
+}
+
+.play-btn:hover {
+  transform: scale(1.06);
+}
+
+.play-btn:active {
+  transform: scale(0.92);
+  transition-duration: 80ms;
+}
+
+/* Every small control (toggles, tool buttons, tabs) gets the same quick press feedback. */
+.toggle,
+.tool-btn,
+.mode-btn,
+.depth-btn,
+.speed-btn,
+.account-tab,
+.pol-step,
+.pair-tab,
+.mol-btn,
+.prop,
+.lesson-item,
+.reaction-step,
+.lesson-back,
+.nav-link,
+.sound-btn {
+  transition:
+    background var(--fast) var(--ease),
+    border-color var(--fast) var(--ease),
+    color var(--fast) var(--ease),
+    box-shadow var(--medium) var(--ease),
+    opacity var(--medium) var(--ease),
+    transform 260ms var(--spring);
+}
+
+.toggle:active,
+.tool-btn:active,
+.mode-btn:active,
+.depth-btn:active,
+.speed-btn:active,
+.account-tab:active,
+.pol-step:active,
+.pair-tab:active,
+.mol-btn:active,
+.prop:active,
+.lesson-item:active,
+.reaction-step:active,
+.nav-link:active,
+.sound-btn:active {
+  transform: scale(0.95);
+  transition-duration: 80ms;
+}
+
+/* Cards lift a little on hover. */
+.lesson-item:hover,
+.mol-btn:hover,
+.prop:hover,
+.pair-tab:hover {
+  transform: translateY(-1px);
+}
+
+.lesson-item:hover,
+.mol-btn:hover,
+.prop:hover {
+  box-shadow: 0 10px 24px -14px rgba(94, 228, 255, 0.35);
+}
+
+/* Toggle switches: the thumb springs across. */
+.toggle-thumb {
+  transition:
+    transform 300ms var(--spring),
+    background var(--medium) var(--ease) !important;
+}
+
+.toggle-track {
+  transition:
+    background var(--medium) var(--ease),
+    border-color var(--medium) var(--ease);
+}
+
+/* =========================================================
+   Sliding highlight behind the selected option of a switch
+   ========================================================= */
+.has-pill {
+  position: relative;
+}
+
+.has-pill > :not(.seg-pill) {
+  position: relative;
+  z-index: 1;
+}
+
+/* The pill draws the selection, so the selected option itself stays transparent. */
+.has-pill > .is-active,
+.has-pill > .active {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.seg-pill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  border-radius: var(--radius-sm);
+  background: var(--bg-3);
+  box-shadow:
+    inset 0 0 0 1px var(--line-accent),
+    0 4px 14px -6px rgba(94, 228, 255, 0.45);
+  pointer-events: none;
+}
+
+.seg-pill.is-ready {
+  transition:
+    transform 340ms var(--spring-soft),
+    width 340ms var(--spring-soft),
+    height 340ms var(--spring-soft),
+    opacity var(--medium) var(--ease);
+}
+
+/* In the top bar: a soft gradient tint instead of a solid fill. */
+.topbar nav > .seg-pill {
+  border-radius: var(--radius);
+  background: var(--accent-grad-soft);
+  box-shadow: inset 0 0 0 1px rgba(140, 180, 255, 0.32);
+}
+
+/* =========================================================
+   Step changes (components/motion.tsx): out, then in
+   ========================================================= */
+.smooth-height {
+  transition: height 300ms var(--ease);
+}
+
+.smooth-height.is-moving {
+  overflow: hidden;
+}
+
+/* Contain children's margins, so the measured height is exact. */
+.smooth-height-inner {
+  display: flow-root;
+}
+
+.step-out {
+  animation: step-out 120ms cubic-bezier(0.4, 0, 1, 1) forwards;
+  pointer-events: none;
+}
+
+.step-in {
+  animation: step-in 300ms var(--spring-soft) both;
+}
+
+@keyframes step-out {
+  to {
+    opacity: 0;
+    transform: translateX(calc(var(--dir, 1) * -18px));
+  }
+}
+
+@keyframes step-in {
+  from {
+    opacity: 0;
+    transform: translateX(calc(var(--dir, 1) * 22px));
+  }
+}
+
+/* =========================================================
+   Page changes: the new page fades in (opacity only: a transform here
+   would break the pages' fixed positioning)
+   ========================================================= */
+.page-fade {
+  animation: page-fade 320ms var(--ease) both;
+}
+
+@keyframes page-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* 3D scenes fade in once their first frame is drawn, instead of popping in. */
+canvas {
+  animation: canvas-in 600ms var(--ease) both;
+}
+
+@keyframes canvas-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* =========================================================
+   Living backgrounds: the color haze behind each 3D viewer drifts very slowly.
+   Transform-only, so it costs the GPU almost nothing, and browsers pause it
+   in hidden tabs. A faint pink and cyan glow adds a small pop of color.
+   ========================================================= */
+div[class$='-backdrop'] {
+  inset: -10%;
+  animation: drift 46s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+div[class$='-backdrop']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(26% 30% at 78% 82%, rgba(255, 122, 217, 0.09), transparent 70%),
+    radial-gradient(24% 28% at 32% 18%, rgba(94, 228, 255, 0.07), transparent 70%);
+  animation: drift-alt 38s ease-in-out infinite alternate;
+}
+
+.atmosphere-haze {
+  animation: drift 52s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@keyframes drift {
+  from {
+    transform: translate(-2%, -1%) scale(1.02);
+  }
+  to {
+    transform: translate(2%, 1.5%) scale(1.06);
+  }
+}
+
+@keyframes drift-alt {
+  from {
+    transform: translate(3%, 2%) rotate(0deg);
+  }
+  to {
+    transform: translate(-3%, -2%) rotate(6deg);
+  }
+}
+
+/* =========================================================
+   Progress dots: the current one widens with a spring; colors fade
+   ========================================================= */
+.lesson-dot,
+.practice-dots li {
+  transition:
+    background var(--medium) var(--ease),
+    width 340ms var(--spring),
+    transform 260ms var(--spring);
+}
+
+.lesson-dot.is-current,
+.practice-dots li.is-current {
+  width: 40px;
+  background: var(--accent-grad);
+}
+
+.practice-dots li.is-current {
+  width: 30px;
+}
+
+.lesson-dot:hover {
+  transform: scaleY(1.5);
+}
+
+/* Panel titles get the same subtle white-to-lavender sheen as the home page headline. */
+.pol-title,
+.practice-title,
+.reaction-head h1,
+.progress-head h1,
+.lesson-list-head h2 {
+  background: linear-gradient(180deg, #ffffff 35%, #c9ccf7 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Keeps a panel's sections spaced when they are wrapped in one transition. */
+.panel-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}

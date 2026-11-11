@@ -2,7 +2,8 @@
   TopBar.tsx — the navigation bar pinned to the top of every page.
   NavLink automatically knows which page is active, so we can highlight it.
 */
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useLocation } from 'react-router-dom'
+import { SlidingPill } from './motion'
 import { loadPolarityPage, loadPracticePage, loadTrendsPage } from '../pages/loaders'
 import { canPrefetch, loadOrbitalsPage, loadProteinPage, loadReactionPage, loadVseprPage } from '../pages/loaders'
 import { useSoundEnabled } from '../sound/sound'
@@ -24,6 +25,7 @@ const LINKS = [
 export default function TopBar() {
   const [soundOn, setSoundOn] = useSoundEnabled()
   const { user, status } = useAccount()
+  const { pathname } = useLocation()
   return (
     <header className="topbar">
       {/* "Skip to content" lets keyboard users jump past the navigation. */}
@@ -38,7 +40,9 @@ export default function TopBar() {
           <span className="brand-version mono">v0.1</span>
         </Link>
 
-        <nav aria-label="Main">
+        <nav aria-label="Main" className="has-pill">
+          {/* The "you are here" highlight glides between links as you change pages. */}
+          <SlidingPill active={`${pathname}-${user ? 1 : 0}`} selector=".active" />
           {LINKS.map((l) => (
             <NavLink
               key={l.to}

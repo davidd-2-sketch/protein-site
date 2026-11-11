@@ -12,6 +12,7 @@
 */
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { StepTransition } from '../components/motion'
 import { QuizBox } from '../lessons/LessonPanel'
 import { MODULES } from '../lessons/place'
 import { useStoredState } from '../lessons/progress'
@@ -40,12 +41,15 @@ export default function PracticePage() {
   const [results, setResults] = useState<boolean[]>([])
   const [answered, setAnswered] = useState(false)
   const [finished, setFinished] = useState(false)
+  /** Counts rounds started in this visit: keeps setup → round → results sliding forward. */
+  const [roundNo, setRoundNo] = useState(0)
 
   const question = round?.[index] ?? null
   const score = results.filter(Boolean).length
 
   const start = () => {
     setRound(buildRound(topics, missed))
+    setRoundNo((n) => n + 1)
     setIndex(0)
     setResults([])
     setAnswered(false)
@@ -99,6 +103,8 @@ export default function PracticePage() {
       </div>
 
       <section className="lesson practice-panel panel" aria-label="Practice">
+        <StepTransition id={!round ? `setup-${roundNo}` : finished ? `results-${roundNo}` : `round-${roundNo}`} order={roundNo * 3 + (!round ? 0 : finished ? 2 : 1)}>
+        <div className="panel-stack">
         {!round ? (
           <Setup topics={topics} onToggle={toggleTopic} onStart={start} stats={stats} rounds={rounds} best={best} reviewCount={Object.values(missed).filter((m) => topics.includes(m.topic)).length} />
         ) : finished ? (
@@ -122,7 +128,8 @@ export default function PracticePage() {
                 </div>
               </header>
 
-              <div className="lesson-body" key={question.id + index}>
+              <StepTransition id={question.id + index} order={index}>
+              <div className="lesson-body">
                 <p className="lesson-kicker">{TOPICS.find((t) => t.id === question.topic)!.name}</p>
                 <QuizBox
                   quiz={question}
@@ -135,6 +142,7 @@ export default function PracticePage() {
                   onResult={(firstTry) => record(question, firstTry)}
                 />
               </div>
+              </StepTransition>
 
               <nav className="lesson-nav">
                 <button className={`btn ${answered ? 'btn-primary' : ''}`} onClick={nextQuestion} disabled={!answered}>
@@ -144,6 +152,8 @@ export default function PracticePage() {
             </>
           )
         )}
+        </div>
+        </StepTransition>
       </section>
     </div>
   )

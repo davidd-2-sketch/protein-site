@@ -18,6 +18,7 @@
 */
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { SlidingPill, StepTransition } from '../components/motion'
 import { DepthSwitch, QuizBox } from '../lessons/LessonPanel'
 import RichText from '../lessons/RichText'
 import { useStoredState } from '../lessons/progress'
@@ -51,7 +52,8 @@ function ReactionSwitch({ view, onView }: { view: View; onView: (v: View) => voi
     { id: 'compare', label: 'Compare' },
   ]
   return (
-    <div className="mode-switch is-three" role="radiogroup" aria-label="Reaction">
+    <div className="mode-switch is-three has-pill" role="radiogroup" aria-label="Reaction">
+      <SlidingPill active={view} />
       {options.map((o) => (
         <button key={o.id} role="radio" aria-checked={view === o.id} className={`mode-btn ${view === o.id ? 'is-active' : ''}`} onClick={() => view !== o.id && onView(o.id)}>
           {o.label}
@@ -296,9 +298,10 @@ const ReactionPanel = memo(function ReactionPanel(props: {
         ))}
       </ol>
 
+      <StepTransition id={asking !== null ? `q${asking}` : `s${stepIndex}`} order={asking !== null ? stepIndex + 0.5 : stepIndex}>
       {asking !== null ? (
         // The reaction is paused on a question: it takes the place of the step text.
-        <div className="lesson-body reaction-question" key={`q${asking}`}>
+        <div className="lesson-body reaction-question">
           <p className="lesson-kicker">Paused for a question</p>
           <QuizBox
             quiz={def.checkpoints[asking].quiz}
@@ -314,7 +317,7 @@ const ReactionPanel = memo(function ReactionPanel(props: {
           </button>
         </div>
       ) : (
-        <div className="lesson-body" key={stepIndex}>
+        <div className="lesson-body">
           <p className="lesson-kicker">
             Step {stepIndex + 1} of {def.steps.length}
           </p>
@@ -324,6 +327,7 @@ const ReactionPanel = memo(function ReactionPanel(props: {
           </p>
         </div>
       )}
+      </StepTransition>
 
       <dl className="reaction-facts">
         <div>
@@ -339,7 +343,8 @@ const ReactionPanel = memo(function ReactionPanel(props: {
       {def.id === 'sn1' && (
         <div className="face-switch">
           <span id="face-label">Water attacks from</span>
-          <div className="speed" role="radiogroup" aria-labelledby="face-label">
+          <div className="speed has-pill" role="radiogroup" aria-labelledby="face-label">
+            <SlidingPill active={props.face} />
             {(
               [
                 [-1, 'The back', 'Opposite where bromide left: gives (R)'],
