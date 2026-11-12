@@ -41,3 +41,17 @@ src/
 
 - **Experimental structure**: atom positions measured in a lab (from the Protein Data Bank).
 - **Illustrative**: simplified or animated to teach. Start/end shapes are accurate; the motion between is a teaching model.
+
+## Visitor analytics
+
+The live site uses [Vercel Web Analytics](https://vercel.com/docs/analytics) to count visits.
+
+- **What's tracked:** anonymous page views only, i.e. which pages (modules) are opened, like
+  `/reaction` or `/protein`. Vercel also reports general, non-identifying info such as
+  country, browser, device type, and the website a visitor came from.
+- **What's not:** no cookies, no names, emails, or accounts, and no custom events. Vercel
+  doesn't track individual visitors across days or across websites, so no cookie banner is needed.
+- **Your own testing doesn't count:** analytics only runs in the published build, never
+  with `npm run dev`.
+- **Where to see the numbers:** [vercel.com](https://vercel.com) → your project →
+  **Analytics** tab.

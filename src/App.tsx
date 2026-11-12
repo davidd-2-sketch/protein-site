@@ -6,6 +6,7 @@
 */
 import { lazy, Suspense, useEffect } from 'react'
 import { Route, Routes, useLocation } from 'react-router-dom'
+import { Analytics } from '@vercel/analytics/react'
 import TopBar from './components/TopBar'
 import LoadingScreen from './components/LoadingScreen'
 import HomePage from './pages/HomePage'
@@ -62,6 +63,12 @@ export default function App() {
           </div>
         </Suspense>
       </main>
+      {/*
+        Visitor counts (Vercel Web Analytics): anonymous page views only, no cookies.
+        Only in the published build: `npm run dev` never loads it, so your own testing
+        isn't counted. (See "Visitor analytics" in README.md.)
+      */}
+      {import.meta.env.PROD && <Analytics />}
     </>
   )
 }
