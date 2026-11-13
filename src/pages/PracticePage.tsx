@@ -8,7 +8,7 @@
 
   Missed questions are remembered and come back in later rounds (up to 3 per round)
   until they're answered right on the first try. Everything is saved through the progress
-  store, so it syncs to the student's account if they sign in.
+  store, so it stays in this browser on the student's own device.
 */
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'

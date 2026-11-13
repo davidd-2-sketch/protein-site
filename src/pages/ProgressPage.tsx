@@ -1,16 +1,14 @@
 /*
   ProgressPage.tsx — everything a student has done, in one place:
   where they left off, lessons finished in each module, and practice results.
-  It reads the same saved progress as every other page (synced if they sign in).
+  It reads the same saved progress as every other page. Everything stays on this device.
 */
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import AccountPanel from '../account/AccountPanel'
 import { SlidingPill } from '../components/motion'
 import { currentSetting, looksWeak, profile, setQualitySetting, useQuality, type QualitySetting } from '../perf/quality'
-import { accountsEnabled } from '../account/supabase'
 import { MODULES, placeLink, type ModuleKey, type Place } from '../lessons/place'
-import { setItem, snapshot, useStoredState } from '../lessons/progress'
+import { getItem, useStoredState } from '../lessons/progress'
 import { PROTEIN_LESSONS } from '../lessons/proteinLessons'
 import type { AnyStep, Lesson } from '../lessons/types'
 import { ORBITAL_LESSONS } from '../orbitals/lessons'
@@ -43,7 +41,7 @@ export default function ProgressPage() {
       <header className="progress-head">
         <h1>Your progress</h1>
         <p>
-          Saved on this device. <AccountHint />
+          Saved in this browser, on this device. No account needed.
         </p>
       </header>
 
@@ -100,11 +98,6 @@ export default function ProgressPage() {
         )}
       </section>
 
-      <section className="progress-section" aria-labelledby="account-title">
-        <h2 id="account-title">Account</h2>
-        <AccountPanel />
-      </section>
-
       <section className="progress-section" aria-labelledby="device-title">
         <h2 id="device-title">This device</h2>
         <GraphicsSetting />
@@ -116,15 +109,13 @@ export default function ProgressPage() {
 }
 
 function LessonCount({ total }: { total: number }) {
-  const done = SECTIONS.reduce((n, s) => n + s.lessons.filter((l) => (snapshotList(s.storeKey) ?? []).includes(l.id)).length, 0)
+  const done = SECTIONS.reduce((n, s) => n + s.lessons.filter((l) => getItem<string[]>(s.storeKey, []).includes(l.id)).length, 0)
   return (
     <span className="progress-count">
       {done} of {total} finished
     </span>
   )
 }
-
-const snapshotList = (key: string) => snapshot().data[key] as string[] | undefined
 
 function ModuleCard({ module, storeKey, lessons }: { module: ModuleKey; storeKey: string; lessons: Lesson<AnyStep>[] }) {
   const [completed] = useStoredState<string[]>(storeKey, [])
@@ -160,16 +151,10 @@ function ModuleCard({ module, storeKey, lessons }: { module: ModuleKey; storeKey
   )
 }
 
-function AccountHint() {
-  // Only mention signing in when accounts are actually switched on.
-  return accountsEnabled ? <span>Sign in below to keep it in sync across devices.</span> : null
-}
-
 /** Clear this device's progress. Two clicks, so it can't happen by accident. */
 function ResetProgress() {
   const [armed, setArmed] = useState(false)
   const reset = () => {
-    for (const key of Object.keys(snapshot().data)) setItem(key, null)
     try {
       for (const key of Object.keys(localStorage)) if (key.startsWith('ps.') && key !== 'ps.sound' && !key.startsWith('ps.quality')) localStorage.removeItem(key) // keep device settings
     } catch {
@@ -182,7 +167,7 @@ function ResetProgress() {
       <button className={`btn ${armed ? 'is-danger' : ''}`} onClick={armed ? reset : () => setArmed(true)} onBlur={() => setArmed(false)}>
         {armed ? 'Click again to erase progress on this device' : 'Reset progress on this device'}
       </button>
-      {armed && <p className="progress-sub">This can’t be undone. Progress saved to your account (if any) is not affected.</p>}
+      {armed && <p className="progress-sub">This can’t be undone. Your sound and graphics settings are kept.</p>}
     </section>
   )
 }

@@ -11,7 +11,6 @@ import TopBar from './components/TopBar'
 import LoadingScreen from './components/LoadingScreen'
 import HomePage from './pages/HomePage'
 import { installClickSounds } from './sound/sound'
-import { initAccount } from './account/account'
 import { loadPolarityPage, loadPracticePage, loadProgressPage, loadTrendsPage } from './pages/loaders'
 import { installLinkPrefetch, loadOrbitalsPage, loadProteinPage, loadReactionPage, loadVseprPage, prefetchWhenIdle } from './pages/loaders'
 
@@ -37,8 +36,6 @@ export default function App() {
   useEffect(() => installLinkPrefetch(), [])
   // One listener gives every button and link a soft tap (only when sound is switched on).
   useEffect(() => installClickSounds(), [])
-  // Check for a signed-in student and start syncing their progress (does nothing if accounts are off).
-  useEffect(() => initAccount(), [])
 
   return (
     <>

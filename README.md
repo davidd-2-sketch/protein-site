@@ -42,6 +42,12 @@ src/
 - **Experimental structure**: atom positions measured in a lab (from the Protein Data Bank).
 - **Illustrative**: simplified or animated to teach. Start/end shapes are accurate; the motion between is a teaching model.
 
+## Your progress stays on your device
+
+There are no accounts. Finished lessons, practice results, and "continue where you left off"
+are saved in your browser on your own computer (localStorage). Nothing is uploaded.
+Clearing your browser data, or using a different browser or device, starts fresh.
+
 ## Visitor analytics
 
 The live site uses [Vercel Web Analytics](https://vercel.com/docs/analytics) to count visits.

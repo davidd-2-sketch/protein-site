@@ -7,7 +7,6 @@ import { SlidingPill } from './motion'
 import { loadPolarityPage, loadPracticePage, loadTrendsPage } from '../pages/loaders'
 import { canPrefetch, loadOrbitalsPage, loadProteinPage, loadReactionPage, loadVseprPage } from '../pages/loaders'
 import { useSoundEnabled } from '../sound/sound'
-import { useAccount } from '../account/account'
 import { loadProgressPage } from '../pages/loaders'
 import './TopBar.css'
 
@@ -24,7 +23,6 @@ const LINKS = [
 
 export default function TopBar() {
   const [soundOn, setSoundOn] = useSoundEnabled()
-  const { user, status } = useAccount()
   const { pathname } = useLocation()
   return (
     <header className="topbar">
@@ -42,7 +40,7 @@ export default function TopBar() {
 
         <nav aria-label="Main" className="has-pill">
           {/* The "you are here" highlight glides between links as you change pages. */}
-          <SlidingPill active={`${pathname}-${user ? 1 : 0}`} selector=".active" />
+          <SlidingPill active={pathname} selector=".active" />
           {LINKS.map((l) => (
             <NavLink
               key={l.to}
@@ -56,15 +54,14 @@ export default function TopBar() {
             </NavLink>
           ))}
           <span className="nav-divider" aria-hidden="true" />
-          {/* Progress (and the account, which lives on that page). A dot shows sync status when signed in. */}
+          {/* Progress: lessons finished, practice results, and this device's settings. */}
           <NavLink
             to="/progress"
             className="nav-link"
             onMouseEnter={() => canPrefetch() && void loadProgressPage()}
-            title={user ? `Signed in as ${user.email}` : 'Your progress (sign in to sync)'}
+            title="Your progress (saved on this device)"
           >
-            {user && <span className={`sync-dot is-${status}`} aria-hidden="true" />}
-            {user ? 'Account' : 'Progress'}
+            Progress
           </NavLink>
           {/* Sound is off until the student turns it on. The label names the action. */}
           <button

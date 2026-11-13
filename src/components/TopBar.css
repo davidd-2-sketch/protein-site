@@ -139,26 +139,6 @@
   }
 }
 
-/* Small dot next to "Account": green when synced, cyan while syncing, gold on an error. */
-.sync-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--text-faint);
-}
-
-.sync-dot.is-synced {
-  background: var(--signal-ok);
-}
-
-.sync-dot.is-syncing {
-  background: var(--accent);
-}
-
-.sync-dot.is-error {
-  background: var(--electron);
-}
-
 /* Laptop widths: the sound button shrinks to its icon so the whole bar fits. */
 @media (max-width: 1280px) {
   .sound-btn-text {
