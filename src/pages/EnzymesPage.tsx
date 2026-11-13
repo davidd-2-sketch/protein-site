@@ -17,12 +17,22 @@ import { BY_THREE } from '../protein/aminoAcids'
 import { ProteinViewer } from '../protein/ProteinViewer'
 import { CHYMO_SITE, GK_GLUCOSE_SITE, GK_OPEN_MISSING, STRUCTURES, type StructureId } from '../enzymes/structures'
 import { GK_LID, GROUP_COLORS, GROUP_NAMES, siteInfo, VIEWS } from '../enzymes/views'
+import EnergyChart from '../enzymes/EnergyChart'
+import KineticsChart, { type KineticsPlot } from '../enzymes/KineticsChart'
+import { apparent, DEMO, INHIBITION_INFO, rate, type Inhibition } from '../enzymes/kinetics'
 import '../components/ModeSwitch.css'
 import './ProteinPage.css'
 import './EnzymesPage.css'
 
 type Enzyme = 'chymo' | 'gk'
 type Style = 'cartoon' | 'surface'
+type Tab = 'structure' | 'energy' | 'kinetics'
+
+const TABS: { id: Tab; label: string }[] = [
+  { id: 'structure', label: 'Structure' },
+  { id: 'energy', label: 'Energy' },
+  { id: 'kinetics', label: 'Kinetics' },
+]
 
 const ENZYMES: { id: Enzyme; name: string; blurb: string }[] = [
   { id: 'chymo', name: 'Chymotrypsin', blurb: 'Cuts proteins. Catalytic triad.' },
@@ -56,6 +66,15 @@ export default function EnzymesPage() {
   const [spin, setSpin] = useState(false)
   const [pick, setPick] = useState<{ chain: string; seq: number; comp: string } | null>(null)
   const [hover, setHover] = useState<string | null>(null)
+  const [tab, setTab] = useState<Tab>('structure')
+  // Energy tab
+  const [showUn, setShowUn] = useState(true)
+  const [showCat, setShowCat] = useState(true)
+  // Kinetics tab
+  const [plot, setPlot] = useState<KineticsPlot>('mm')
+  const [inhibition, setInhibition] = useState<Inhibition>('none')
+  const [inhibitor, setInhibitor] = useState(2)
+  const [substrate, setSubstrate] = useState(4)
 
   /* ---------- create the viewer once ---------- */
   useEffect(() => {
@@ -122,7 +141,8 @@ export default function EnzymesPage() {
     }
   }, [viewer, structureId, style, enzyme])
 
-  useEffect(() => viewer?.setSpin(spin), [viewer, spin])
+  // The 3D view is hidden (not destroyed) on the chart tabs; stop any spinning there.
+  useEffect(() => viewer?.setSpin(spin && tab === 'structure'), [viewer, spin, tab])
 
   /* ---------- clicks ---------- */
   useEffect(() => {
@@ -145,7 +165,7 @@ export default function EnzymesPage() {
   const labels = shown && labelsOn ? VIEWS[shown].labels : []
 
   return (
-    <div className="protein-page enzymes-page has-lessons">
+    <div className={`protein-page enzymes-page has-lessons is-${tab}`}>
       <div className="protein-backdrop" aria-hidden="true" />
       <div className="stage">
         <div
@@ -154,8 +174,18 @@ export default function EnzymesPage() {
           role="img"
           aria-label={`3D model of ${s.enzyme}, ${s.state} (PDB ${s.pdb}). Drag to rotate, scroll to zoom, click a residue for details.`}
         />
-        {ready && shown && <OverlayLabels key={shown} viewer={viewer} labels={labels} lines={[]} />}
+        {ready && shown && tab === 'structure' && <OverlayLabels key={shown} viewer={viewer} labels={labels} lines={[]} />}
       </div>
+
+      {tab !== 'structure' && (
+        <div className="enz-chart-stage" key={tab}>
+          {tab === 'energy' ? (
+            <EnergyChart showUncatalyzed={showUn} showCatalyzed={showCat} />
+          ) : (
+            <KineticsChart plot={plot} type={inhibition} inhibitor={inhibitor} substrate={substrate} />
+          )}
+        </div>
+      )}
 
       {status === 'loading' && <LoadingScreen label="Loading enzyme" />}
       {status === 'error' && (
@@ -171,6 +201,31 @@ export default function EnzymesPage() {
           <p className="enz-sub">Two real enzymes from the Protein Data Bank. Click any residue to see what it does.</p>
         </header>
 
+        <div className="mode-switch is-three has-pill" role="tablist" aria-label="What to explore">
+          <SlidingPill active={tab} />
+          {TABS.map((t) => (
+            <button key={t.id} role="tab" aria-selected={tab === t.id} className={`mode-btn ${tab === t.id ? 'is-active' : ''}`} onClick={() => setTab(t.id)}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {tab === 'energy' && <EnergyPanel showUn={showUn} showCat={showCat} onUn={setShowUn} onCat={setShowCat} />}
+        {tab === 'kinetics' && (
+          <KineticsPanel
+            plot={plot}
+            onPlot={setPlot}
+            type={inhibition}
+            onType={setInhibition}
+            inhibitor={inhibitor}
+            onInhibitor={setInhibitor}
+            substrate={substrate}
+            onSubstrate={setSubstrate}
+          />
+        )}
+
+        {tab === 'structure' && (
+        <>
         <div className="enz-cards" role="radiogroup" aria-label="Enzyme">
           {ENZYMES.map((e) => (
             <button key={e.id} role="radio" aria-checked={enzyme === e.id} className={`enz-card ${enzyme === e.id ? 'is-active' : ''}`} onClick={() => chooseEnzyme(e.id)}>
@@ -196,8 +251,12 @@ export default function EnzymesPage() {
         <SiteList enzyme={enzyme} structure={structureId} onSelect={focusResidue} />
 
         <EnzymeNote structure={structureId} />
+        </>
+        )}
       </section>
 
+      {tab === 'structure' && (
+      <>
       <div className="protein-bottom">
         <div className="toolbar panel" role="toolbar" aria-label="View controls">
           <div className="segmented" role="radiogroup" aria-label="Style">
@@ -245,6 +304,8 @@ export default function EnzymesPage() {
           )}
         </ul>
       </div>
+      </>
+      )}
     </div>
   )
 }
@@ -362,4 +423,148 @@ function EnzymeNote({ structure }: { structure: StructureId }) {
       'With glucose bound, the lid has swung more than 10 Å to close over it (“induced fit”), and the floppy loop is now ordered. The pink molecule on the far side is a synthetic activator used to help crystallize this form; it binds a separate site.',
   }
   return <p className="lesson-note">{text[structure]}</p>
+}
+
+/* ---------- Energy tab: what the diagram shows ---------- */
+function EnergyPanel(p: { showUn: boolean; showCat: boolean; onUn: (v: boolean) => void; onCat: (v: boolean) => void }) {
+  return (
+    <div className="enz-tab">
+      <div className="enz-toggles">
+        <button className={`enz-toggle is-un ${p.showUn ? 'is-on' : ''}`} aria-pressed={p.showUn} onClick={() => p.onUn(!p.showUn)}>
+          <span aria-hidden="true" /> Without enzyme
+        </button>
+        <button className={`enz-toggle is-cat ${p.showCat ? 'is-on' : ''}`} aria-pressed={p.showCat} onClick={() => p.onCat(!p.showCat)}>
+          <span aria-hidden="true" /> With enzyme
+        </button>
+      </div>
+      <ul className="enz-points">
+        <li>
+          <strong>Lower barrier, faster reaction.</strong> The enzyme binds the transition state more tightly than the
+          substrate, which lowers the activation energy (Eₐ). A lower barrier means many more molecules get over it each second.
+        </li>
+        <li>
+          <strong>Same ΔG.</strong> Both paths start and end at the same energies. An enzyme can’t make an unfavorable
+          reaction favorable, or change where equilibrium lies; it only gets there faster, in both directions.
+        </li>
+        <li>
+          <strong>New stops along the way.</strong> With the enzyme, the path passes through bound complexes (ES, EP). The
+          barrier that matters is measured from ES, the low point just before the peak.
+        </li>
+      </ul>
+      <p className="lesson-note">
+        Schematic: the shapes follow standard textbook diagrams, but the heights are not measured values.
+      </p>
+    </div>
+  )
+}
+
+/* ---------- Kinetics tab: controls and live numbers ---------- */
+function KineticsPanel(p: {
+  plot: KineticsPlot
+  onPlot: (v: KineticsPlot) => void
+  type: Inhibition
+  onType: (v: Inhibition) => void
+  inhibitor: number
+  onInhibitor: (v: number) => void
+  substrate: number
+  onSubstrate: (v: number) => void
+}) {
+  const app = apparent(p.type, DEMO, p.type === 'none' ? 0 : p.inhibitor)
+  const v = rate(p.substrate, app.vmax, app.km)
+  const change = (now: number, before: number) => (Math.abs(now - before) < 1e-9 ? 'same' : now > before ? 'up' : 'down')
+  const types: { id: Inhibition; label: string }[] = [
+    { id: 'none', label: 'No inhibitor' },
+    { id: 'competitive', label: 'Competitive' },
+    { id: 'noncompetitive', label: 'Noncompetitive' },
+    { id: 'uncompetitive', label: 'Uncompetitive' },
+  ]
+  const info = p.type !== 'none' ? INHIBITION_INFO[p.type] : null
+  return (
+    <div className="enz-tab">
+      <div className="mode-switch has-pill" role="radiogroup" aria-label="Graph">
+        <SlidingPill active={p.plot} />
+        {(
+          [
+            ['mm', 'Michaelis–Menten'],
+            ['lb', 'Lineweaver–Burk'],
+          ] as const
+        ).map(([id, label]) => (
+          <button key={id} role="radio" aria-checked={p.plot === id} className={`mode-btn ${p.plot === id ? 'is-active' : ''}`} onClick={() => p.onPlot(id)}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      <div className="enz-types" role="radiogroup" aria-label="Inhibitor">
+        {types.map((t) => (
+          <button key={t.id} role="radio" aria-checked={p.type === t.id} className={`enz-type ${p.type === t.id ? 'is-active' : ''}`} onClick={() => p.onType(t.id)}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      <label className={`enz-slider ${p.type === 'none' ? 'is-off' : ''}`}>
+        <span>
+          Inhibitor [I] <b className="mono">{p.inhibitor.toFixed(1)} mM</b>
+        </span>
+        <input type="range" min={0} max={5} step={0.1} value={p.inhibitor} disabled={p.type === 'none'} onChange={(e) => p.onInhibitor(Number(e.target.value))} />
+      </label>
+      {p.plot === 'mm' && (
+        <label className="enz-slider">
+          <span>
+            Substrate [S] <b className="mono">{p.substrate.toFixed(1)} mM</b>
+          </span>
+          <input type="range" min={0} max={20} step={0.1} value={p.substrate} onChange={(e) => p.onSubstrate(Number(e.target.value))} />
+        </label>
+      )}
+
+      <dl className="enz-readout">
+        <div>
+          <dt>Vmax</dt>
+          <dd className="mono">
+            {app.vmax.toFixed(1)} <Change dir={change(app.vmax, DEMO.vmax)} />
+          </dd>
+        </div>
+        <div>
+          <dt>Km</dt>
+          <dd className="mono">
+            {app.km.toFixed(2)} mM <Change dir={change(app.km, DEMO.km)} />
+          </dd>
+        </div>
+        {p.plot === 'mm' && (
+          <div>
+            <dt>Rate at this [S]</dt>
+            <dd className="mono">{v.toFixed(1)}</dd>
+          </div>
+        )}
+      </dl>
+
+      {info ? (
+        <div className="enz-info">
+          <p>
+            <strong>{info.name}:</strong> binds {info.binds}.
+          </p>
+          <p>{info.effect}</p>
+          <p className="enz-info-lb">Lineweaver–Burk: {info.lb}</p>
+        </div>
+      ) : (
+        <p className="enz-points-text">
+          <strong>Vmax</strong> is the top speed when every enzyme is busy. <strong>Km</strong> is the substrate
+          concentration that gives half of Vmax: a low Km means the enzyme reaches half speed with less substrate.
+        </p>
+      )}
+
+      <p className="lesson-note">
+        The equations are the standard ones; the numbers (Vmax = {DEMO.vmax} µM/s, Km = {DEMO.km} mM, Ki = {DEMO.ki} mM) are
+        made-up examples. “Noncompetitive” here is the textbook (MCAT) case where the inhibitor binds the enzyme and the
+        enzyme–substrate complex equally well. Real inhibitors often bind one a bit more tightly (“mixed” inhibition),
+        which changes Km too.
+      </p>
+    </div>
+  )
+}
+
+function Change({ dir }: { dir: 'up' | 'down' | 'same' }) {
+  const text = { up: '↑ up', down: '↓ down', same: '· same' }[dir]
+  return <span className={`enz-change is-${dir}`}>{text}</span>
 }

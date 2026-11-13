@@ -210,3 +210,385 @@ span.enz-chip {
     max-height: 44%;
   }
 }
+
+/* ---------- chart tabs ---------- */
+.enzymes-page:not(.is-structure) .protein-canvas {
+  visibility: hidden; /* kept alive (no reload), just not shown */
+}
+
+.enz-chart-stage {
+  position: absolute;
+  inset: calc(var(--topbar-height) + 16px) 16px 16px 428px;
+  display: grid;
+  place-items: center;
+  animation: fade-up 320ms var(--spring-soft);
+}
+
+.enz-chart {
+  margin: 0;
+  width: min(100%, 860px);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line-strong);
+  background: rgba(13, 15, 36, 0.72);
+}
+
+.enz-chart-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-2);
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+.enz-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.ec-axis {
+  stroke: var(--text-faint);
+  stroke-width: 1.2;
+}
+
+.ec-axis-label {
+  fill: var(--text-faint);
+  font: 500 13px var(--font-sans);
+}
+
+.ec-guide {
+  stroke: var(--line-strong);
+  stroke-dasharray: 4 5;
+}
+
+.ec-curve {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.ec-curve.is-un {
+  stroke: #8e93b3;
+  stroke-dasharray: 7 6;
+}
+
+.ec-curve.is-cat {
+  stroke: url(#catGrad);
+  stroke-width: 3.5;
+}
+
+.ec-bracket {
+  stroke-width: 1.5;
+  fill: none;
+}
+
+.ec-bracket.is-un {
+  color: #a8acc8;
+  stroke: #a8acc8;
+}
+
+.ec-bracket.is-cat {
+  color: #5ee4ff;
+  stroke: #5ee4ff;
+}
+
+.ec-bracket.is-dg {
+  color: #ff9ee6;
+  stroke: #ff9ee6;
+}
+
+.ec-guide.is-cat {
+  stroke: rgba(94, 228, 255, 0.35);
+}
+
+.ec-note {
+  fill: var(--text-dim);
+  font: 500 13px var(--font-sans);
+}
+
+.ec-note.is-un {
+  fill: #b5b9d6;
+}
+
+.ec-note.is-cat {
+  fill: #8fefff;
+}
+
+.ec-note.is-dg {
+  fill: #ff9ee6;
+  font-weight: 600;
+}
+
+.ec-note-small {
+  fill: var(--text-faint);
+  font: 400 11.5px var(--font-sans);
+}
+
+.ec-un,
+.ec-cat {
+  animation: fade-up 300ms var(--ease);
+}
+
+.kc-curve {
+  fill: none;
+  stroke-width: 3.5;
+  stroke-linecap: round;
+}
+
+.kc-curve.is-main {
+  stroke: #5ee4ff;
+}
+
+.kc-curve.is-ref {
+  stroke: #6c7196;
+  stroke-width: 2.5;
+  stroke-dasharray: 6 6;
+}
+
+.kc-guide {
+  stroke: #6c7196;
+  stroke-dasharray: 3 5;
+}
+
+.kc-guide.is-app {
+  stroke: #b68cff;
+}
+
+.kc-note {
+  fill: var(--text-faint);
+  font: 500 12.5px var(--font-sans);
+}
+
+.kc-note.is-app {
+  fill: #c9b4ff;
+}
+
+.kc-tick {
+  fill: var(--text-faint);
+  font: 400 12px var(--font-mono);
+}
+
+.kc-half {
+  fill: #b68cff;
+}
+
+.kc-ref-dot {
+  fill: #6c7196;
+}
+
+.kc-drop {
+  stroke: rgba(255, 201, 77, 0.6);
+  stroke-dasharray: 2 4;
+}
+
+.kc-dot {
+  fill: #ffc94d;
+  stroke: #07101f;
+  stroke-width: 2;
+}
+
+.kc-value {
+  fill: #ffd98a;
+  font-size: 13px;
+}
+
+/* ---------- chart tab panels ---------- */
+.enz-tab {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  animation: fade-up 260ms var(--spring-soft);
+}
+
+.enz-toggles {
+  display: flex;
+  gap: 8px;
+}
+
+.enz-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: transparent;
+  color: var(--text-dim);
+  font: 500 13px/1 var(--font-sans);
+  cursor: pointer;
+  transition: all var(--fast) var(--ease);
+}
+
+.enz-toggle span {
+  width: 18px;
+  height: 3px;
+  border-radius: 2px;
+  background: #8e93b3;
+}
+
+.enz-toggle.is-cat span {
+  background: linear-gradient(90deg, #5ee4ff, #b68cff);
+}
+
+.enz-toggle.is-on {
+  color: var(--text);
+  border-color: var(--line-accent);
+  background: var(--bg-2);
+}
+
+.enz-toggle:not(.is-on) span {
+  opacity: 0.3;
+}
+
+.enz-points {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: var(--space-3);
+  color: var(--text-dim);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.enz-points strong,
+.enz-points-text strong {
+  color: var(--text);
+}
+
+.enz-points-text {
+  color: var(--text-dim);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.enz-types {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.enz-type {
+  height: 36px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line-strong);
+  background: rgba(7, 8, 22, 0.45);
+  color: var(--text-dim);
+  font: 500 13px/1 var(--font-sans);
+  cursor: pointer;
+  transition:
+    background var(--fast) var(--ease),
+    border-color var(--fast) var(--ease),
+    transform 260ms var(--spring);
+}
+
+.enz-type:hover {
+  background: var(--bg-2);
+  color: var(--text);
+}
+
+.enz-type:active {
+  transform: scale(0.95);
+}
+
+.enz-type.is-active {
+  border-color: var(--accent);
+  background: rgba(94, 228, 255, 0.1);
+  color: var(--text);
+}
+
+.enz-slider {
+  display: grid;
+  gap: 6px;
+  font-size: 13.5px;
+  color: var(--text-dim);
+}
+
+.enz-slider span {
+  display: flex;
+  justify-content: space-between;
+}
+
+.enz-slider b {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.enz-slider input {
+  width: 100%;
+  accent-color: #5ee4ff;
+}
+
+.enz-slider.is-off {
+  opacity: 0.4;
+}
+
+.enz-readout {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.enz-readout div {
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: rgba(7, 8, 22, 0.35);
+}
+
+.enz-readout dt {
+  color: var(--text-faint);
+  font-size: 12px;
+}
+
+.enz-readout dd {
+  margin: 2px 0 0;
+  font-size: 14px;
+}
+
+.enz-change {
+  display: block;
+  font: 600 11.5px/1.4 var(--font-sans);
+}
+
+.enz-change.is-up {
+  color: #ffc94d;
+}
+
+.enz-change.is-down {
+  color: #b68cff;
+}
+
+.enz-change.is-same {
+  color: var(--text-faint);
+}
+
+.enz-info {
+  display: grid;
+  gap: 4px;
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid #b68cff;
+  border-radius: var(--radius-sm);
+  background: rgba(182, 140, 255, 0.08);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+.enz-info strong {
+  color: var(--text);
+}
+
+.enz-info-lb {
+  color: #c9b4ff;
+  font-size: 13px;
+}
+
+@media (max-width: 800px) {
+  .enz-chart-stage {
+    inset: calc(var(--topbar-height) + 8px) 8px 46% 8px;
+  }
+}
