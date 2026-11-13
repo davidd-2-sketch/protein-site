@@ -1,7 +1,11 @@
 /*
   TopBar.tsx — the navigation bar pinned to the top of every page.
   NavLink automatically knows which page is active, so we can highlight it.
+
+  Wide screens show every link in the bar. Narrower than 1040 px (phones and most tablets),
+  the links don't fit, so a "Menu" button opens the same list in a panel instead.
 */
+import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { SlidingPill } from './motion'
 import { loadEnzymesPage, loadPolarityPage, loadPracticePage, loadTrendsPage } from '../pages/loaders'
@@ -25,6 +29,30 @@ const LINKS = [
 export default function TopBar() {
   const [soundOn, setSoundOn] = useSoundEnabled()
   const { pathname } = useLocation()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+
+  // Close the menu on Escape or a tap outside it.
+  useEffect(() => {
+    if (!menuOpen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      setMenuOpen(false)
+      buttonRef.current?.focus()
+    }
+    const onDown = (e: PointerEvent) => {
+      const t = e.target as Node
+      if (!menuRef.current?.contains(t) && !buttonRef.current?.contains(t)) setMenuOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    window.addEventListener('pointerdown', onDown)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      window.removeEventListener('pointerdown', onDown)
+    }
+  }, [menuOpen])
+
   return (
     <header className="topbar">
       {/* "Skip to content" lets keyboard users jump past the navigation. */}
@@ -39,7 +67,7 @@ export default function TopBar() {
           <span className="brand-version mono">v0.1</span>
         </Link>
 
-        <nav aria-label="Main" className="has-pill">
+        <nav aria-label="Main" className="main-nav has-pill">
           {/* The "you are here" highlight glides between links as you change pages. */}
           <SlidingPill active={pathname} selector=".active" />
           {LINKS.map((l) => (
@@ -77,7 +105,41 @@ export default function TopBar() {
             <span className="sound-btn-text">{soundOn ? 'Sound on' : 'Sound off'}</span>
           </button>
         </nav>
+
+        {/* Narrow screens: one button that opens the full list. */}
+        <button
+          ref={buttonRef}
+          className={`menu-btn ${menuOpen ? 'is-open' : ''}`}
+          aria-expanded={menuOpen}
+          aria-controls="site-menu"
+          onClick={() => setMenuOpen((o) => !o)}
+        >
+          <MenuIcon open={menuOpen} />
+          {menuOpen ? 'Close' : 'Menu'}
+        </button>
       </div>
+
+      {menuOpen && (
+        <div id="site-menu" ref={menuRef} className="site-menu panel">
+          <nav aria-label="Main (menu)">
+            <ul className="site-menu-links">
+              {[...LINKS, { to: '/progress', label: 'Progress', load: loadProgressPage }].map((l) => (
+                <li key={l.to}>
+                  <NavLink to={l.to} className="site-menu-link" onClick={() => setMenuOpen(false)} onTouchStart={() => canPrefetch() && void l.load()}>
+                    {l.label}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <div className="site-menu-footer">
+            <button className={`sound-btn ${soundOn ? 'is-on' : ''}`} role="switch" aria-checked={soundOn} onClick={() => setSoundOn(!soundOn)}>
+              <SpeakerIcon on={soundOn} />
+              {soundOn ? 'Sound on' : 'Sound off'}
+            </button>
+          </div>
+        </div>
+      )}
     </header>
   )
 }
@@ -117,6 +179,15 @@ function SpeakerIcon({ on }: { on: boolean }) {
       ) : (
         <path d="M10.5 6l3.5 4M14 6l-3.5 4" />
       )}
+    </svg>
+  )
+}
+
+/* Three lines (menu) that turn into an ×  (close). */
+function MenuIcon({ open }: { open: boolean }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+      {open ? <path d="M3.5 3.5l9 9M12.5 3.5l-9 9" /> : <path d="M2.5 4.5h11M2.5 8h11M2.5 11.5h11" />}
     </svg>
   )
 }

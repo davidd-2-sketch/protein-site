@@ -145,3 +145,110 @@
     display: none;
   }
 }
+
+/* =========================================================
+   Narrow screens (phones, most tablets): a Menu button instead of the full bar.
+   Wide screens (1040 px and up) are unchanged.
+   ========================================================= */
+.menu-btn {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--bg-1);
+  color: var(--text);
+  font: 500 14px/1 var(--font-sans);
+  cursor: pointer;
+}
+
+.menu-btn.is-open {
+  border-color: var(--line-accent);
+  background: var(--bg-2);
+}
+
+.site-menu {
+  display: none;
+}
+
+@media (max-width: 1039px) {
+  /* (.topbar .main-nav: specific enough to beat the ".topbar nav" rule above) */
+  .topbar .main-nav {
+    display: none;
+  }
+
+  .menu-btn {
+    display: inline-flex;
+  }
+
+  .site-menu {
+    display: block;
+    position: fixed;
+    top: calc(var(--topbar-height) + 6px);
+    left: 8px;
+    right: 8px;
+    max-width: 520px;
+    margin-left: auto;
+    max-height: calc(100dvh - var(--topbar-height) - 16px);
+    overflow-y: auto;
+    padding: var(--space-3);
+    /* Solid, so the page behind doesn't show through the menu. */
+    --panel-bg: linear-gradient(180deg, #13163a, #0d0f26);
+    animation: menu-in 220ms var(--spring-soft) both;
+  }
+
+  .site-menu-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .site-menu-link {
+    display: flex;
+    align-items: center;
+    min-height: 48px; /* comfortable to tap */
+    padding: 0 14px;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    color: var(--text-dim);
+    font: 500 15px/1.2 var(--font-sans);
+  }
+
+  .site-menu-link:hover {
+    background: var(--bg-2);
+    color: var(--text);
+  }
+
+  .site-menu-link.active {
+    border-color: var(--line-accent);
+    background: var(--accent-grad-soft);
+    color: var(--text);
+  }
+
+  .site-menu-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    margin-top: var(--space-3);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--line);
+  }
+
+  .site-menu-footer .sound-btn {
+    height: 40px;
+  }
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
