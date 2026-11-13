@@ -4,7 +4,7 @@
 */
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { SlidingPill } from './motion'
-import { loadPolarityPage, loadPracticePage, loadTrendsPage } from '../pages/loaders'
+import { loadEnzymesPage, loadPolarityPage, loadPracticePage, loadTrendsPage } from '../pages/loaders'
 import { canPrefetch, loadOrbitalsPage, loadProteinPage, loadReactionPage, loadVseprPage } from '../pages/loaders'
 import { useSoundEnabled } from '../sound/sound'
 import { loadProgressPage } from '../pages/loaders'
@@ -13,6 +13,7 @@ import './TopBar.css'
 /* Plain topic names (no numbers): each says what you'll learn there. */
 const LINKS = [
   { to: '/protein', label: 'Proteins', load: loadProteinPage },
+  { to: '/enzymes', label: 'Enzymes', load: loadEnzymesPage },
   { to: '/reaction', label: 'Reactions', load: loadReactionPage },
   { to: '/shapes', label: 'Shapes', load: loadVseprPage },
   { to: '/orbitals', label: 'Orbitals', load: loadOrbitalsPage },

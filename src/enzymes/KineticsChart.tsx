@@ -154,17 +154,18 @@ function LB({ base, app, inhibited }: { base: K; app: K; inhibited: boolean }) {
           </g>
         )
       })}
+      {/* Intercept values in the empty top-left corner, so they never crowd the origin. */}
       {(() => {
         const lb = lineweaverBurk(app.vmax, app.km)
         return (
-          <>
-            <text x={x0 + 8} y={Y(lb.yIntercept) - 8} className="kc-note is-app">
-              1/Vmax = {lb.yIntercept.toFixed(3)}
+          <g>
+            <text x={X(xMin) + 6} y={PAD.t + 6} className="kc-note is-app">
+              y-intercept: 1/Vmax = {lb.yIntercept.toFixed(3)}
             </text>
-            <text x={X(lb.xIntercept)} y={Y(0) - 10} textAnchor="middle" className="kc-note is-app">
-              −1/Km = {lb.xIntercept.toFixed(2)}
+            <text x={X(xMin) + 6} y={PAD.t + 24} className="kc-note is-app">
+              x-intercept: −1/Km = {lb.xIntercept.toFixed(2)}
             </text>
-          </>
+          </g>
         )
       })()}
     </svg>

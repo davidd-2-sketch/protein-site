@@ -3,7 +3,13 @@
   as the lessons. Each kind of visual keeps its scene while consecutive questions use it,
   and swaps scenes only when the kind changes.
 */
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import EnergyChart from '../enzymes/EnergyChart'
+import KineticsChart from '../enzymes/KineticsChart'
+import '../pages/EnzymesPage.css'
+
+// The 3D enzyme stage pulls in the Mol* viewer, so it loads only when an enzyme structure question appears.
+const EnzymePracticeStage = lazy(() => import('../enzymes/EnzymePracticeStage'))
 import AxisLabels from '../orbitals/AxisLabels'
 import { OrbitalScene } from '../orbitals/OrbitalScene'
 import ReactionLabels from '../reactions/ReactionLabels'
@@ -29,6 +35,26 @@ export default function PracticeStage({ visual, revealed }: { visual: Visual; re
       return <Sn2Stage visual={visual} />
     case 'polarity':
       return <PolarityStage visual={visual} revealed={revealed} />
+    case 'kinetics': {
+      const k = revealed && visual.after ? visual.after : visual.before
+      return (
+        <div className="practice-canvas practice-chart">
+          <KineticsChart plot={k.plot} type={k.type} inhibitor={k.inhibitor} substrate={k.substrate} />
+        </div>
+      )
+    }
+    case 'energy':
+      return (
+        <div className="practice-canvas practice-chart">
+          <EnergyChart showUncatalyzed showCatalyzed hints={false} />
+        </div>
+      )
+    case 'enzyme3d':
+      return (
+        <Suspense fallback={<p className="practice-busy">Loading the enzyme…</p>}>
+          <EnzymePracticeStage structure={visual.structure} after={visual.after} highlight={visual.highlight} revealed={revealed} />
+        </Suspense>
+      )
   }
 }
 

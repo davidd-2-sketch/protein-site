@@ -20,7 +20,7 @@ const pathOf = (fn: (s: number) => number) => {
   return d
 }
 
-export default function EnergyChart({ showUncatalyzed, showCatalyzed }: { showUncatalyzed: boolean; showCatalyzed: boolean }) {
+export default function EnergyChart({ showUncatalyzed, showCatalyzed, hints = true }: { showUncatalyzed: boolean; showCatalyzed: boolean; /** false hides answer-giving notes (Practice) */ hints?: boolean }) {
   const paths = useMemo(() => ({ un: pathOf(uncatalyzedEnergy), cat: pathOf(catalyzedEnergy) }), [])
   const start = UNCATALYZED[0][1]
   const end = UNCATALYZED[UNCATALYZED.length - 1][1]
@@ -108,9 +108,11 @@ export default function EnergyChart({ showUncatalyzed, showCatalyzed }: { showUn
         <text x={BX.dg - 8} y={(Y(start) + Y(end)) / 2 + 2} textAnchor="end" className="ec-note is-dg">
           ΔG
         </text>
-        <text x={BX.dg - 8} y={(Y(start) + Y(end)) / 2 + 17} textAnchor="end" className="ec-note-small">
-          same either way
-        </text>
+        {hints && (
+          <text x={BX.dg - 8} y={(Y(start) + Y(end)) / 2 + 17} textAnchor="end" className="ec-note-small">
+            same either way
+          </text>
+        )}
 
         <text x={X(0)} y={Y(start) + 20} className="ec-note">
           {showCatalyzed ? 'S (+ E)' : 'S'}

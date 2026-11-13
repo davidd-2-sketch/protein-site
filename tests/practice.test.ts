@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { buildRound, fromId, randomId, TOPICS, type Topic } from '../src/practice/questions'
 import { byZ } from '../src/trends/elements'
 import { configuration, sn2Atoms } from '../src/reactions/sn2Geometry'
+import { apparent, DEMO } from '../src/enzymes/kinetics'
 
 const topics = TOPICS.map((t) => t.id)
 
@@ -81,5 +82,34 @@ describe('Rounds', () => {
       expect(round.map((q) => q.id)).toContain('shape:3:1') // reviewed
       expect(round.map((q) => q.id)).not.toContain('orb:2px') // topic not chosen
     }
+  })
+})
+
+describe('Enzymes practice answers agree with the kinetics math', () => {
+  const correct = (id: string) => {
+    const q = fromId(id)!
+    return q.choices[q.answer]
+  }
+  it('"what happens to Vmax and Km" answers match apparent()', () => {
+    for (const t of ['competitive', 'noncompetitive', 'uncompetitive'] as const) {
+      const a = apparent(t, DEMO, 3)
+      const vmax = a.vmax === DEMO.vmax ? 'unchanged' : a.vmax < DEMO.vmax ? 'down' : 'up'
+      const km = a.km === DEMO.km ? 'unchanged' : a.km < DEMO.km ? 'down' : 'up'
+      const answer = correct(`enzchange:${t}`)
+      if (vmax === 'down' && km === 'down') expect(answer).toBe('Vmax and Km both go down')
+      else expect(answer).toBe(`Vmax ${vmax === 'unchanged' ? 'unchanged' : `goes ${vmax}`}, Km ${km === 'unchanged' ? 'unchanged' : `goes ${km}`}`)
+    }
+  })
+  it('naming-the-inhibitor answers match the graph shown', () => {
+    for (const t of ['competitive', 'noncompetitive', 'uncompetitive'] as const)
+      for (const plot of ['mm', 'lb']) {
+        const q = fromId(`enzinh:${t}:${plot}`)!
+        expect(q.visual).toMatchObject({ kind: 'kinetics', before: { type: t, plot } })
+        expect(q.choices[q.answer].toLowerCase()).toBe(t)
+      }
+  })
+  it('active-site questions name residues that are really in the site list', () => {
+    for (const seq of [195, 57, 102, 193, 189]) expect(fromId(`enzres:${seq}`)?.visual).toMatchObject({ kind: 'enzyme3d', structure: 'chymo-ts' })
+    expect(fromId('enzres:999')).toBeNull()
   })
 })

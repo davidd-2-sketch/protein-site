@@ -19,10 +19,12 @@ import { SHAPES, SLOTS, shapeFor } from '../vsepr/shapes'
 import { byFormula, idealState, moleculeState } from '../vsepr/states'
 import type { SceneState } from '../vsepr/VseprScene'
 import { byId as polarById, POLAR_MOLECULES } from '../polarity/molecules'
+import { INHIBITION_INFO, type Inhibition } from '../enzymes/kinetics'
+import { CHYMO_SITE, type StructureId } from '../enzymes/structures'
 import type { ModuleKey } from '../lessons/place'
 import type { Quiz } from '../lessons/types'
 
-export type Topic = 'shapes' | 'orbitals' | 'trends' | 'reactions' | 'polarity'
+export type Topic = 'shapes' | 'orbitals' | 'trends' | 'reactions' | 'polarity' | 'enzymes'
 
 export const TOPICS: { id: Topic; name: string; blurb: string }[] = [
   { id: 'shapes', name: 'Shapes', blurb: 'Name 3D shapes, count hidden lone pairs, read bond angles.' },
@@ -30,6 +32,7 @@ export const TOPICS: { id: Topic; name: string; blurb: string }[] = [
   { id: 'trends', name: 'Trends', blurb: 'Compare two elements on the table, then see the data rise.' },
   { id: 'reactions', name: 'Reactions', blurb: 'Read frozen frames of the SN2 reaction.' },
   { id: 'polarity', name: 'Polarity', blurb: 'Polar or nonpolar? Then watch the bond dipoles add up.' },
+  { id: 'enzymes', name: 'Enzymes', blurb: 'Read kinetics graphs, name inhibitors, and explore real active sites.' },
 ]
 
 /** What to draw, before and after answering. */
@@ -40,6 +43,12 @@ export type Visual =
   | { kind: 'sn2'; s: number }
   /** A polarity molecule: bond dipoles beside the bonds, summed tip-to-tail once answered. */
   | { kind: 'polarity'; id: string }
+  /** Kinetics graph; `after` (if set) replaces it once answered. */
+  | { kind: 'kinetics'; before: KineticsVisual; after?: KineticsVisual }
+  /** The catalyzed vs uncatalyzed energy diagram (hint labels hidden). */
+  | { kind: 'energy' }
+  /** A real enzyme structure; `after` replaces it once answered. Highlight = one residue. */
+  | { kind: 'enzyme3d'; structure: StructureId; after?: StructureId; highlight?: { chain: string; seq: number; label: string } }
 
 export interface Question extends Quiz {
   id: string
@@ -47,6 +56,13 @@ export interface Question extends Quiz {
   visual: Visual
   /** Where to review this idea. */
   review: { module: ModuleKey | 'reaction' | 'polarity'; lessonId?: string; label: string }
+}
+
+export interface KineticsVisual {
+  plot: 'mm' | 'lb'
+  type: Inhibition
+  inhibitor: number
+  substrate: number
 }
 
 /* ---------- small helpers ---------- */
@@ -374,6 +390,146 @@ function polarOrNot(id: string): Question {
   }
 }
 
+/* ======================================================================= enzymes */
+
+const INH_TYPES = ['competitive', 'noncompetitive', 'uncompetitive'] as const
+type InhType = (typeof INH_TYPES)[number]
+const INH_NAME: Record<InhType, string> = { competitive: 'Competitive', noncompetitive: 'Noncompetitive', uncompetitive: 'Uncompetitive' }
+const enzReview = (lessonId: string, label: string) => ({ module: 'enzymes' as const, lessonId, label })
+
+/** Show a graph with an inhibitor; name the inhibitor type. */
+function enzInhibitor(type: InhType, plot: 'mm' | 'lb'): Question {
+  const { choices, answer } = withChoices(INH_NAME[type], Object.values(INH_NAME))
+  const info = INHIBITION_INFO[type]
+  return {
+    id: `enzinh:${type}:${plot}`,
+    topic: 'enzymes',
+    visual: { kind: 'kinetics', before: { plot, type, inhibitor: 3, substrate: 8 } },
+    question: `The dashed line has no inhibitor; the solid line has a drug added. What kind of inhibitor is the drug?`,
+    choices,
+    answer,
+    explain: `${info.name}. ${info.effect} ${info.lb}`,
+    hint: plot === 'mm' ? 'Compare the two Vmax lines and the two Km lines.' : 'Where do the two lines cross: on the y-axis, the x-axis, or never?',
+    review: enzReview('inhibition', 'Enzymes: Inhibitors'),
+  }
+}
+
+const CHANGES: Record<InhType, string> = {
+  competitive: 'Vmax unchanged, Km goes up',
+  noncompetitive: 'Vmax goes down, Km unchanged',
+  uncompetitive: 'Vmax and Km both go down',
+}
+
+/** Predict how Vmax and Km change; the graph then shows it. */
+function enzChange(type: InhType): Question {
+  const { choices, answer } = withChoices(CHANGES[type], [...Object.values(CHANGES), 'Vmax and Km both go up'])
+  return {
+    id: `enzchange:${type}`,
+    topic: 'enzymes',
+    visual: {
+      kind: 'kinetics',
+      before: { plot: 'mm', type: 'none', inhibitor: 0, substrate: 8 },
+      after: { plot: 'mm', type, inhibitor: 3, substrate: 8 },
+    },
+    question: `This is the enzyme with no inhibitor. ${type === 'uncompetitive' ? 'An' : 'A'} ${type} inhibitor is added. What happens to Vmax and Km?`,
+    choices,
+    answer,
+    explain: `${CHANGES[type]}. ${type === 'uncompetitive' ? 'An' : 'A'} ${type} inhibitor binds ${INHIBITION_INFO[type].binds}. The graph now shows the inhibited curve (solid).`,
+    hint: 'Ask: can piling on substrate push this inhibitor out?',
+    review: enzReview('inhibition', 'Enzymes: Inhibitors'),
+  }
+}
+
+const ENERGY_QS: Record<string, { question: string; correct: string; wrong: string[]; explain: string }> = {
+  dg: {
+    question: 'Dashed: no enzyme. Solid: with enzyme. What does the enzyme do to the reaction’s ΔG?',
+    correct: 'Nothing: ΔG is the same',
+    wrong: ['Makes ΔG more negative', 'Makes ΔG positive'],
+    explain: 'Nothing. Both paths start and end at the same energies, so ΔG (and the equilibrium) is unchanged. The enzyme only lowers the barrier.',
+  },
+  ea: {
+    question: 'Dashed: no enzyme. Solid: with enzyme. What does the enzyme lower?',
+    correct: 'The activation energy (Eₐ)',
+    wrong: ['The energy of the products', 'ΔG of the reaction'],
+    explain: 'The activation energy. The enzyme’s highest peak (the stabilized transition state) is far lower than the uncatalyzed one, so the reaction runs much faster.',
+  },
+}
+
+function enzEnergy(key: string): Question {
+  const e = ENERGY_QS[key]
+  const { choices, answer } = withChoices(e.correct, e.wrong)
+  return {
+    id: `enzenergy:${key}`,
+    topic: 'enzymes',
+    visual: { kind: 'energy' },
+    question: e.question,
+    choices,
+    answer,
+    explain: e.explain,
+    hint: 'Compare where the two paths start and end, and how high each one climbs.',
+    review: enzReview('barrier', 'Enzymes: Lowering the barrier'),
+  }
+}
+
+/** Short job descriptions for chymotrypsin's active-site residues (full ones are in structures.ts). */
+const JOBS: Record<number, string> = {
+  195: 'Attacks the peptide bond (the nucleophile)',
+  57: 'Pulls a proton off Ser195 (the base)',
+  102: 'Holds His57 in the right position',
+  193: 'Hydrogen-bonds the negative oxygen (oxyanion hole)',
+  189: 'Sits at the bottom of the specificity pocket',
+}
+
+function enzResidue(seq: number): Question {
+  const r = CHYMO_SITE.find((x) => x.seq === seq)!
+  const label = `${r.comp[0]}${r.comp.slice(1).toLowerCase()}${seq}`
+  const { choices, answer } = withChoices(JOBS[seq], Object.values(JOBS))
+  return {
+    id: `enzres:${seq}`,
+    topic: 'enzymes',
+    visual: { kind: 'enzyme3d', structure: 'chymo-ts', highlight: { chain: r.chain, seq, label } },
+    question: `This is chymotrypsin’s real active site (PDB 6CHA). What is the job of the highlighted residue, ${label}?`,
+    choices,
+    answer,
+    explain: `${label}: ${r.role}`,
+    hint: 'Look at where it sits: next to the pink bound molecule, beside His57, or deep in the pocket?',
+    review: enzReview(seq === 189 ? 'specificity' : 'triad', seq === 189 ? 'Enzymes: Picking the right target' : 'Enzymes: The catalytic triad'),
+  }
+}
+
+const FIT = {
+  gk: {
+    before: 'gk-open' as StructureId,
+    after: 'gk-closed' as StructureId,
+    question: 'This is glucokinase with no glucose (real structure). Glucose binds. Predict what happens.',
+    correct: 'A lid swings shut over the glucose (induced fit)',
+    explain: 'A lid swings shut: in the real structures it moves from about 28 Å to about 6 Å from the glucose-binding residues. That is induced fit. The view now shows the closed form with glucose.',
+  },
+  chymo: {
+    before: 'chymo-free' as StructureId,
+    after: 'chymo-ts' as StructureId,
+    question: 'This is chymotrypsin with nothing bound (real structure). A substrate-like molecule binds. Predict what happens to the active site.',
+    correct: 'Almost nothing changes (close to lock and key)',
+    explain: 'Almost nothing: the two real structures match to 0.25 Å, and no active-site residue moves more than 1 Å. Chymotrypsin’s pocket is already shaped. The view now shows the bound form.',
+  },
+}
+
+function enzFit(key: 'gk' | 'chymo'): Question {
+  const f = FIT[key]
+  const { choices, answer } = withChoices(f.correct, [FIT.gk.correct, FIT.chymo.correct, 'The enzyme unfolds and refolds'])
+  return {
+    id: `enzfit:${key}`,
+    topic: 'enzymes',
+    visual: { kind: 'enzyme3d', structure: f.before, after: f.after },
+    question: f.question,
+    choices,
+    answer,
+    explain: f.explain,
+    hint: key === 'gk' ? 'The module uses this enzyme as the induced-fit example.' : 'This enzyme’s pocket is a fairly rigid groove.',
+    review: enzReview('specificity', 'Enzymes: Picking the right target'),
+  }
+}
+
 /* ======================================================================= building rounds */
 
 /** Rebuild a question from its ID (used for review of missed questions). */
@@ -401,6 +557,16 @@ export function fromId(id: string): Question | null {
         return STAGE_FRAMES[p[0]] ? sn2Stage(p[0]) : null
       case 'sn2config':
         return sn2Config(p[0])
+      case 'enzinh':
+        return (INH_TYPES as readonly string[]).includes(p[0]) && (p[1] === 'mm' || p[1] === 'lb') ? enzInhibitor(p[0] as InhType, p[1]) : null
+      case 'enzchange':
+        return (INH_TYPES as readonly string[]).includes(p[0]) ? enzChange(p[0] as InhType) : null
+      case 'enzenergy':
+        return ENERGY_QS[p[0]] ? enzEnergy(p[0]) : null
+      case 'enzres':
+        return JOBS[Number(p[0])] ? enzResidue(Number(p[0])) : null
+      case 'enzfit':
+        return p[0] === 'gk' || p[0] === 'chymo' ? enzFit(p[0]) : null
       case 'polar':
         return POLAR_MOLECULES.some((m) => m.id === p[0]) ? polarOrNot(p[0]) : null
     }
@@ -438,6 +604,14 @@ export function randomId(topic: Topic): string {
       return Math.random() < 0.55 ? `sn2stage:${pick(Object.keys(STAGE_FRAMES))}` : `sn2config:${pick(CONFIG_FRAMES)}`
     case 'polarity':
       return `polar:${pick(POLAR_MOLECULES).id}`
+    case 'enzymes': {
+      const r = Math.random()
+      if (r < 0.35) return `enzinh:${pick([...INH_TYPES])}:${pick(['mm', 'lb'])}`
+      if (r < 0.55) return `enzchange:${pick([...INH_TYPES])}`
+      if (r < 0.68) return `enzenergy:${pick(Object.keys(ENERGY_QS))}`
+      if (r < 0.86) return `enzres:${pick(Object.keys(JOBS))}`
+      return `enzfit:${pick(['gk', 'chymo'])}`
+    }
   }
 }
 

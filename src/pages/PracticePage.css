@@ -325,3 +325,44 @@
     max-height: 48%;
   }
 }
+
+/* Enzyme charts in Practice: centered, with breathing room */
+.practice-chart {
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.practice-chart .enz-chart {
+  width: min(100%, 820px);
+}
+
+.practice-source {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  z-index: 4;
+}
+
+.practice-canvas .pin {
+  position: absolute;
+}
+
+/* Keep "3 of 4 right" on one line next to the progress dots. */
+.practice-score {
+  white-space: nowrap;
+}
+
+.practice-dots {
+  gap: 4px;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+.practice-dots li {
+  width: 16px;
+}
+
+.practice-dots li.is-current {
+  width: 26px;
+}

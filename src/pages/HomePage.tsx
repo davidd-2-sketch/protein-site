@@ -26,7 +26,7 @@ const ROADMAP: { title: string; detail: string; status: Status }[] = [
   { title: 'Protein structure', detail: 'Primary to quaternary structure, helices and sheets, and why shape decides function.', status: 'live' },
   { title: 'Reaction mechanisms', detail: 'SN2 and SN1, side by side. E1, E2, and nucleophilic addition to carbonyls next.', status: 'live' },
   { title: 'Molecular shapes (VSEPR)', detail: 'Build any shape from bonds and lone pairs, then compare real molecules’ measured angles.', status: 'live' },
-  { title: 'Enzymes', detail: 'Binding, active sites, induced fit, and how enzymes stabilize the transition state.', status: 'planned' },
+  { title: 'Enzymes', detail: 'Real active sites, induced fit, how enzymes stabilize the transition state, kinetics, and inhibitors.', status: 'live' },
   { title: 'Orbitals', detail: 's, p, and d orbitals, hybridization, and how σ and π bonds come from overlap.', status: 'live' },
   { title: 'Polarity', detail: 'Bond dipoles as arrows that add up, or cancel, in look-alike pairs like CO₂ and H₂O.', status: 'live' },
   { title: 'Periodic trends', detail: 'Radius, ionization energy, and electronegativity as a 3D skyline, with the exceptions explained.', status: 'live' },

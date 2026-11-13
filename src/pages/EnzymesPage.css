@@ -592,3 +592,34 @@ span.enz-chip {
     inset: calc(var(--topbar-height) + 8px) 8px 46% 8px;
   }
 }
+
+/* ---------- Phones: model or chart on top, panel as a sheet on the bottom ---------- */
+@media (max-width: 800px) {
+  .enzymes-page .stage {
+    inset: var(--topbar-height) 0 50% 0;
+  }
+  .enzymes-page .lesson {
+    top: auto;
+    left: 8px;
+    right: 8px;
+    bottom: 64px;
+    width: auto;
+    max-height: calc(50% - 72px);
+  }
+  .enzymes-page .enz-chart-stage {
+    inset: calc(var(--topbar-height) + 4px) 4px 50% 4px;
+  }
+  .enzymes-page .enz-chart {
+    padding: var(--space-2);
+  }
+  .enzymes-page .protein-bottom {
+    left: 8px;
+    right: 8px;
+    transform: none;
+  }
+  .enzymes-page .toolbar {
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+}

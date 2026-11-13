@@ -29,7 +29,7 @@ type Missed = Record<string, { topic: Topic; misses: number }>
 const IDLE = { kind: 'vsepr' as const, before: idealState(4, 0), after: idealState(4, 0), arcsAfter: true }
 
 export default function PracticePage() {
-  const [topics, setTopics] = useStoredState<Topic[]>('ps.practice.topics', ['shapes', 'orbitals', 'trends', 'reactions', 'polarity'])
+  const [topics, setTopics] = useStoredState<Topic[]>('ps.practice.topics', ['shapes', 'orbitals', 'trends', 'reactions', 'polarity', 'enzymes'])
   const [stats, setStats] = useStoredState<Stats>('ps.practice.stats', {})
   const [missed, setMissed] = useStoredState<Missed>('ps.practice.missed', {})
   const [rounds, setRounds] = useStoredState<number>('ps.practice.rounds', 0)
@@ -137,7 +137,7 @@ export default function PracticePage() {
                   total={round.length}
                   reveals={false}
                   label="Look, then answer"
-                  prompt="Drag the model to look around, then pick an answer."
+                  prompt={question.visual.kind === 'kinetics' || question.visual.kind === 'energy' ? 'Read the graph, then pick an answer.' : 'Drag the model to look around, then pick an answer.'}
                   onDone={() => setAnswered(true)}
                   onResult={(firstTry) => record(question, firstTry)}
                 />

@@ -14,6 +14,7 @@ import type { AnyStep, Lesson } from '../lessons/types'
 import { ORBITAL_LESSONS } from '../orbitals/lessons'
 import { TOPICS, type Topic } from '../practice/questions'
 import { TREND_LESSONS } from '../trends/lessons'
+import { ENZYME_LESSONS } from '../enzymes/lessons'
 import { VSEPR_LESSONS } from '../vsepr/lessons'
 import '../components/ModeSwitch.css'
 import './ProgressPage.css'
@@ -24,6 +25,7 @@ const SECTIONS: { module: ModuleKey; storeKey: string; lessons: Lesson<AnyStep>[
   { module: 'vsepr', storeKey: 'ps.vsepr.completed', lessons: VSEPR_LESSONS as unknown as Lesson<AnyStep>[] },
   { module: 'orbitals', storeKey: 'ps.orbitals.completed', lessons: ORBITAL_LESSONS as unknown as Lesson<AnyStep>[] },
   { module: 'trends', storeKey: 'ps.trends.completed', lessons: TREND_LESSONS as unknown as Lesson<AnyStep>[] },
+  { module: 'enzymes', storeKey: 'ps.enzymes.completed', lessons: ENZYME_LESSONS as unknown as Lesson<AnyStep>[] },
 ]
 
 type Stats = Partial<Record<Topic, { answered: number; firstTry: number }>>
