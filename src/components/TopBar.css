@@ -148,7 +148,7 @@
 
 /* =========================================================
    Narrow screens (phones, most tablets): a Menu button instead of the full bar.
-   Wide screens (1040 px and up) are unchanged.
+   Wide screens (1080 px and up) show the full bar.
    ========================================================= */
 .menu-btn {
   display: none;
@@ -173,7 +173,7 @@
   display: none;
 }
 
-@media (max-width: 1039px) {
+@media (max-width: 1079px) {
   /* (.topbar .main-nav: specific enough to beat the ".topbar nav" rule above) */
   .topbar .main-nav {
     display: none;
@@ -251,4 +251,38 @@
     opacity: 0;
     transform: translateY(-6px);
   }
+}
+
+/* "Send feedback": a quiet icon at the end of the bar (wide screens) and a text link in the menu. */
+.feedback-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius);
+  color: var(--text-faint);
+  transition:
+    color var(--fast) var(--ease),
+    background var(--fast) var(--ease);
+}
+
+.feedback-btn:hover {
+  color: var(--text);
+  background: var(--bg-2);
+}
+
+.site-menu-feedback {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 10px;
+  border-radius: var(--radius);
+  color: var(--text-dim);
+  font: 500 14px/1 var(--font-sans);
+}
+
+.site-menu-feedback:hover {
+  color: var(--text);
+  background: var(--bg-2);
 }

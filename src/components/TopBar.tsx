@@ -2,12 +2,13 @@
   TopBar.tsx — the navigation bar pinned to the top of every page.
   NavLink automatically knows which page is active, so we can highlight it.
 
-  Wide screens show every link in the bar. Narrower than 1040 px (phones and most tablets),
+  Wide screens show every link in the bar. Narrower than 1080 px (phones and most tablets),
   the links don't fit, so a "Menu" button opens the same list in a panel instead.
 */
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { SlidingPill } from './motion'
+import { FEEDBACK_URL } from './feedback'
 import { loadEnzymesPage, loadPolarityPage, loadPracticePage, loadTrendsPage } from '../pages/loaders'
 import { canPrefetch, loadOrbitalsPage, loadProteinPage, loadReactionPage, loadVseprPage } from '../pages/loaders'
 import { useSoundEnabled } from '../sound/sound'
@@ -104,6 +105,10 @@ export default function TopBar() {
             <SpeakerIcon on={soundOn} />
             <span className="sound-btn-text">{soundOn ? 'Sound on' : 'Sound off'}</span>
           </button>
+          {/* Feedback: a small icon, so it's on every page without crowding the bar. */}
+          <a className="feedback-btn" href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer" aria-label="Send feedback (opens a form in a new tab)" title="Send feedback">
+            <FeedbackIcon />
+          </a>
         </nav>
 
         {/* Narrow screens: one button that opens the full list. */}
@@ -133,6 +138,9 @@ export default function TopBar() {
             </ul>
           </nav>
           <div className="site-menu-footer">
+            <a className="site-menu-feedback" href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer">
+              <FeedbackIcon /> Send feedback <span className="sr-only">(opens in a new tab)</span>
+            </a>
             <button className={`sound-btn ${soundOn ? 'is-on' : ''}`} role="switch" aria-checked={soundOn} onClick={() => setSoundOn(!soundOn)}>
               <SpeakerIcon on={soundOn} />
               {soundOn ? 'Sound on' : 'Sound off'}
@@ -188,6 +196,15 @@ function MenuIcon({ open }: { open: boolean }) {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
       {open ? <path d="M3.5 3.5l9 9M12.5 3.5l-9 9" /> : <path d="M2.5 4.5h11M2.5 8h11M2.5 11.5h11" />}
+    </svg>
+  )
+}
+
+/* A speech bubble: "tell us what you think". */
+function FeedbackIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round">
+      <path d="M2.5 3.5h11v7h-6l-3 2.5v-2.5h-2z" />
     </svg>
   )
 }

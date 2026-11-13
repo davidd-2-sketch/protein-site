@@ -233,3 +233,21 @@
 .graphics-row .mode-switch {
   width: 320px;
 }
+
+.progress-footer {
+  margin-top: var(--space-8);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--line);
+  color: var(--text-faint);
+  font-size: 14px;
+}
+
+.progress-footer a {
+  color: var(--text-dim);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.progress-footer a:hover {
+  color: var(--text);
+}

@@ -6,6 +6,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { SlidingPill } from '../components/motion'
+import { FEEDBACK_URL } from '../components/feedback'
 import { currentSetting, looksWeak, profile, setQualitySetting, useQuality, type QualitySetting } from '../perf/quality'
 import { MODULES, placeLink, type ModuleKey, type Place } from '../lessons/place'
 import { getItem, useStoredState } from '../lessons/progress'
@@ -106,6 +107,13 @@ export default function ProgressPage() {
       </section>
 
       <ResetProgress />
+
+      <p className="progress-footer">
+        Something confusing, wrong, or missing?{' '}
+        <a href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer">
+          Send feedback
+        </a>
+      </p>
     </div>
   )
 }

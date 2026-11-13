@@ -14,6 +14,7 @@
 */
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { FEEDBACK_URL } from '../components/feedback'
 import Atmosphere from '../components/Atmosphere'
 import HeroMolecule from '../components/HeroMolecule'
 import { MODULES, placeLink, type Place } from '../lessons/place'
@@ -176,7 +177,12 @@ export default function HomePage() {
       {/* ===== Footer ===== */}
       <footer className="footer">
         <div className="container footer-inner">
-          <p>protein-site · free for every student</p>
+          <p>
+            protein-site · free for every student ·{' '}
+            <a href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer">
+              Send feedback
+            </a>
+          </p>
           <p>
             Structures from the{' '}
             <a href="https://www.rcsb.org/" target="_blank" rel="noreferrer">
