@@ -18,8 +18,8 @@
       do not change ΔG or the equilibrium.
     • Hexokinase closing excludes water, so ATP's phosphate goes to glucose, not to water
       (Koshland's induced-fit example).
-    • Uncatalyzed peptide-bond hydrolysis in neutral water: half-life of hundreds of years
-      (Radzicka & Wolfenden, J. Am. Chem. Soc. 1996).
+    • Uncatalyzed peptide-bond hydrolysis in neutral water: half-life of roughly 350–600 years,
+      depending on the bond (Radzicka & Wolfenden, J. Am. Chem. Soc. 1996).
     • Glucokinase is half-saturated at ~8 mM glucose and its curve is sigmoidal (not simple
       Michaelis–Menten); hexokinase I has a Km below 0.1 mM. Statins are competitive
       inhibitors of HMG-CoA reductase; lithium is an uncompetitive inhibitor of inositol
@@ -82,7 +82,7 @@ export const ENZYME_LESSONS: Lesson<EnzymeStep>[] = [
           standard:
             'An [[enzyme]] is a biological [[catalyst]]: it speeds up a reaction without being used up. Chymotrypsin digests proteins in the small intestine by hydrolyzing peptide bonds. On its own, a peptide bond in water has a half-life of hundreds of years.',
           deep:
-            'Chymotrypsin is a serine protease (about 25 kDa) made as an inactive precursor, chymotrypsinogen, and activated by cutting, which is why this structure has three chains (A, B, C) held together by disulfide bonds. Uncatalyzed peptide hydrolysis at neutral pH has a half-life of roughly 450 years (Radzicka & Wolfenden, 1996).',
+            'Chymotrypsin is a serine protease (about 25 kDa) made as an inactive precursor, chymotrypsinogen, and activated by cutting, which is why this structure has three chains (A, B, C) held together by disulfide bonds. Uncatalyzed peptide hydrolysis at neutral pH has a half-life of roughly 350–600 years, depending on the bond (Radzicka & Wolfenden, 1996).',
         },
         view: { kind: 'structure', structure: TS, focus: 'whole', labels: [] },
         note: 'Experimental structure: PDB 6CHA, cow chymotrypsin, X-ray, 1.8 Å. One of the two copies in the file is shown.',
