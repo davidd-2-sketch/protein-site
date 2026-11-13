@@ -7,7 +7,7 @@
 import { describe, expect, it } from 'vitest'
 import { activation, CATALYZED, catalyzedEnergy, deltaG, UNCATALYZED, uncatalyzedEnergy } from '../src/enzymes/energy'
 import { apparent, DEMO, lineweaverBurk, rate, velocity, type Inhibition } from '../src/enzymes/kinetics'
-import { CHYMO_SITE, GK_GLUCOSE_SITE, GK_OPEN_MISSING, GK_POCKET_SIDES, STRUCTURES } from '../src/enzymes/structures'
+import { CHYMO_ALIGN, CHYMO_SITE, GK_ALIGN, GK_GLUCOSE_SITE, GK_OPEN_MISSING, GK_POCKET_SIDES, STRUCTURES } from '../src/enzymes/structures'
 import { dist, find, readAtoms } from './cif'
 
 const chymoTS = readAtoms('6cha.cif')
@@ -92,6 +92,51 @@ describe('glucokinase induced fit (1V4S closed, 1V4T open)', () => {
     expect(gap(gkClosed)).toBeLessThan(8)
     // The glucose-binding side itself keeps its shape (what moves is the lid).
     expect(GK_POCKET_SIDES.base).toEqual(GK_GLUCOSE_SITE.map((r) => r.seq).filter((s) => s < GK_OPEN_MISSING.from || s > GK_OPEN_MISSING.to))
+  })
+})
+
+describe('chymotrypsin barely changes shape when the mimic binds (lock-and-key-like)', () => {
+  const m = CHYMO_ALIGN.freeToBound
+  const apply = (p: [number, number, number]) => [0, 1, 2].map((r) => m[r] * p[0] + m[4 + r] * p[1] + m[8 + r] * p[2] + m[12 + r])
+  const ca = (atoms: typeof chymoTS) =>
+    new Map(atoms.filter((a) => a.record === 'ATOM' && a.atom === 'CA' && ['A', 'B', 'C'].includes(a.chain)).map((a) => [`${a.chain}:${a.seq}`, a.xyz]))
+  const bound = ca(chymoTS)
+  const free = ca(chymoFree)
+  const moved = (k: string) => {
+    const p = apply(free.get(k)!)
+    const q = bound.get(k)!
+    return Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2])
+  }
+  it('the whole enzyme matches to within 0.5 Å RMSD after lining up', () => {
+    const keys = [...bound.keys()].filter((k) => free.has(k))
+    expect(keys.length).toBeGreaterThan(220)
+    expect(Math.sqrt(keys.reduce((t, k) => t + moved(k) ** 2, 0) / keys.length)).toBeLessThan(0.5)
+  })
+  it('no active-site or pocket residue moves more than 1 Å', () => {
+    for (const r of CHYMO_SITE) expect(moved(`${r.chain}:${r.seq}`), `${r.comp}${r.seq}`).toBeLessThan(1)
+  })
+})
+
+describe('glucokinase alignment used by the viewer', () => {
+  const m = GK_ALIGN.openToClosed
+  const apply = (p: [number, number, number]) => [0, 1, 2].map((r) => m[r] * p[0] + m[4 + r] * p[1] + m[8 + r] * p[2] + m[12 + r])
+  const ca = (atoms: typeof gkClosed) => new Map(atoms.filter((a) => a.record === 'ATOM' && a.atom === 'CA').map((a) => [a.seq, a.xyz]))
+  const closed = ca(gkClosed)
+  const open = ca(gkOpen)
+  const moved = (s: number) => {
+    const p = apply(open.get(s)!)
+    const q = closed.get(s)!
+    return Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2])
+  }
+  it('lines up the rigid core to within 1 Å (RMSD)', () => {
+    const core = [...open.keys()].filter((s) => GK_ALIGN.core.some(([a, b]) => s >= a && s <= b))
+    expect(core.length).toBeGreaterThan(250)
+    const rmsd = Math.sqrt(core.reduce((t, s) => t + moved(s) ** 2, 0) / core.length)
+    expect(rmsd).toBeLessThan(1)
+  })
+  it('the glucose-pocket lid really moves (more than 10 Å) once the core is lined up', () => {
+    for (const s of GK_POCKET_SIDES.lid) expect(moved(s), `${s}`).toBeGreaterThan(10)
+    for (const s of GK_POCKET_SIDES.base) expect(moved(s), `${s}`).toBeLessThan(2.5)
   })
 })
 

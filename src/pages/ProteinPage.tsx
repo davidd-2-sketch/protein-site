@@ -18,7 +18,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import LoadingScreen from '../components/LoadingScreen'
 import InfoPanel from '../protein/InfoPanel'
 import SequenceStrip from '../protein/SequenceStrip'
-import { ALL_CHAINS, CHAINS, SEQUENCES } from '../protein/hemoglobin'
+import { ALL_CHAINS, CHAINS, SEQUENCES, type ChainId as HbChain } from '../protein/hemoglobin'
 import {
   ProteinViewer,
   RAINBOW,
@@ -423,7 +423,7 @@ function MoreMenu(props: {
 function Legend({ view }: { view: ViewState }) {
   const items: { label: string; swatch: string }[] = []
   if (view.chains.length && (view.color === 'chain' || view.color === 'element')) {
-    view.chains.forEach((c) => items.push({ label: `${CHAINS[c].label} chain`, swatch: CHAINS[c].color }))
+    view.chains.forEach((c) => items.push({ label: `${CHAINS[c as HbChain].label} chain`, swatch: CHAINS[c as HbChain].color }))
   }
   if (view.chains.length && view.color === 'secondary') {
     items.push({ label: 'α-helix', swatch: '#e879c9' }, { label: 'Loop', swatch: '#b4b9d6' })

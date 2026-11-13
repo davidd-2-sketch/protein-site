@@ -3,7 +3,7 @@
   a residue, a single atom, a heme, the iron, or a bond.
 */
 import { BACKBONE_ATOMS, BY_THREE, PLAIN_SIDE_CHAIN, SIDE_CHAIN_LABEL } from './aminoAcids'
-import { CHAINS, KEY_RESIDUES } from './hemoglobin'
+import { CHAINS, KEY_RESIDUES, type ChainId as HbChain } from './hemoglobin'
 import type { AtomInfo, PickInfo, ResidueRef } from './ProteinViewer'
 import { isPeptideBond } from './bonds'
 
@@ -30,7 +30,7 @@ export default function InfoPanel({ pick, onClose, onFocus }: Props) {
 /* ---------- Residue / atom / heme ---------- */
 
 function AtomOrResidueInfo({ atom, showAtom, onFocus }: { atom: AtomInfo; showAtom: boolean; onFocus: (r: ResidueRef) => void }) {
-  const chain = CHAINS[atom.chain]
+  const chain = CHAINS[atom.chain as HbChain]
 
   if (atom.comp === 'HEM') {
     const isIron = atom.element.toUpperCase() === 'FE'

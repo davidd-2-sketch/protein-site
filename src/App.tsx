@@ -11,7 +11,7 @@ import TopBar from './components/TopBar'
 import LoadingScreen from './components/LoadingScreen'
 import HomePage from './pages/HomePage'
 import { installClickSounds } from './sound/sound'
-import { loadPolarityPage, loadPracticePage, loadProgressPage, loadTrendsPage } from './pages/loaders'
+import { loadEnzymesPage, loadPolarityPage, loadPracticePage, loadProgressPage, loadTrendsPage } from './pages/loaders'
 import { installLinkPrefetch, loadOrbitalsPage, loadProteinPage, loadReactionPage, loadVseprPage, prefetchWhenIdle } from './pages/loaders'
 
 /*
@@ -25,6 +25,7 @@ const VseprPage = lazy(loadVseprPage)
 const OrbitalsPage = lazy(loadOrbitalsPage)
 const TrendsPage = lazy(loadTrendsPage)
 const PolarityPage = lazy(loadPolarityPage)
+const EnzymesPage = lazy(loadEnzymesPage)
 const PracticePage = lazy(loadPracticePage)
 const ProgressPage = lazy(loadProgressPage)
 
@@ -52,6 +53,7 @@ export default function App() {
             <Route path="/orbitals" element={<OrbitalsPage />} />
             <Route path="/trends" element={<TrendsPage />} />
             <Route path="/polarity" element={<PolarityPage />} />
+            <Route path="/enzymes" element={<EnzymesPage />} />
             <Route path="/practice" element={<PracticePage />} />
             <Route path="/progress" element={<ProgressPage />} />
             {/* Any unknown URL falls back to the home page. */}

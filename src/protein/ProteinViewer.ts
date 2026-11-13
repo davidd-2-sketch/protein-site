@@ -32,7 +32,15 @@ import { Color } from 'molstar/lib/mol-util/color'
 import { Vec3, Vec4 } from 'molstar/lib/mol-math/linear-algebra'
 import type { StateObjectSelector } from 'molstar/lib/mol-state'
 import type { PluginStateObject } from 'molstar/lib/mol-plugin-state/objects'
-import { CHAINS, type ChainId } from './hemoglobin'
+import { CHAINS } from './hemoglobin'
+import { StateTransforms as ST } from 'molstar/lib/mol-plugin-state/transforms'
+import { Mat4 } from 'molstar/lib/mol-math/linear-algebra'
+
+/** A chain id as written in the PDB file (e.g. 'A'). Hemoglobin uses A–D; enzymes use others. */
+export type ChainId = string
+
+/** How a chain is named and colored on screen. Defaults to hemoglobin's chains. */
+export type ChainStyles = Record<string, { label: string; color: string }>
 import { countFrame } from '../dev/frameCounter'
 
 /* ---------------------------------------------------------------- public types */
@@ -54,6 +62,10 @@ export interface ViewState {
   hemes: boolean
   /** Residues drawn on top of the main style (e.g. key histidines), with cyan carbons. */
   highlights?: ResidueRef[]
+  /** Extra groups of residues, each drawn as sticks with its own carbon color (e.g. catalytic triad). */
+  groups?: { residues: ResidueRef[]; color: string }[]
+  /** Small molecules to show (PDB component ids, e.g. ['GLC']), as ball-and-stick colored by element. */
+  ligands?: string[]
   /** How highlighted residues are drawn. Spheres stand out more in a crowded view. */
   highlightStyle?: 'ball-and-stick' | 'spacefill'
   /** Float a text label (e.g. "GLU 6") next to each highlighted residue. */
@@ -108,6 +120,7 @@ const HYDROPHOBIC_COLOR = '#ff9a3d'
 const HIGHLIGHT_CARBON = '#5ee4ff'
 const HEME_CARBON = '#c9cde6'
 const DETAIL_CARBON = '#aab1d6'
+const LIGAND_CARBON = '#ff9ee6'
 
 // HYDROPHOBIC lives in bonds.ts (a tiny file), so lesson data can use it without loading Mol*.
 import { HYDROPHOBIC } from './bonds'
@@ -123,6 +136,13 @@ const chainPolymer = (c: ChainId) =>
   MS.struct.generator.atomGroups({
     'chain-test': eq(Q.auth_asym_id(), c),
     'entity-test': eq(Q.entityType(), 'polymer'),
+  })
+
+/** Small molecules (by PDB component id) attached to the given chains. */
+const ligandsOf = (chains: ChainId[], comps: string[]) =>
+  MS.struct.generator.atomGroups({
+    'chain-test': MS.core.set.has([MS.set(...chains), Q.auth_asym_id()]),
+    'residue-test': MS.core.set.has([MS.set(...comps), Q.label_comp_id()]),
   })
 
 const chainHeme = (c: ChainId) =>
@@ -168,6 +188,10 @@ export class ProteinViewer {
   private pickListeners: ((p: PickInfo | null) => void)[] = []
   private hoverListeners: ((label: string | null) => void)[] = []
   private granularity: 'residue' | 'atom' = 'residue'
+  /** Names and colors of the chains in the loaded structure(s). */
+  private chainStyles: ChainStyles = CHAINS
+  /** Every structure loaded so far, by key. Only the active one is drawn. */
+  private loaded = new Map<string, { ref: StateObjectSelector<PluginStateObject.Molecule.Structure>; structure: Structure }>()
 
   /** The element this viewer owns. Removed completely in dispose(). */
   private root: HTMLDivElement
@@ -179,7 +203,7 @@ export class ProteinViewer {
   }
 
   /** Create the Mol* plugin inside a <div>. Returns once it's ready to draw. */
-  static async create(container: HTMLDivElement): Promise<ProteinViewer> {
+  static async create(container: HTMLDivElement, options: { chains?: ChainStyles } = {}): Promise<ProteinViewer> {
     // Only the behaviors we need. (Mol*'s defaults include its own UI helpers we don't use.)
     const spec: PluginSpec = {
       ...DefaultPluginSpec(),
@@ -223,6 +247,7 @@ export class ProteinViewer {
     }
 
     const viewer = new ProteinViewer(plugin, root)
+    if (options.chains) viewer.chainStyles = options.chains
     // On Auto, if the protein draws slowly while moving, switch it to the fast profile.
     const watcher = frameWatcher(() => viewer.applyRenderQuality())
     plugin.canvas3d?.didDraw.subscribe(() => {
@@ -238,16 +263,44 @@ export class ProteinViewer {
 
   /* ----------------------------------------------------------- loading */
 
-  async load(url: string) {
+  /**
+   * Load a structure file. `key` names it (so several can be loaded and switched with show());
+   * `transform` (a 4×4 column-major matrix) moves it, e.g. to line it up with another structure.
+   * The first structure loaded becomes the one on screen.
+   */
+  async load(url: string, options: { key?: string; transform?: number[] } = {}) {
     const { plugin } = this
+    const key = options.key ?? url
+    if (this.loaded.has(key)) return
     // Binary files (.bcif) are ~35% smaller to download and much faster to read than text .cif.
     const isBinary = url.endsWith('.bcif')
     const data = await plugin.builders.data.download({ url, isBinary }, { state: { isGhost: true } })
     const trajectory = await plugin.builders.structure.parseTrajectory(data, 'mmcif')
     const model = await plugin.builders.structure.createModel(trajectory)
     // "model" = the atoms exactly as deposited. For 4HHB that's the full α₂β₂ tetramer.
-    this.structureRef = await plugin.builders.structure.createStructure(model, { name: 'model', params: {} })
-    this.structure = this.structureRef.data
+    let ref = await plugin.builders.structure.createStructure(model, { name: 'model', params: {} })
+    if (options.transform) {
+      ref = await plugin
+        .build()
+        .to(ref)
+        .apply(ST.Model.TransformStructureConformation, { transform: { name: 'matrix', params: { data: Mat4.fromArray(Mat4(), options.transform, 0), transpose: false } } })
+        .commit()
+    }
+    this.loaded.set(key, { ref, structure: ref.data! })
+    if (!this.structureRef) this.useStructure(key)
+  }
+
+  /** Names and colors for the chains of the structure on screen (used by labels and the color key). */
+  setChainStyles(styles: ChainStyles) {
+    this.chainStyles = styles
+  }
+
+  /** Make a loaded structure the one that setView() draws. Call setView() afterwards. */
+  useStructure(key: string) {
+    const s = this.loaded.get(key)
+    if (!s) return
+    this.structureRef = s.ref
+    this.structure = s.structure
   }
 
   /* ----------------------------------------------------------- building a view */
@@ -277,12 +330,33 @@ export class ProteinViewer {
     }
 
     // ---- The chains ----
-    for (const c of view.chains) add(`Chain ${CHAINS[c].label}`, chainPolymer(c), this.chainRepr(c, view))
+    for (const c of view.chains) add(`Chain ${this.chainStyles[c]?.label ?? c}`, chainPolymer(c), this.chainRepr(c, view))
+
+    // ---- Bound small molecules (substrate, inhibitor, ...) ----
+    if (view.ligands?.length && view.chains.length) {
+      add('Ligands', ligandsOf(view.chains, view.ligands), {
+        type: view.style === 'spacefill' ? 'spacefill' : 'ball-and-stick',
+        color: 'element-symbol',
+        colorParams: { carbonColor: { name: 'uniform', params: { value: hex(LIGAND_CARBON), saturation: 0, lightness: 0 } } },
+        typeParams: { sizeFactor: 0.3 },
+      } as never)
+    }
+
+    // ---- Residue groups, each with its own carbon color ----
+    view.groups?.forEach((g, i) => {
+      if (!g.residues.length) return
+      add(`Group ${i + 1}`, residues(g.residues), {
+        type: 'ball-and-stick',
+        color: 'element-symbol',
+        colorParams: { carbonColor: { name: 'uniform', params: { value: hex(g.color), saturation: 0, lightness: 0 } } },
+        typeParams: { sizeFactor: 0.3 },
+      } as never)
+    })
 
     // ---- Hemes (always ball-and-stick, colored by element, so the iron stands out) ----
     if (view.hemes) {
       for (const c of view.chains) {
-        add(`Heme ${CHAINS[c].label}`, chainHeme(c), {
+        add(`Heme ${this.chainStyles[c]?.label ?? c}`, chainHeme(c), {
           type: view.style === 'spacefill' ? 'spacefill' : 'ball-and-stick',
           color: 'element-symbol',
           colorParams: { carbonColor: { name: 'uniform', params: { value: hex(HEME_CARBON), saturation: 0, lightness: 0 } } },
@@ -370,7 +444,7 @@ export class ProteinViewer {
 
     switch (view.color) {
       case 'chain':
-        return { type, typeParams, color: 'uniform', colorParams: { value: hex(CHAINS[c].color) } } as never
+        return { type, typeParams, color: 'uniform', colorParams: { value: hex(this.chainStyles[c]?.color ?? '#b4b9d6') } } as never
       case 'rainbow':
         return {
           type,
@@ -407,7 +481,7 @@ export class ProteinViewer {
           type,
           typeParams,
           color: 'element-symbol',
-          colorParams: { carbonColor: { name: 'uniform', params: { value: hex(CHAINS[c].color), saturation: 0, lightness: 0 } } },
+          colorParams: { carbonColor: { name: 'uniform', params: { value: hex(this.chainStyles[c]?.color ?? '#b4b9d6'), saturation: 0, lightness: 0 } } },
         } as never
     }
   }
@@ -608,7 +682,8 @@ export class ProteinViewer {
       let label: string | null = null
       if (info?.kind === 'atom') {
         const a = info.atom
-        label = a.comp === 'HEM' ? `Heme · ${CHAINS[a.chain].label}` : `${a.comp} ${a.seq} · ${CHAINS[a.chain].label}`
+        const chain = this.chainStyles[a.chain]?.label ?? a.chain
+        label = a.comp === 'HEM' ? `Heme · ${chain}` : `${a.comp} ${a.seq} · ${chain}`
         if (info.granularity === 'atom') label += ` · ${a.atomName}`
       } else if (info?.kind === 'bond') {
         label = `${info.a.atomName}–${info.b.atomName} bond · ${info.length.toFixed(2)} Å`
@@ -622,15 +697,15 @@ export class ProteinViewer {
     if (StructureElement.Loci.is(loci) && !StructureElement.Loci.isEmpty(loci)) {
       const loc = StructureElement.Loci.getFirstLocation(loci)
       if (!loc) return null
-      const atom = atomInfo(loc)
+      const atom = atomInfo(loc, this.chainStyles)
       return atom ? { kind: 'atom', atom, granularity: this.granularity } : null
     }
     if (Bond.isLoci(loci) && loci.bonds.length) {
       const b = loci.bonds[0]
       const la = StructureElement.Location.create(loci.structure, b.aUnit, b.aUnit.elements[b.aIndex])
       const lb = StructureElement.Location.create(loci.structure, b.bUnit, b.bUnit.elements[b.bIndex])
-      const a = atomInfo(la)
-      const c = atomInfo(lb)
+      const a = atomInfo(la, this.chainStyles)
+      const c = atomInfo(lb, this.chainStyles)
       if (!a || !c) return null
       const order = b.aUnit.kind === 0 ? Bond.getOrder(loci.structure, b as never) : 1
       return { kind: 'bond', a, b: c, length: Vec3.distance(a.position, c.position), order }
@@ -640,9 +715,10 @@ export class ProteinViewer {
 }
 
 /** Read the properties we care about from one atom location. */
-function atomInfo(loc: StructureElement.Location): AtomInfo | null {
-  const chain = SP.chain.auth_asym_id(loc) as ChainId
-  if (!(chain in CHAINS)) return null
+function atomInfo(loc: StructureElement.Location, chains: ChainStyles): AtomInfo | null {
+  const chain = SP.chain.auth_asym_id(loc)
+  // Only chains this page shows (e.g. the second copy of an enzyme in the same file is ignored).
+  if (!(chain in chains)) return null
   // Mol* stores secondary structure as bit flags. Values copied from Mol*'s
   // SecondaryStructureType.Flag (Helix = 2, Beta = 4, Turn = 16).
   const ssType = SP.residue.secondary_structure_type(loc) as number

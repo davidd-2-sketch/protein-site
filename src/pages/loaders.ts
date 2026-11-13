@@ -12,6 +12,7 @@ export const loadVseprPage = () => import('./VseprPage')
 export const loadOrbitalsPage = () => import('./OrbitalsPage')
 export const loadTrendsPage = () => import('./TrendsPage')
 export const loadPolarityPage = () => import('./PolarityPage')
+export const loadEnzymesPage = () => import('./EnzymesPage')
 export const loadPracticePage = () => import('./PracticePage')
 export const loadProgressPage = () => import('./ProgressPage')
 
@@ -52,6 +53,7 @@ const BY_PATH: Record<string, () => Promise<unknown>> = {
   '/orbitals': loadOrbitalsPage,
   '/trends': loadTrendsPage,
   '/polarity': loadPolarityPage,
+  '/enzymes': loadEnzymesPage,
   '/practice': loadPracticePage,
   '/progress': loadProgressPage,
 }

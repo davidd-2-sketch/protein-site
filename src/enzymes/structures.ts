@@ -131,3 +131,27 @@ export const GK_OPEN_MISSING = { from: 157, to: 179 }
  * Distance between the two sides' Cα centers: about 28 Å open (1V4T) vs 6 Å closed (1V4S).
  */
 export const GK_POCKET_SIDES = { lid: [151, 152, 153], base: [204, 205, 231, 256, 290] }
+
+/**
+ * Lining up the open structure (1V4T) on the closed one (1V4S), so switching between them
+ * shows only the part that really moves. Computed from the files (tests/enzymes.test.ts
+ * checks it): repeatedly superpose all shared Cα atoms and drop the ones that differ by more
+ * than 2 Å. What remains is the rigid "core" (279 of 424 residues, mostly the large
+ * domain), which matches to 0.77 Å RMSD. The small domain, including the glucose-pocket
+ * lid, is what swings shut.
+ * `openToClosed` is a 4×4 matrix in Mol*'s column-major order.
+ */
+export const GK_ALIGN = {
+  core: [[15, 60], [62, 64], [182, 182], [204, 247], [251, 339], [345, 397], [399, 416], [418, 442]] as [number, number][],
+  openToClosed: [-0.24494, -0.92929, -0.27645, 0, 0.81594, -0.04356, -0.57649, 0, 0.52368, -0.36677, 0.76892, 0, -4.81002, 42.12794, 43.07525, 1],
+}
+
+/**
+ * Lining up empty chymotrypsin (4CHA) on the mimic-bound one (6CHA). Computed from all
+ * 236 matching Cα atoms of chains A–C: they differ by only 0.25 Å RMSD, and no
+ * active-site or pocket residue moves more than 0.6 Å. Chymotrypsin's pocket is
+ * already shaped before anything binds: close to "lock and key". (Checked in tests.)
+ */
+export const CHYMO_ALIGN = {
+  freeToBound: [-0.9999, -0.01421, 0.00074, 0, -0.01421, 0.9999, -0.00166, 0, -0.00072, -0.00167, -1, 0, 35.7937, 20.16802, 64.58096, 1],
+}
