@@ -212,3 +212,46 @@ describe('energy diagram (schematic): enzymes lower Eₐ but do not change ΔG',
     expect(catalyzedEnergy(0.24)).toBeLessThan(catalyzedEnergy(0.1))
   })
 })
+
+/* ---------- the lessons and views only point at atoms that exist ---------- */
+import { ENZYME_LESSONS, type EnzymeLessonView } from '../src/enzymes/lessons'
+import { VIEWS } from '../src/enzymes/views'
+import { GLOSSARY } from '../src/lessons/glossary'
+
+describe('enzyme lessons and 3D views', () => {
+  const files: Record<string, typeof chymoTS> = { 'chymo-ts': chymoTS, 'chymo-free': chymoFree, 'gk-closed': gkClosed, 'gk-open': gkOpen }
+  const hasAtom = (s: string, a: { chain: string; seq: number; atom: string }) => files[s].some((x) => x.chain === a.chain && x.seq === a.seq && x.atom === a.atom)
+  const hasResidue = (s: string, r: { chain: string; seq: number }) => files[s].some((x) => x.chain === r.chain && x.seq === r.seq)
+  const atomsOf = (labels: { at: unknown }[]) => labels.map((l) => l.at as { chain: string; seq: number; atom: string })
+
+  it('every default label sits on a real atom of its structure', () => {
+    for (const [id, v] of Object.entries(VIEWS)) for (const a of atomsOf(v.labels)) expect(hasAtom(id, a), `${id} ${a.chain}:${a.seq}:${a.atom}`).toBe(true)
+  })
+  it('every highlighted and framed residue exists in its structure', () => {
+    for (const [id, v] of Object.entries(VIEWS)) {
+      for (const g of v.groups) for (const r of g.residues) expect(hasResidue(id, r), `${id} ${r.chain}:${r.seq}`).toBe(true)
+      for (const r of v.focus) expect(hasResidue(id, r), `${id} focus ${r.chain}:${r.seq}`).toBe(true)
+    }
+  })
+  it('every lesson label, measured line, and camera target exists in the structure that step shows', () => {
+    const views: EnzymeLessonView[] = ENZYME_LESSONS.flatMap((l) => l.steps.flatMap((s) => [s.view, ...(s.revealView ? [s.revealView] : [])]))
+    for (const v of views) {
+      if (v.kind !== 'structure') continue
+      for (const a of atomsOf(v.labels ?? [])) expect(hasAtom(v.structure, a), `${v.structure} ${a.chain}:${a.seq}:${a.atom}`).toBe(true)
+      for (const ln of v.lines ?? []) for (const a of [ln.from, ln.to]) expect(hasAtom(v.structure, a), `${v.structure} line ${a.chain}:${a.seq}:${a.atom}`).toBe(true)
+      if (Array.isArray(v.focus)) for (const r of v.focus) expect(hasResidue(v.structure, r), `${v.structure} focus ${r.chain}:${r.seq}`).toBe(true)
+    }
+  })
+  it('every glossary link in the lessons has a definition, and every quiz answer is a real choice', () => {
+    for (const lesson of ENZYME_LESSONS)
+      for (const step of lesson.steps) {
+        const texts = [...Object.values(step.text), step.quiz?.question ?? '', step.quiz?.explain ?? '']
+        for (const t of texts)
+          for (const m of t.matchAll(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g)) {
+            const key = m[2] ?? m[1]
+            expect(GLOSSARY[key], `"${key}" in ${lesson.id}`).toBeDefined()
+          }
+        if (step.quiz) expect(step.quiz.answer).toBeLessThan(step.quiz.choices.length)
+      }
+  })
+})

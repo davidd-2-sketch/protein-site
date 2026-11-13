@@ -7,8 +7,17 @@
     • Glucokinase (1V4T open, 1V4S closed around glucose): induced fit.
   Switching between the two forms of one enzyme keeps the camera still, and the structures
   are lined up on their rigid parts, so whatever moves on screen really moves in the data.
+
+  Explore → Energy and Kinetics: the schematic energy diagram and interactive kinetics.
+  Lessons: six guided lessons; each step chooses a structure (with camera, labels, and
+  measured lines) or one of the charts.
 */
 import { useEffect, useRef, useState } from 'react'
+import ModeSwitch from '../components/ModeSwitch'
+import LessonPanel from '../lessons/LessonPanel'
+import type { Depth } from '../lessons/types'
+import { useLessons } from '../lessons/useLessons'
+import { ENZYME_LESSONS, type EnzymePick } from '../enzymes/lessons'
 import LoadingScreen from '../components/LoadingScreen'
 import { SlidingPill } from '../components/motion'
 import OverlayLabels from '../lessons/OverlayLabels'
@@ -57,6 +66,7 @@ export default function EnzymesPage() {
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const [enzyme, setEnzyme] = useStoredState<Enzyme>('ps.enzymes.enzyme', 'chymo')
   const [form, setForm] = useState<Record<Enzyme, StructureId>>({ chymo: 'chymo-ts', gk: 'gk-open' })
+  /** Explore's choice (the panel's switches). */
   const structureId = form[enzyme]
   /** What's actually on screen (labels wait for the new structure to be drawn). */
   const [shown, setShown] = useState<StructureId | null>(null)
@@ -75,6 +85,25 @@ export default function EnzymesPage() {
   const [inhibition, setInhibition] = useState<Inhibition>('none')
   const [inhibitor, setInhibitor] = useState(2)
   const [substrate, setSubstrate] = useState(4)
+
+  /* ---------- lessons ---------- */
+  const [mode, setMode] = useStoredState<'lessons' | 'explore'>('ps.enzymes.mode', 'lessons')
+  const [depth, setDepth] = useStoredState<Depth>('ps.depth', 'standard')
+  const L = useLessons(ENZYME_LESSONS, 'enzymes')
+  useEffect(() => {
+    if (L.fromLink) setMode('lessons')
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  const inLesson = mode === 'lessons' && L.step !== null
+  const lv = L.step ? (L.revealed && L.step.revealView ? L.step.revealView : L.step.view) : null
+  const lessonStructure = inLesson && lv?.kind === 'structure' ? lv : null
+
+  // What's on screen: the lesson step's choice, or the Explore controls.
+  const effTab: Tab = inLesson && lv ? (lv.kind === 'structure' ? 'structure' : lv.kind) : tab
+  const effStructure: StructureId = lessonStructure ? lessonStructure.structure : form[enzyme]
+  const effEnzyme: Enzyme = STRUCTURES[effStructure].enzyme === 'Chymotrypsin' ? 'chymo' : 'gk'
+  const effStyle: Style = lessonStructure ? (lessonStructure.style ?? 'cartoon') : style
+  const energy = inLesson && lv?.kind === 'energy' ? { un: lv.uncatalyzed, cat: lv.catalyzed } : { un: showUn, cat: showCat }
+  const kin = inLesson && lv?.kind === 'kinetics' ? lv : { plot, type: inhibition, inhibitor, substrate }
 
   /* ---------- create the viewer once ---------- */
   useEffect(() => {
@@ -104,6 +133,7 @@ export default function EnzymesPage() {
   useEffect(() => {
     if (!viewer) return
     let cancelled = false
+    const structureId = effStructure
     const view = VIEWS[structureId]
     ;(async () => {
       setSwitching(true)
@@ -115,7 +145,7 @@ export default function EnzymesPage() {
         viewer.setChainStyles(view.chainStyles)
         await viewer.setView({
           chains: view.chains,
-          style,
+          style: effStyle,
           color: 'chain',
           hemes: false,
           ligands: view.ligands,
@@ -125,8 +155,9 @@ export default function EnzymesPage() {
         if (cancelled) return
         // Frame the active site when a different ENZYME appears; keep the camera still when
         // switching forms of the same enzyme, so the real movement is easy to see.
-        if (lastEnzyme.current !== enzyme) viewer.focusResidues(view.focus, 14, lastEnzyme.current ? 700 : 0)
-        lastEnzyme.current = enzyme
+        // (In a lesson, each step frames the camera itself; see below.)
+        if (!inLesson && lastEnzyme.current !== effEnzyme) viewer.focusResidues(view.focus, 14, lastEnzyme.current ? 700 : 0)
+        lastEnzyme.current = effEnzyme
         setShown(structureId)
         setStatus('ready')
       } catch (err) {
@@ -139,15 +170,35 @@ export default function EnzymesPage() {
     return () => {
       cancelled = true
     }
-  }, [viewer, structureId, style, enzyme])
+  }, [viewer, effStructure, effStyle, effEnzyme, inLesson])
 
   // The 3D view is hidden (not destroyed) on the chart tabs; stop any spinning there.
-  useEffect(() => viewer?.setSpin(spin && tab === 'structure'), [viewer, spin, tab])
+  useEffect(() => viewer?.setSpin(spin && effTab === 'structure'), [viewer, spin, effTab])
 
-  /* ---------- clicks ---------- */
+  /* ---------- lesson camera: frame each step once (not again when its answer is revealed) ---------- */
+  const stepKey = L.lesson ? `${L.lesson.id}-${L.stepIndex}` : ''
+  const framed = useRef('')
+  useEffect(() => {
+    if (!viewer || !lessonStructure || shown !== lessonStructure.structure || framed.current === stepKey) return
+    framed.current = stepKey
+    const f = lessonStructure.focus ?? 'site'
+    if (f === 'whole') viewer.resetCamera(700)
+    else if (f === 'site') viewer.focusResidues(VIEWS[lessonStructure.structure].focus, lessonStructure.radius ?? 14, 700)
+    else viewer.focusResidues(f, lessonStructure.radius ?? 8, 700)
+  }, [viewer, lessonStructure, shown, stepKey])
+
+  /* ---------- clicks (also checks "click the …" lesson tasks) ---------- */
+  const reportRef = useRef<(p: EnzymePick) => void>(() => {})
+  useEffect(() => {
+    reportRef.current = (p) => inLesson && L.report(p)
+  }, [inLesson, L])
   useEffect(() => {
     if (!viewer) return
-    return viewer.onPick((p) => setPick(p?.kind === 'atom' ? { chain: p.atom.chain, seq: p.atom.seq, comp: p.atom.comp } : null))
+    return viewer.onPick((p) => {
+      const picked = p?.kind === 'atom' ? { chain: p.atom.chain, seq: p.atom.seq, comp: p.atom.comp } : null
+      setPick(picked)
+      if (picked) reportRef.current(picked)
+    })
   }, [viewer])
 
   const chooseEnzyme = (e: Enzyme) => {
@@ -160,12 +211,13 @@ export default function EnzymesPage() {
     viewer?.highlightResidue({ chain, seq })
   }
 
-  const s = STRUCTURES[structureId]
+  const s = STRUCTURES[effStructure]
   const ready = status === 'ready'
-  const labels = shown && labelsOn ? VIEWS[shown].labels : []
+  const labels = !shown ? [] : lessonStructure ? (lessonStructure.labels ?? VIEWS[shown].labels) : labelsOn ? VIEWS[shown].labels : []
+  const lines = lessonStructure?.lines ?? []
 
   return (
-    <div className={`protein-page enzymes-page has-lessons is-${tab}`}>
+    <div className={`protein-page enzymes-page has-lessons is-${effTab}`}>
       <div className="protein-backdrop" aria-hidden="true" />
       <div className="stage">
         <div
@@ -174,15 +226,15 @@ export default function EnzymesPage() {
           role="img"
           aria-label={`3D model of ${s.enzyme}, ${s.state} (PDB ${s.pdb}). Drag to rotate, scroll to zoom, click a residue for details.`}
         />
-        {ready && shown && tab === 'structure' && <OverlayLabels key={shown} viewer={viewer} labels={labels} lines={[]} />}
+        {ready && shown && effTab === 'structure' && <OverlayLabels key={`${shown}-${stepKey}`} viewer={viewer} labels={labels} lines={lines} />}
       </div>
 
-      {tab !== 'structure' && (
-        <div className="enz-chart-stage" key={tab}>
-          {tab === 'energy' ? (
-            <EnergyChart showUncatalyzed={showUn} showCatalyzed={showCat} />
+      {effTab !== 'structure' && (
+        <div className="enz-chart-stage" key={effTab}>
+          {effTab === 'energy' ? (
+            <EnergyChart showUncatalyzed={energy.un} showCatalyzed={energy.cat} />
           ) : (
-            <KineticsChart plot={plot} type={inhibition} inhibitor={inhibitor} substrate={substrate} />
+            <KineticsChart plot={kin.plot} type={kin.type} inhibitor={kin.inhibitor} substrate={kin.substrate} />
           )}
         </div>
       )}
@@ -195,7 +247,26 @@ export default function EnzymesPage() {
         </div>
       )}
 
+      {mode === 'lessons' ? (
+        <LessonPanel
+          listTitle="Learn enzymes"
+          listBlurb="Six short lessons on real enzymes: the active site, the catalytic triad, induced fit, lowering the barrier, kinetics, and inhibitors."
+          lessons={L.lessons}
+          lesson={L.lesson}
+          stepIndex={L.stepIndex}
+          depth={depth}
+          taskStatus={L.taskStatus}
+          completed={L.completed}
+          onDepth={setDepth}
+          onOpen={L.open}
+          onStep={L.goTo}
+          onExit={L.exit}
+          onClose={() => setMode('explore')}
+          onQuizDone={L.onQuizDone}
+        />
+      ) : (
       <section className="lesson enzyme-panel panel" aria-label="Enzymes">
+        <ModeSwitch mode="explore" onChange={() => setMode('lessons')} />
         <header>
           <h1 className="enz-title">Enzymes</h1>
           <p className="enz-sub">Two real enzymes from the Protein Data Bank. Click any residue to see what it does.</p>
@@ -254,11 +325,14 @@ export default function EnzymesPage() {
         </>
         )}
       </section>
+      )}
 
-      {tab === 'structure' && (
+      {effTab === 'structure' && (
       <>
       <div className="protein-bottom">
         <div className="toolbar panel" role="toolbar" aria-label="View controls">
+          {!inLesson && (
+          <>
           <div className="segmented" role="radiogroup" aria-label="Style">
             {(
               [
@@ -272,10 +346,12 @@ export default function EnzymesPage() {
             ))}
           </div>
           <span className="toolbar-divider" aria-hidden="true" />
+          </>
+          )}
           <button className={`tool-btn ${labelsOn ? 'is-on' : ''}`} aria-pressed={labelsOn} onClick={() => setLabelsOn((l) => !l)}>
             Labels
           </button>
-          <button className="tool-btn" onClick={() => viewer?.focusResidues(VIEWS[structureId].focus, 14, 700)}>
+          <button className="tool-btn" onClick={() => viewer?.focusResidues(VIEWS[effStructure].focus, 14, 700)}>
             Active site
           </button>
           <button className="tool-btn" onClick={() => viewer?.resetCamera()}>
@@ -290,16 +366,16 @@ export default function EnzymesPage() {
       <div className="readout">
         <p className="readout-hover mono">{hover ?? 'Drag to rotate · scroll to zoom · click a residue'}</p>
         <ul className="legend-list" aria-label="Color key">
-          {VIEWS[structureId].groups.map((g) => (
+          {VIEWS[effStructure].groups.map((g) => (
             <li key={g.group}>
               <span className="legend-chip" style={{ background: GROUP_COLORS[g.group] }} aria-hidden="true" />
               {GROUP_NAMES[g.group]}
             </li>
           ))}
-          {VIEWS[structureId].ligands.length > 0 && (
+          {VIEWS[effStructure].ligands.length > 0 && (
             <li>
               <span className="legend-chip" style={{ background: '#ff9ee6' }} aria-hidden="true" />
-              Bound molecule{VIEWS[structureId].ligands.length > 1 ? 's' : ''}
+              Bound molecule{VIEWS[effStructure].ligands.length > 1 ? 's' : ''}
             </li>
           )}
         </ul>

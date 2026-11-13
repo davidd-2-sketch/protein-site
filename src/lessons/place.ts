@@ -11,6 +11,7 @@ export const MODULES = {
   vsepr: { path: '/shapes', name: 'Shapes' },
   orbitals: { path: '/orbitals', name: 'Orbitals' },
   trends: { path: '/trends', name: 'Trends' },
+  enzymes: { path: '/enzymes', name: 'Enzymes' },
 } as const
 export type ModuleKey = keyof typeof MODULES
 
