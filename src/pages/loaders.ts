@@ -14,7 +14,6 @@ export const loadTrendsPage = () => import('./TrendsPage')
 export const loadPolarityPage = () => import('./PolarityPage')
 export const loadEnzymesPage = () => import('./EnzymesPage')
 export const loadPracticePage = () => import('./PracticePage')
-export const loadProgressPage = () => import('./ProgressPage')
 
 type NetworkInfo = { saveData?: boolean; effectiveType?: string }
 
@@ -55,7 +54,6 @@ const BY_PATH: Record<string, () => Promise<unknown>> = {
   '/polarity': loadPolarityPage,
   '/enzymes': loadEnzymesPage,
   '/practice': loadPracticePage,
-  '/progress': loadProgressPage,
 }
 
 /**

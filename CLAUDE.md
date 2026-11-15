@@ -12,11 +12,17 @@ Vercel from the `main` branch of github.com/davidd-2-sketch/protein-site.
   wait for an OK on plans for big features.
 
 ## Product rules (do not break)
-- The site is free and needs no account. Progress is saved only in the browser
-  (`src/lessons/progress.ts`, localStorage keys starting with `ps.`). Don't change how
-  existing keys are stored, so students never lose progress.
-- Do NOT add accounts, logins, sign-in, cloud sync, AI chatbots or tutors, leaderboards,
-  streaks, points, badges, or other gamification.
+- The site is free, forever: no accounts, no paid tiers or subscriptions, ever.
+- There is no Progress page. The only saved state is the quiet kind that makes lessons
+  pleasant: check marks on finished lessons, "Continue where you left off", and which
+  practice cards to bring back. It lives only in the browser (`src/lessons/progress.ts`,
+  localStorage keys starting with `ps.`). Don't change how existing keys are stored, so
+  students never lose their place. `/progress` redirects to the home page.
+- Do NOT add accounts, logins, sign-in, cloud sync, payments, AI chatbots or tutors,
+  leaderboards, scores, streaks, points, badges, percentages, or other gamification.
+  Practice shows no scores.
+- Settings (3D graphics quality, "Reset my saved data") live in the top bar's settings
+  popover (`src/components/SettingsPanel.tsx`).
 - Every 3D model must carry an honesty label: **"Experimental structure"** (measured data,
   e.g. from the Protein Data Bank) or **"Illustrative"** (simplified, animated, or schematic).
   Energy diagrams are labeled "Schematic".

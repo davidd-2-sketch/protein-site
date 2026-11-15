@@ -42,11 +42,14 @@ src/
 - **Experimental structure**: atom positions measured in a lab (from the Protein Data Bank).
 - **Illustrative**: simplified or animated to teach. Start/end shapes are accurate; the motion between is a teaching model.
 
-## Your progress stays on your device
+## Free, with no accounts
 
-There are no accounts. Finished lessons, practice results, and "continue where you left off"
-are saved in your browser on your own computer (localStorage). Nothing is uploaded.
-Clearing your browser data, or using a different browser or device, starts fresh.
+The site is free and always will be: no accounts, no sign-in, no paid tiers. There is no
+Progress page either. The only things saved are small helpers: check marks on finished
+lessons, "Continue where you left off", and which practice cards to bring back. They are
+kept in your browser on your own computer (localStorage); nothing is uploaded. Clearing
+your browser data, or using a different browser or device, starts fresh. "Reset my saved
+data" is under the settings icon in the top bar.
 
 ## Visitor analytics
 

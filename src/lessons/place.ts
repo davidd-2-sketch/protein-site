@@ -1,6 +1,6 @@
 /*
   place.ts — remembers the last lesson step a student opened, so the home page and the
-  progress page can offer "Continue where you left off". Also reads lesson links like
+  lessons can offer "Continue where you left off". Also reads lesson links like
   /shapes?lesson=lone-pairs&step=2 so that button can open the exact step.
 */
 import { getItem, setItem } from './progress'

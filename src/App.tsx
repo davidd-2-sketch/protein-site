@@ -5,13 +5,13 @@
   <Routes> looks at the URL and picks which page component to show.
 */
 import { lazy, Suspense, useEffect } from 'react'
-import { Route, Routes, useLocation } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { Analytics } from '@vercel/analytics/react'
 import TopBar from './components/TopBar'
 import LoadingScreen from './components/LoadingScreen'
 import HomePage from './pages/HomePage'
 import { installClickSounds } from './sound/sound'
-import { loadEnzymesPage, loadPolarityPage, loadPracticePage, loadProgressPage, loadTrendsPage } from './pages/loaders'
+import { loadEnzymesPage, loadPolarityPage, loadPracticePage, loadTrendsPage } from './pages/loaders'
 import { installLinkPrefetch, loadOrbitalsPage, loadProteinPage, loadReactionPage, loadVseprPage, prefetchWhenIdle } from './pages/loaders'
 
 /*
@@ -27,7 +27,6 @@ const TrendsPage = lazy(loadTrendsPage)
 const PolarityPage = lazy(loadPolarityPage)
 const EnzymesPage = lazy(loadEnzymesPage)
 const PracticePage = lazy(loadPracticePage)
-const ProgressPage = lazy(loadProgressPage)
 
 export default function App() {
   const location = useLocation()
@@ -58,7 +57,8 @@ export default function App() {
             <Route path="/polarity" element={<PolarityPage />} />
             <Route path="/enzymes" element={<EnzymesPage />} />
             <Route path="/practice" element={<PracticePage />} />
-            <Route path="/progress" element={<ProgressPage />} />
+            {/* The old Progress page is gone; its address sends people home instead of to an error. */}
+            <Route path="/progress" element={<Navigate to="/" replace />} />
             {/* Any unknown URL falls back to the home page. */}
             <Route path="*" element={<HomePage />} />
           </Routes>

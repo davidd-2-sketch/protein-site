@@ -8,7 +8,7 @@
       triangles, no protein shadows, still backgrounds. Several times less work for the
       graphics chip, so older laptops and Chromebooks stay smooth.
 
-  The student can choose Auto / Faster / Detailed (Progress page → This device). On Auto we
+  The student can choose Auto / Faster / Detailed (Settings, in the top bar). On Auto we
   guess from the hardware, and if a 3D view still runs slowly we switch to 'fast' and
   remember that for this device.
 */
