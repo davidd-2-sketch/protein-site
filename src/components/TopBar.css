@@ -1,3 +1,5 @@
+/* TopBar.css — the top navigation bar, its dropdowns, popover, and the phone menu sheet. */
+
 .topbar {
   position: fixed;
   top: 0;
@@ -5,8 +7,8 @@
   right: 0;
   height: var(--topbar-height);
   z-index: 50;
-  /* Near-opaque, no blur: the bar sits over moving 3D scenes on the viewer pages. */
-  background: rgba(7, 8, 22, 0.94);
+  /* Near-opaque, no blur: the bar sits over moving 3D scenes on the topic pages. */
+  background: rgba(7, 7, 26, 0.94);
   border-bottom: 1px solid var(--line);
 }
 
@@ -17,7 +19,13 @@
   padding: 0 var(--space-6);
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: var(--space-5);
+}
+
+/* Topic and practice pages fill the window; the bar lines up with their panels. */
+.topbar.is-wide .topbar-inner {
+  max-width: none;
+  padding: 0 20px;
 }
 
 .brand {
@@ -25,90 +33,271 @@
   align-items: center;
   gap: 10px;
   color: var(--text);
-}
-
-.logo {
-  color: var(--text-dim);
-}
-
-.brand-name {
-  font: 500 15px/1 var(--font-sans);
-  letter-spacing: -0.02em;
-}
-
-.brand-version {
-  font-size: 11px;
-  color: var(--text-faint);
-  padding: 2px 6px;
-  border: 1px solid var(--line);
   border-radius: var(--radius-sm);
 }
 
-.topbar nav {
+.logo {
+  color: #c9cdf2;
+  flex-shrink: 0;
+}
+
+.brand-name {
+  font: 600 16.5px/1 var(--font-sans);
+  letter-spacing: -0.025em;
+}
+
+/* ---------- course buttons ---------- */
+.main-nav {
   display: flex;
-  gap: var(--space-1);
+  align-items: center;
+  gap: 2px;
 }
 
-.nav-link {
+.menu-anchor {
+  position: relative;
+}
+
+.nav-item {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  height: 32px;
+  gap: 5px;
+  height: 36px;
   padding: 0 12px;
-  border-radius: var(--radius);
+  border: 0;
+  border-radius: 9px;
+  background: none;
   color: var(--text-dim);
-  font: 500 14px/1 var(--font-sans);
-  transition:
-    color var(--fast) var(--ease),
-    background var(--fast) var(--ease);
-}
-
-.nav-divider {
-  width: 1px;
-  height: 20px;
-  margin: 6px 6px 0;
-  background: var(--line-strong);
-}
-
-.sound-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  height: 32px;
-  padding: 0 10px;
-  border: 1px solid transparent;
-  border-radius: var(--radius);
-  background: transparent;
-  color: var(--text-faint);
-  font: 500 13px/1 var(--font-sans);
+  font: 500 14.5px/1 var(--font-sans);
   cursor: pointer;
   transition:
     color var(--fast) var(--ease),
     background var(--fast) var(--ease);
 }
 
-.sound-btn:hover {
+.nav-item svg {
+  opacity: 0.6;
+  transition: transform var(--medium) var(--ease);
+}
+
+.nav-item.is-open svg {
+  transform: rotate(180deg);
+}
+
+.nav-item:hover,
+.nav-item.is-open {
   color: var(--text);
   background: var(--bg-2);
 }
 
-.sound-btn.is-on {
+/* "You are here": brighter text plus a gradient line (a shape, not only a color). */
+.nav-item.is-here,
+.nav-item.active {
+  color: var(--text);
+}
+
+.nav-item.is-here::after,
+.nav-item.active::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: -12px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent-grad);
+}
+
+/* ---------- dropdown ---------- */
+.menu,
+.popover {
+  position: absolute;
+  top: calc(100% + 16px);
+  z-index: 60;
+  border-radius: var(--radius-lg);
+  background: var(--menu-bg);
+  border: 1px solid var(--line-strong);
+  box-shadow: var(--shadow-panel);
+  animation: menu-in var(--medium) var(--ease) both;
+}
+
+.menu {
+  left: -8px;
+  width: 372px;
+  padding: 8px;
+}
+
+.menu-item,
+.sheet-item {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px 10px 10px;
+  border-radius: 11px;
+  color: var(--text);
+}
+
+.menu-item:hover,
+.menu-item:focus-visible {
+  background: var(--bg-2);
+}
+
+.menu-item:focus-visible,
+.sheet-item:focus-visible {
+  outline-offset: -2px;
+}
+
+.menu-ico {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  color: #c9cdf2;
+}
+
+.menu-item:hover .menu-ico,
+.menu-item:focus-visible .menu-ico {
+  background: var(--bg-3);
+}
+
+.menu-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+}
+
+.menu-desc {
+  display: block;
+  margin-top: 2px;
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: var(--text-dim);
+}
+
+.is-current .menu-ico {
+  background: var(--accent-grad-soft);
+  border-color: rgba(147, 180, 255, 0.4);
+  color: var(--text);
+}
+
+.here-chip {
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--accent-grad-soft);
+  border: 1px solid rgba(147, 180, 255, 0.35);
+  color: #cfe0ff;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+/* ---------- icon buttons (sound, feedback, settings) ---------- */
+.bar-tools {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.icon-btn {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition:
+    color var(--fast) var(--ease),
+    background var(--fast) var(--ease);
+}
+
+.icon-btn:hover,
+.icon-btn.is-open {
+  color: var(--text);
+  background: var(--bg-2);
+}
+
+.icon-btn.is-on {
   color: var(--accent);
-  border-color: var(--line-accent);
 }
 
-.nav-link:hover {
+/* Tooltip: the button's name, shown on hover or keyboard focus. */
+.icon-btn[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 70;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #1b1e47;
+  border: 1px solid var(--line-strong);
   color: var(--text);
-  background: var(--bg-2);
+  font: 500 12.5px/1.2 var(--font-sans);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--fast) var(--ease);
 }
 
-/* NavLink adds the "active" class automatically on the current page. */
-.nav-link.active {
-  color: var(--text);
-  background: var(--bg-2);
-  box-shadow: inset 0 0 0 1px var(--line-strong);
+.icon-btn[data-tip]:hover::after,
+.icon-btn[data-tip]:focus-visible::after {
+  opacity: 1;
+  transition-delay: 350ms;
 }
 
+/* ---------- settings popover ---------- */
+.popover {
+  right: -4px;
+  width: 320px;
+  padding: var(--space-4);
+}
+
+.settings {
+  display: grid;
+  gap: 10px;
+}
+
+.settings h2 {
+  font-size: 15px;
+  letter-spacing: -0.015em;
+}
+
+.settings p {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-dim);
+}
+
+.settings hr {
+  width: 100%;
+  margin: 6px 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+
+.settings .btn {
+  justify-self: start;
+}
+
+.settings-warn {
+  color: #ff9db1 !important;
+}
+
+/* ---------- skip link ---------- */
 .skip-link {
   position: absolute;
   left: 12px;
@@ -117,65 +306,46 @@
   background: var(--accent);
   color: var(--accent-ink);
   border-radius: var(--radius);
-  font-weight: 500;
-  z-index: 2;
+  font-weight: 600;
+  z-index: 80;
 }
 
 .skip-link:focus {
   top: 10px;
 }
 
-@media (max-width: 640px) {
-  .topbar-inner {
-    padding: 0 var(--space-4);
-  }
-  .brand-version,
-  .sound-btn-text {
-    display: none;
-  }
-  .nav-link {
-    padding: 0 8px;
-    font-size: 13px;
-  }
-}
-
-/* Laptop widths: the sound button shrinks to its icon so the whole bar fits. */
-@media (max-width: 1280px) {
-  .sound-btn-text {
-    display: none;
-  }
-}
-
-/* =========================================================
-   Narrow screens (phones, most tablets): a Menu button instead of the full bar.
-   Wide screens (1080 px and up) show the full bar.
-   ========================================================= */
+/* ---------- phones and tablets: Menu button + full-screen sheet ---------- */
 .menu-btn {
   display: none;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   height: 36px;
-  padding: 0 14px;
+  margin-left: auto;
+  padding: 0 12px;
   border: 1px solid var(--line-strong);
-  border-radius: var(--radius);
+  border-radius: 10px;
   background: var(--bg-1);
   color: var(--text);
-  font: 500 14px/1 var(--font-sans);
+  font: 600 14px/1 var(--font-sans);
   cursor: pointer;
 }
 
-.menu-btn.is-open {
-  border-color: var(--line-accent);
-  background: var(--bg-2);
-}
-
-.site-menu {
+.sheet {
   display: none;
 }
 
-@media (max-width: 1079px) {
-  /* (.topbar .main-nav: specific enough to beat the ".topbar nav" rule above) */
-  .topbar .main-nav {
+@media (max-width: 899px) {
+  .topbar-inner,
+  .topbar.is-wide .topbar-inner {
+    padding: 0 14px 0 16px;
+  }
+
+  .brand-name {
+    font-size: 15.5px;
+  }
+
+  .main-nav,
+  .bar-tools {
     display: none;
   }
 
@@ -183,106 +353,89 @@
     display: inline-flex;
   }
 
-  .site-menu {
-    display: block;
+  .sheet {
     position: fixed;
-    top: calc(var(--topbar-height) + 6px);
-    left: 8px;
-    right: 8px;
-    max-width: 520px;
-    margin-left: auto;
-    max-height: calc(100dvh - var(--topbar-height) - 16px);
+    inset: var(--topbar-height) 0 0 0;
+    z-index: 55;
+    display: flex;
+    flex-direction: column;
+    background: #0b0c24;
+    animation: sheet-in var(--medium) var(--ease) both;
+  }
+
+  .sheet-scroll {
+    flex: 1;
     overflow-y: auto;
-    padding: var(--space-3);
-    /* Solid, so the page behind doesn't show through the menu. */
-    --panel-bg: linear-gradient(180deg, #13163a, #0d0f26);
-    animation: menu-in 220ms var(--spring-soft) both;
+    overscroll-behavior: contain;
+    padding: 2px 12px 12px;
   }
 
-  .site-menu-links {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
+  .sheet-head {
+    margin: 14px 8px 2px;
+    font: 600 12px/1.4 var(--font-sans);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-faint);
   }
 
-  .site-menu-link {
-    display: flex;
-    align-items: center;
-    min-height: 48px; /* comfortable to tap */
-    padding: 0 14px;
-    border-radius: var(--radius);
-    border: 1px solid var(--line);
-    color: var(--text-dim);
-    font: 500 15px/1.2 var(--font-sans);
+  .sheet-item {
+    grid-template-columns: 36px 1fr;
+    min-height: 54px;
+    padding: 6px 8px;
+    border-radius: 12px;
   }
 
-  .site-menu-link:hover {
-    background: var(--bg-2);
-    color: var(--text);
+  .sheet-item .menu-ico {
+    width: 36px;
+    height: 36px;
   }
 
-  .site-menu-link.active {
-    border-color: var(--line-accent);
+  .sheet-item .menu-desc {
+    font-size: 13px;
+  }
+
+  .sheet-item.is-current,
+  .sheet-item.active {
     background: var(--accent-grad-soft);
-    color: var(--text);
   }
 
-  .site-menu-footer {
+  .sheet-settings {
+    margin: 12px 4px 0;
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--line-strong);
+    background: var(--bg-1);
+  }
+
+  .sheet-foot {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-2);
-    margin-top: var(--space-3);
-    padding-top: var(--space-3);
+    gap: 6px;
+    padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
     border-top: 1px solid var(--line);
   }
 
-  .site-menu-footer .sound-btn {
-    height: 40px;
+  .sheet-foot .btn {
+    flex: 1;
+    gap: 6px;
+    padding: 0 6px;
   }
+}
+
+/* While the phone menu is open, the page behind it stays put. */
+.menu-open,
+.menu-open body {
+  overflow: hidden;
 }
 
 @keyframes menu-in {
   from {
     opacity: 0;
-    transform: translateY(-6px);
+    transform: translateY(-4px);
   }
 }
 
-/* "Send feedback": a quiet icon at the end of the bar (wide screens) and a text link in the menu. */
-.feedback-btn {
-  display: inline-grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius);
-  color: var(--text-faint);
-  transition:
-    color var(--fast) var(--ease),
-    background var(--fast) var(--ease);
-}
-
-.feedback-btn:hover {
-  color: var(--text);
-  background: var(--bg-2);
-}
-
-.site-menu-feedback {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 40px;
-  padding: 0 10px;
-  border-radius: var(--radius);
-  color: var(--text-dim);
-  font: 500 14px/1 var(--font-sans);
-}
-
-.site-menu-feedback:hover {
-  color: var(--text);
-  background: var(--bg-2);
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+  }
 }

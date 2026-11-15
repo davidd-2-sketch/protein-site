@@ -30,7 +30,10 @@ const PracticePage = lazy(loadPracticePage)
 const ProgressPage = lazy(loadProgressPage)
 
 export default function App() {
-  const { pathname } = useLocation()
+  const location = useLocation()
+  // A link that names a lesson (e.g. Organic → Hybridization) reopens the page at that lesson,
+  // even if the student is already on that page.
+  const pageKey = location.pathname + (location.search.includes('lesson=') ? location.key : '')
   // Quietly download the viewers in the background once the first page has settled.
   useEffect(() => prefetchWhenIdle(), [])
   // ...and any page the moment a student points at a link to it.
@@ -44,7 +47,7 @@ export default function App() {
       <main id="main">
         <Suspense fallback={<LoadingScreen label="Loading viewer" />}>
           {/* key: each new page fades in instead of popping in. */}
-          <div className="page-fade" key={pathname}>
+          <div className="page-fade" key={pageKey}>
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/protein" element={<ProteinPage />} />

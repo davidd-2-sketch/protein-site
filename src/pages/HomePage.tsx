@@ -14,7 +14,7 @@
 */
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { FEEDBACK_URL } from '../components/feedback'
+import SiteFooter from '../components/SiteFooter'
 import Atmosphere from '../components/Atmosphere'
 import HeroMolecule from '../components/HeroMolecule'
 import { MODULES, placeLink, type Place } from '../lessons/place'
@@ -174,36 +174,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ===== Footer ===== */}
-      <footer className="footer">
-        <div className="container footer-inner">
-          <p>
-            protein-site · free for every student ·{' '}
-            <a href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer">
-              Send feedback
-            </a>
-          </p>
-          <p>
-            Structures from the{' '}
-            <a href="https://www.rcsb.org/" target="_blank" rel="noreferrer">
-              RCSB Protein Data Bank
-            </a>{' '}
-            and{' '}
-            <a href="https://pubchem.ncbi.nlm.nih.gov/" target="_blank" rel="noreferrer">
-              PubChem
-            </a>
-            . Rendered with{' '}
-            <a href="https://molstar.org/" target="_blank" rel="noreferrer">
-              Mol*
-            </a>{' '}
-            and{' '}
-            <a href="https://threejs.org/" target="_blank" rel="noreferrer">
-              Three.js
-            </a>
-            .
-          </p>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   )
 }

@@ -126,9 +126,7 @@
 .prop,
 .lesson-item,
 .reaction-step,
-.lesson-back,
-.nav-link,
-.sound-btn {
+.lesson-back {
   transition:
     background var(--fast) var(--ease),
     border-color var(--fast) var(--ease),
@@ -148,9 +146,7 @@
 .mol-btn:active,
 .prop:active,
 .lesson-item:active,
-.reaction-step:active,
-.nav-link:active,
-.sound-btn:active {
+.reaction-step:active {
   transform: scale(0.985);
   transition-duration: 80ms;
 }
@@ -220,12 +216,6 @@
     opacity var(--medium) var(--ease);
 }
 
-/* In the top bar: a soft gradient tint instead of a solid fill. */
-.topbar nav > .seg-pill {
-  border-radius: var(--radius);
-  background: var(--accent-grad-soft);
-  box-shadow: inset 0 0 0 1px rgba(140, 180, 255, 0.32);
-}
 
 /* =========================================================
    Step changes (components/motion.tsx): out, then in

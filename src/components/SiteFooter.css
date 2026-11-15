@@ -1,0 +1,41 @@
+.site-footer {
+  position: relative;
+  z-index: 1;
+  margin-top: var(--space-8);
+  border-top: 1px solid var(--line);
+  padding: 36px 0 44px;
+}
+
+.site-footer-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.site-footer-note {
+  margin-top: 12px;
+  max-width: 460px;
+  color: var(--text-faint);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.site-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 26px;
+  font-size: 14.5px;
+}
+
+.site-footer-links a {
+  color: var(--text-dim);
+  padding: 4px 0;
+}
+
+.site-footer-links a:hover {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}

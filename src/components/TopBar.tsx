@@ -1,61 +1,79 @@
 /*
   TopBar.tsx — the navigation bar pinned to the top of every page.
-  NavLink automatically knows which page is active, so we can highlight it.
 
-  Wide screens show every link in the bar. Narrower than 1080 px (phones and most tablets),
-  the links don't fit, so a "Menu" button opens the same list in a panel instead.
+  Wide screens: logo · General Chem ▾ · Organic ▾ · Biochem ▾ · Practice · [sound] [feedback] [settings]
+    Each course opens a dropdown of its topics, with a one-line description of each.
+    Keyboard: Tab to a course, Enter/Space/↓ opens it, ↑ ↓ Home End move through the
+    topics, Escape closes and returns to the button, Tab moves on (and closes).
+  Phones and tablets (under 900 px): logo · Menu. The Menu button opens a full-screen
+    sheet with the same courses and descriptions, then Practice, Sound, Feedback, Settings.
+
+  Menus are drawn on top of the page (they never push content around).
 */
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
-import { SlidingPill } from './motion'
+import Icon, { LogoMark } from './Icon'
+import SettingsPanel from './SettingsPanel'
 import { FEEDBACK_URL } from './feedback'
-import { loadEnzymesPage, loadPolarityPage, loadPracticePage, loadTrendsPage } from '../pages/loaders'
-import { canPrefetch, loadOrbitalsPage, loadProteinPage, loadReactionPage, loadVseprPage } from '../pages/loaders'
+import { COURSES, courseFor, isCurrent, rememberCourse, type Course } from '../nav/courses'
 import { useSoundEnabled } from '../sound/sound'
-import { loadProgressPage } from '../pages/loaders'
 import './TopBar.css'
 
-/* Plain topic names (no numbers): each says what you'll learn there. */
-const LINKS = [
-  { to: '/protein', label: 'Proteins', load: loadProteinPage },
-  { to: '/enzymes', label: 'Enzymes', load: loadEnzymesPage },
-  { to: '/reaction', label: 'Reactions', load: loadReactionPage },
-  { to: '/shapes', label: 'Shapes', load: loadVseprPage },
-  { to: '/orbitals', label: 'Orbitals', load: loadOrbitalsPage },
-  { to: '/trends', label: 'Trends', load: loadTrendsPage },
-  { to: '/polarity', label: 'Polarity', load: loadPolarityPage },
-  { to: '/practice', label: 'Practice', load: loadPracticePage },
-]
+type Open = Course['id'] | 'settings' | 'sheet' | null
 
 export default function TopBar() {
   const [soundOn, setSoundOn] = useSoundEnabled()
-  const { pathname } = useLocation()
-  const [menuOpen, setMenuOpen] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
-  const buttonRef = useRef<HTMLButtonElement>(null)
+  const { pathname, key } = useLocation()
+  const [open, setOpen] = useState<Open>(null)
+  const [sheetSettings, setSheetSettings] = useState(false)
+  const barRef = useRef<HTMLElement>(null)
+  const here = courseFor(pathname)
+  // Topic and practice pages fill the window, so the bar spans it too; reading pages are centered.
+  const wide = here !== null || pathname === '/practice'
 
-  // Close the menu on Escape or a tap outside it.
+  const close = useCallback(() => setOpen(null), [])
+
+  // Going to another page closes whatever is open.
+  const [lastKey, setLastKey] = useState(key)
+  if (key !== lastKey) {
+    setLastKey(key)
+    setOpen(null)
+    setSheetSettings(false)
+  }
+
+  // Close on a click/tap outside the bar, or Escape (returning focus to the opener).
   useEffect(() => {
-    if (!menuOpen) return
+    if (!open) return
+    const onDown = (e: PointerEvent) => {
+      if (!barRef.current?.contains(e.target as Node)) close()
+    }
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return
-      setMenuOpen(false)
-      buttonRef.current?.focus()
+      barRef.current?.querySelector<HTMLElement>(`[data-opens="${open}"]`)?.focus()
+      close()
     }
-    const onDown = (e: PointerEvent) => {
-      const t = e.target as Node
-      if (!menuRef.current?.contains(t) && !buttonRef.current?.contains(t)) setMenuOpen(false)
-    }
-    window.addEventListener('keydown', onKey)
     window.addEventListener('pointerdown', onDown)
+    window.addEventListener('keydown', onKey)
     return () => {
-      window.removeEventListener('keydown', onKey)
       window.removeEventListener('pointerdown', onDown)
+      window.removeEventListener('keydown', onKey)
     }
-  }, [menuOpen])
+  }, [open, close])
+
+  // The phone sheet covers the page: stop the page behind it from scrolling, and start at its first link.
+  useEffect(() => {
+    if (open !== 'sheet') return
+    document.documentElement.classList.add('menu-open')
+    barRef.current?.querySelector<HTMLElement>('.sheet a')?.focus()
+    return () => document.documentElement.classList.remove('menu-open')
+  }, [open])
+
+  const toggle = (id: Open) => setOpen((o) => (o === id ? null : id))
+
+  const soundLabel = `Sound effects: ${soundOn ? 'on' : 'off'}`
 
   return (
-    <header className="topbar">
+    <header className={`topbar ${wide ? 'is-wide' : ''}`} ref={barRef}>
       {/* "Skip to content" lets keyboard users jump past the navigation. */}
       <a className="skip-link" href="#main">
         Skip to content
@@ -65,85 +83,86 @@ export default function TopBar() {
         <Link to="/" className="brand" aria-label="protein-site home">
           <LogoMark />
           <span className="brand-name">protein-site</span>
-          <span className="brand-version mono">v0.1</span>
         </Link>
 
-        <nav aria-label="Main" className="main-nav has-pill">
-          {/* The "you are here" highlight glides between links as you change pages. */}
-          <SlidingPill active={pathname} selector=".active" />
-          {LINKS.map((l) => (
-            <NavLink
-              key={l.to}
-              to={l.to}
-              className="nav-link"
-              // Start downloading the page the moment someone points at (or tabs to) the link.
-              onMouseEnter={() => canPrefetch() && void l.load()}
-              onFocus={() => canPrefetch() && void l.load()}
-            >
-              {l.label}
-            </NavLink>
+        <nav aria-label="Main" className="main-nav">
+          {COURSES.map((c) => (
+            <CourseMenu key={c.id} course={c} open={open === c.id} here={here === c.id} pathname={pathname} onToggle={() => toggle(c.id)} onClose={close} />
           ))}
-          <span className="nav-divider" aria-hidden="true" />
-          {/* Progress: lessons finished, practice results, and this device's settings. */}
-          <NavLink
-            to="/progress"
-            className="nav-link"
-            onMouseEnter={() => canPrefetch() && void loadProgressPage()}
-            title="Your progress (saved on this device)"
-          >
-            Progress
+          <NavLink to="/practice" className="nav-item">
+            Practice
           </NavLink>
-          {/* Sound is off until the student turns it on. The label names the action. */}
-          <button
-            className={`sound-btn ${soundOn ? 'is-on' : ''}`}
-            role="switch"
-            aria-checked={soundOn}
-            aria-label="Sound effects"
-            title={soundOn ? 'Sound effects are on' : 'Sound effects are off'}
-            onClick={() => setSoundOn(!soundOn)}
-          >
-            <SpeakerIcon on={soundOn} />
-            <span className="sound-btn-text">{soundOn ? 'Sound on' : 'Sound off'}</span>
-          </button>
-          {/* Feedback: a small icon, so it's on every page without crowding the bar. */}
-          <a className="feedback-btn" href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer" aria-label="Send feedback (opens a form in a new tab)" title="Send feedback">
-            <FeedbackIcon />
-          </a>
         </nav>
 
-        {/* Narrow screens: one button that opens the full list. */}
-        <button
-          ref={buttonRef}
-          className={`menu-btn ${menuOpen ? 'is-open' : ''}`}
-          aria-expanded={menuOpen}
-          aria-controls="site-menu"
-          onClick={() => setMenuOpen((o) => !o)}
-        >
-          <MenuIcon open={menuOpen} />
-          {menuOpen ? 'Close' : 'Menu'}
+        <div className="bar-tools">
+          {/* Sound is off until the student turns it on. */}
+          <button className={`icon-btn ${soundOn ? 'is-on' : ''}`} role="switch" aria-checked={soundOn} aria-label="Sound effects" data-tip={soundLabel} onClick={() => setSoundOn(!soundOn)}>
+            <Icon name={soundOn ? 'sound' : 'soundOff'} />
+          </button>
+          <a className="icon-btn" href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer" aria-label="Send feedback (opens a form in a new tab)" data-tip="Send feedback">
+            <Icon name="feedback" />
+          </a>
+          <div className="menu-anchor">
+            <button className={`icon-btn ${open === 'settings' ? 'is-open' : ''}`} aria-label="Settings" aria-expanded={open === 'settings'} aria-controls="settings-popover" data-opens="settings" data-tip={open === 'settings' ? undefined : 'Settings'} onClick={() => toggle('settings')}>
+              <Icon name="settings" />
+            </button>
+            {open === 'settings' && (
+              <div id="settings-popover" className="popover" role="dialog" aria-label="Settings">
+                <SettingsPanel />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Phones and tablets: one button that opens the full menu. */}
+        <button className={`menu-btn ${open === 'sheet' ? 'is-open' : ''}`} aria-expanded={open === 'sheet'} aria-controls="site-menu" data-opens="sheet" onClick={() => toggle('sheet')}>
+          <Icon name={open === 'sheet' ? 'close' : 'menu'} />
+          {open === 'sheet' ? 'Close' : 'Menu'}
         </button>
       </div>
 
-      {menuOpen && (
-        <div id="site-menu" ref={menuRef} className="site-menu panel">
-          <nav aria-label="Main (menu)">
-            <ul className="site-menu-links">
-              {[...LINKS, { to: '/progress', label: 'Progress', load: loadProgressPage }].map((l) => (
-                <li key={l.to}>
-                  <NavLink to={l.to} className="site-menu-link" onClick={() => setMenuOpen(false)} onTouchStart={() => canPrefetch() && void l.load()}>
-                    {l.label}
-                  </NavLink>
-                </li>
-              ))}
-            </ul>
+      {open === 'sheet' && (
+        <div id="site-menu" className="sheet" role="dialog" aria-modal="true" aria-label="Menu">
+          <nav aria-label="Main (menu)" className="sheet-scroll">
+            {COURSES.map((c) => (
+              <section key={c.id} aria-labelledby={`sheet-${c.id}`}>
+                <h2 id={`sheet-${c.id}`} className="sheet-head">
+                  {c.name}
+                </h2>
+                {c.topics.map((t) => (
+                  <TopicItem key={t.to} course={c} topic={t} pathname={pathname} className="sheet-item" onPick={close} />
+                ))}
+              </section>
+            ))}
+            <section aria-labelledby="sheet-practice">
+              <h2 id="sheet-practice" className="sheet-head">
+                Practice
+              </h2>
+              <NavLink to="/practice" className="sheet-item" onClick={close}>
+                <span className="menu-ico">
+                  <Icon name="practice" />
+                </span>
+                <span>
+                  <span className="menu-title">Practice</span>
+                  <span className="menu-desc">Calm flashcards for any topic.</span>
+                </span>
+              </NavLink>
+            </section>
+            {sheetSettings && (
+              <section className="sheet-settings" aria-label="Settings">
+                <SettingsPanel />
+              </section>
+            )}
           </nav>
-          <div className="site-menu-footer">
-            <a className="site-menu-feedback" href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer">
-              <FeedbackIcon /> Send feedback <span className="sr-only">(opens in a new tab)</span>
+          <div className="sheet-foot">
+            <button className={`btn btn-sm btn-quiet ${soundOn ? 'is-on' : ''}`} role="switch" aria-checked={soundOn} onClick={() => setSoundOn(!soundOn)}>
+              <Icon name={soundOn ? 'sound' : 'soundOff'} size={18} /> {soundOn ? 'Sound on' : 'Sound off'}
+            </button>
+            <a className="btn btn-sm btn-quiet" href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer">
+              <Icon name="feedback" size={18} /> Feedback
             </a>
-            <button className={`sound-btn ${soundOn ? 'is-on' : ''}`} role="switch" aria-checked={soundOn} onClick={() => setSoundOn(!soundOn)}>
-              <SpeakerIcon on={soundOn} />
-              {soundOn ? 'Sound on' : 'Sound off'}
+            <button className="btn btn-sm btn-quiet" aria-expanded={sheetSettings} onClick={() => setSheetSettings((s) => !s)}>
+              <Icon name="settings" size={18} /> Settings
             </button>
           </div>
         </div>
@@ -152,59 +171,91 @@ export default function TopBar() {
   )
 }
 
-/* Logo: a nucleus with three crisp orbital rings, drawn as SVG (scales perfectly). */
-function LogoMark() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true" className="logo">
-      <circle cx="11" cy="11" r="2.4" fill="var(--accent)" />
-      {[0, 60, 120].map((deg) => (
-        <ellipse
-          key={deg}
-          cx="11"
-          cy="11"
-          rx="9.5"
-          ry="3.6"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1"
-          transform={`rotate(${deg} 11 11)`}
-        />
-      ))}
-    </svg>
-  )
-}
+/* ---------- one course: a button and its dropdown of topics ---------- */
 
-/* Speaker icon: sound waves when on, a slash when off (shape changes, not just color). */
-function SpeakerIcon({ on }: { on: boolean }) {
+function CourseMenu({ course, open, here, pathname, onToggle, onClose }: { course: Course; open: boolean; here: boolean; pathname: string; onToggle: () => void; onClose: () => void }) {
+  const wrap = useRef<HTMLDivElement>(null)
+  const focusItem = (index: number) => {
+    const items = wrap.current?.querySelectorAll<HTMLElement>('.menu a')
+    if (!items?.length) return
+    items[(index + items.length) % items.length].focus()
+  }
+  // After opening with the ↓ key, focus lands on the first topic.
+  const focusFirst = useRef(false)
+  useEffect(() => {
+    if (open && focusFirst.current) focusItem(0)
+    focusFirst.current = false
+  }, [open])
+
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    const items = Array.from(wrap.current?.querySelectorAll<HTMLElement>('.menu a') ?? [])
+    const at = items.indexOf(document.activeElement as HTMLElement)
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      if (!open) {
+        focusFirst.current = true
+        onToggle()
+      } else focusItem(at + 1)
+    } else if (e.key === 'ArrowUp' && open) {
+      e.preventDefault()
+      focusItem(at <= 0 ? items.length - 1 : at - 1)
+    } else if (e.key === 'Home' && open) {
+      e.preventDefault()
+      focusItem(0)
+    } else if (e.key === 'End' && open) {
+      e.preventDefault()
+      focusItem(items.length - 1)
+    }
+  }
+
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M2.5 6.2h2.2L8 3.5v9L4.7 9.8H2.5z" fill="currentColor" stroke="none" />
-      {on ? (
-        <>
-          <path d="M10.2 6.1a2.7 2.7 0 0 1 0 3.8" />
-          <path d="M12 4.4a5 5 0 0 1 0 7.2" />
-        </>
-      ) : (
-        <path d="M10.5 6l3.5 4M14 6l-3.5 4" />
+    <div
+      className="menu-anchor"
+      ref={wrap}
+      onKeyDown={onKeyDown}
+      // Tabbing out of the menu closes it.
+      onBlur={(e) => open && e.relatedTarget !== null && !wrap.current?.contains(e.relatedTarget as Node) && onClose()}
+    >
+      <button className={`nav-item ${open ? 'is-open' : ''} ${here ? 'is-here' : ''}`} aria-expanded={open} aria-controls={`menu-${course.id}`} data-opens={course.id} onClick={onToggle}>
+        {course.name}
+        {here && <span className="sr-only"> (current section)</span>}
+        <Icon name="chevron" size={14} />
+      </button>
+      {open && (
+        <div id={`menu-${course.id}`} className="menu">
+          {course.topics.map((t) => (
+            <TopicItem key={t.to} course={course} topic={t} pathname={pathname} className="menu-item" onPick={onClose} />
+          ))}
+        </div>
       )}
-    </svg>
+    </div>
   )
 }
 
-/* Three lines (menu) that turn into an ×  (close). */
-function MenuIcon({ open }: { open: boolean }) {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-      {open ? <path d="M3.5 3.5l9 9M12.5 3.5l-9 9" /> : <path d="M2.5 4.5h11M2.5 8h11M2.5 11.5h11" />}
-    </svg>
-  )
-}
+/* ---------- one topic row (used in dropdowns and in the phone sheet) ---------- */
 
-/* A speech bubble: "tell us what you think". */
-function FeedbackIcon() {
+function TopicItem({ course, topic, pathname, className, onPick }: { course: Course; topic: Course['topics'][number]; pathname: string; className: string; onPick: () => void }) {
+  const current = isCurrent(topic, course, pathname)
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round">
-      <path d="M2.5 3.5h11v7h-6l-3 2.5v-2.5h-2z" />
-    </svg>
+    <Link
+      to={topic.to}
+      className={`${className} ${current ? 'is-current' : ''}`}
+      aria-current={current ? 'page' : undefined}
+      onClick={() => {
+        rememberCourse(course.id)
+        onPick()
+      }}
+    >
+      <span className="menu-ico">
+        <Icon name={topic.icon} />
+      </span>
+      <span>
+        <span className="menu-title">
+          {topic.title}
+          {current && <span className="here-chip">You’re here</span>}
+        </span>
+        <span className="menu-desc">{topic.desc}</span>
+      </span>
+    </Link>
   )
 }
