@@ -2,25 +2,20 @@
   motion.css — how things move and glow across the whole site.
 
   Principles:
-    • Snappy: most transitions take 150–260 ms.
-    • Springy: presses squash a little, releases overshoot slightly and settle.
+    • Subtle: gentle fades and short slides, 140–300 ms, with no bounce.
     • Never overlapping: content leaves, THEN new content arrives (see components/motion.tsx).
     • Only transform and opacity are animated where possible: those are cheap for the GPU.
     • "Reduce motion" turns all of it off (global.css).
 */
 
 /* =========================================================
-   Panels: glassy depth with a faint gradient edge
+   Panels: one hairline border and one soft shadow
    ========================================================= */
 .panel {
-  /* Two backgrounds: the panel fill inside the border, the gradient edge under the border. */
-  background:
-    var(--panel-bg) padding-box,
-    var(--panel-edge) border-box;
-  border: 1px solid transparent;
+  background: var(--panel-bg);
+  border: 1px solid var(--line-strong);
   box-shadow: var(--shadow-panel);
 }
-
 /* Side panels and floating controls arrive with a short glide when a page opens. */
 .lesson {
   animation: panel-in 420ms var(--spring-soft) both;
@@ -36,7 +31,7 @@
 @keyframes panel-in {
   from {
     opacity: 0;
-    transform: translateX(-14px);
+    transform: translateX(-8px);
   }
 }
 
@@ -78,7 +73,7 @@
 }
 
 .btn:active:not(:disabled) {
-  transform: scale(0.96);
+  transform: scale(0.985);
   transition-duration: 80ms;
 }
 
@@ -86,8 +81,8 @@
 .btn-primary:hover {
   background: var(--bg-1);
   border-color: transparent;
-  color: #08112a;
-  box-shadow: 0 8px 22px -10px rgba(120, 170, 255, 0.65);
+  color: var(--accent-ink);
+  box-shadow: 0 10px 28px -14px rgba(130, 170, 255, 0.8);
 }
 
 .btn-primary::before {
@@ -105,7 +100,7 @@
 /* Small round play button on the reaction timeline gets the same gradient. */
 .play-btn {
   background: var(--accent-grad) !important;
-  color: #08112a !important;
+  color: var(--accent-ink) !important;
   box-shadow: 0 6px 18px -8px rgba(120, 170, 255, 0.7);
   transition: transform 260ms var(--spring), box-shadow var(--medium) var(--ease);
 }
@@ -115,7 +110,7 @@
 }
 
 .play-btn:active {
-  transform: scale(0.92);
+  transform: scale(0.97);
   transition-duration: 80ms;
 }
 
@@ -156,7 +151,7 @@
 .reaction-step:active,
 .nav-link:active,
 .sound-btn:active {
-  transform: scale(0.95);
+  transform: scale(0.985);
   transition-duration: 80ms;
 }
 
@@ -171,7 +166,7 @@
 .lesson-item:hover,
 .mol-btn:hover,
 .prop:hover {
-  box-shadow: 0 10px 24px -14px rgba(94, 228, 255, 0.35);
+  border-color: var(--line-strong);
 }
 
 /* Toggle switches: the thumb springs across. */
@@ -213,9 +208,7 @@
   z-index: 0;
   border-radius: var(--radius-sm);
   background: var(--bg-3);
-  box-shadow:
-    inset 0 0 0 1px var(--line-accent),
-    0 4px 14px -6px rgba(94, 228, 255, 0.45);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
   pointer-events: none;
 }
 
@@ -299,49 +292,9 @@ canvas {
 }
 
 /* =========================================================
-   Living backgrounds: the color haze behind each 3D viewer drifts very slowly.
-   Transform-only, so it costs the GPU almost nothing, and browsers pause it
-   in hidden tabs. A faint pink and cyan glow adds a small pop of color.
+   Backgrounds are still pictures (CSS gradients): no animation, so they cost
+   nothing while a 3D model is on screen.
    ========================================================= */
-div[class$='-backdrop'] {
-  inset: -10%;
-  animation: drift 46s ease-in-out infinite alternate;
-  will-change: transform;
-}
-
-div[class$='-backdrop']::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(26% 30% at 78% 82%, rgba(255, 122, 217, 0.09), transparent 70%),
-    radial-gradient(24% 28% at 32% 18%, rgba(94, 228, 255, 0.07), transparent 70%);
-  animation: drift-alt 38s ease-in-out infinite alternate;
-}
-
-.atmosphere-haze {
-  animation: drift 52s ease-in-out infinite alternate;
-  will-change: transform;
-}
-
-@keyframes drift {
-  from {
-    transform: translate(-2%, -1%) scale(1.02);
-  }
-  to {
-    transform: translate(2%, 1.5%) scale(1.06);
-  }
-}
-
-@keyframes drift-alt {
-  from {
-    transform: translate(3%, 2%) rotate(0deg);
-  }
-  to {
-    transform: translate(-3%, -2%) rotate(6deg);
-  }
-}
-
 /* =========================================================
    Progress dots: the current one widens with a spring; colors fade
    ========================================================= */
@@ -355,7 +308,7 @@ div[class$='-backdrop']::after {
 
 .lesson-dot.is-current,
 .practice-dots li.is-current {
-  width: 40px;
+  width: 36px;
   background: var(--accent-grad);
 }
 
@@ -363,21 +316,7 @@ div[class$='-backdrop']::after {
   width: 30px;
 }
 
-.lesson-dot:hover {
-  transform: scaleY(1.5);
-}
 
-/* Panel titles get the same subtle white-to-lavender sheen as the home page headline. */
-.pol-title,
-.practice-title,
-.reaction-head h1,
-.progress-head h1,
-.lesson-list-head h2 {
-  background: linear-gradient(180deg, #ffffff 35%, #c9ccf7 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
 
 /* Keeps a panel's sections spaced when they are wrapped in one transition. */
 .panel-stack {
@@ -390,13 +329,6 @@ div[class$='-backdrop']::after {
    'Fast' graphics profile (perf/quality.ts): switch off purely decorative motion
    and effects, so the computer's effort goes into the 3D model itself.
    ========================================================= */
-.perf-fast div[class$='-backdrop'],
-.perf-fast div[class$='-backdrop']::after,
-.perf-fast .atmosphere-haze {
-  animation: none;
-  will-change: auto;
-}
-
 .perf-fast .viewer-card,
 .perf-fast [class*='glass'] {
   backdrop-filter: none;

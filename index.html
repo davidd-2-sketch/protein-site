@@ -7,21 +7,15 @@
     <meta name="theme-color" content="#070816" />
     <meta
       name="description"
-      content="Free interactive 3D chemistry for pre-med, organic chemistry, and biochemistry students. See proteins and reaction mechanisms in real 3D."
+      content="Free 3D chemistry lessons for general chemistry, organic chemistry, and biochemistry. Turn molecules around, watch reactions happen, and see why it works."
     />
     <title>protein-site — chemistry you can see</title>
 
     <!--
-      Fonts from Google Fonts:
-        - Geist: precise modern sans-serif (headings + body)
-        - Geist Mono: data, labels, readouts
+      The font (Inter) is hosted on this site and loaded early, so text appears in its
+      final shape almost immediately and nothing jumps.
     -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400;500&display=swap"
-      rel="stylesheet"
-    />
+    <link rel="preload" href="/fonts/inter-4.1-subset.woff2" as="font" type="font/woff2" crossorigin />
   </head>
   <body>
     <div id="root"></div>
