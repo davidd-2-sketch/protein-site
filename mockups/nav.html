@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin /><link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&display=swap" rel="stylesheet" /><link rel="stylesheet" href="mock.css" /><title>Mockup A · Top bar</title></head>
+<body>
+<div class="mock-note">
+  <p class="t-micro"><a href="index.html">← All mockups</a></p>
+  <h1>A · The new top bar</h1>
+  <p>Topics are grouped by course, each with a one-line plain-English description. Practice is always visible. Sound, Feedback, and Settings are compact icon buttons. The “v0.1” badge and the Progress link are gone. These are static pictures: menus are drawn open so you can see them.</p>
+</div>
+
+<p class="mock-label">Desktop · option 1: one dropdown per course <span class="opt">Recommended</span></p>
+<div class="frame desktop" style="height:470px">
+  <div class="haze"></div><svg class="contours" data-o="0.17"></svg>
+  <div data-topbar='{"open":"gen","here":"gen","current":"/polarity","focus":"/orbitals","tip":"sound"}'></div>
+  <p style="position:absolute;right:28px;bottom:22px;max-width:420px" class="t-small">Shown: the student is on Polarity (marked “You’re here”, plus the gradient line under General Chem) and has pressed the ↓ arrow key to move to Orbitals (cyan focus ring). Hovering the sound icon shows its tooltip.</p>
+</div>
+
+<p class="mock-label">Desktop · option 2: one “Topics” menu with all three courses</p>
+<div class="frame desktop" style="height:400px">
+  <div class="haze"></div>
+  <header class="topbar">
+    <a class="brand" href="#"><span data-icon="logo"></span><span>protein-site</span></a>
+    <nav class="nav"><button class="nav-item open here">Topics <span data-icon="chev"></span></button><a class="nav-item" href="#">Practice</a></nav>
+    <div class="bar-right"><button class="icon-btn" data-icon="soundOff"></button><a class="icon-btn" data-icon="feedback"></a><button class="icon-btn" data-icon="settings"></button></div>
+  </header>
+  <div class="mega" id="mega"></div>
+</div>
+<div class="mock-row" style="margin-top:12px"><p class="t-small" style="max-width:900px"><b style="color:var(--text)">Why I recommend option 1:</b> a student sees their own course name in the bar before clicking anything, which answers “where do I go?” at a glance. Option 2 is one click for everything, but hides the course names behind a generic word, and its wide panel covers more of the 3D model.</p></div>
+
+<p class="mock-label">Settings popover (replaces the Progress page’s settings)</p>
+<div class="frame desktop" style="height:330px">
+  <div data-topbar='{"here":"bio"}'></div>
+  <div class="popover" style="top:56px;right:20px">
+    <h3>3D graphics</h3>
+    <p>Auto picks what runs smoothly on this device.</p>
+    <div class="seg" style="margin-top:10px"><button class="on">Auto</button><button>Faster</button><button>Detailed</button></div>
+    <hr />
+    <h3>Saved on this device</h3>
+    <p>Your finished lessons and place are kept in this browser only.</p>
+    <button class="btn sm" style="margin-top:10px">Reset my saved data</button>
+  </div>
+</div>
+
+<p class="mock-label">Phone and tablet · Menu button opens a full-screen sheet</p>
+<div class="mock-row">
+  <figure><div class="frame phone"><div class="haze"></div><div data-phonebar="closed"></div>
+    <div style="padding:26px 20px"><p class="eyebrow">Biochem</p><h2 style="margin-top:6px;font-size:28px">Enzymes</h2><p class="t-small" style="margin-top:8px">(page content)</p></div></div>
+    <figcaption>Closed: logo and one Menu button. Nothing else competes for space.</figcaption></figure>
+  <figure><div class="frame phone"><div data-phonebar="open"></div><div data-sheet="/enzymes"></div></div>
+    <figcaption>Open: the whole screen becomes the menu, grouped by course with the same descriptions, then Practice, then Sound, Feedback, and Settings. Rows are at least 54 px tall for thumbs; Sound, Feedback, and Settings stay pinned at the bottom.</figcaption></figure>
+</div>
+<div style="height:60px"></div>
+<script src="parts.js"></script>
+<script>
+  document.getElementById('mega').innerHTML = COURSES.map((c) => '<div><h4>' + c.name + '</h4>' + menuItems(c, '/polarity', null) + '</div>').join('')
+</script>
+<script src="contours.js"></script>
+</body></html>

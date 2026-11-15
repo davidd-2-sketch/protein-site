@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin /><link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&display=swap" rel="stylesheet" /><link rel="stylesheet" href="mock.css" /><title>Mockup C · Topic page</title></head>
+<body>
+<div class="mock-note">
+  <p class="t-micro"><a href="index.html">← All mockups</a></p>
+  <h1>C · One shared layout for every topic page</h1>
+  <p>Shown with Enzymes (the model is a still picture of the real chymotrypsin structure). Proteins, Reactions, Shapes, Orbitals, Polarity, and Trends would use these same five slots, so a student who learns one page knows them all. The lesson text is the real text from your lesson, unchanged.</p>
+</div>
+
+<p class="mock-label">Desktop</p>
+<div class="frame desktop" style="height:740px">
+  <div class="haze" style="opacity:.7"></div>
+  <div data-topbar='{"here":"bio"}'></div>
+  <div class="viewer">
+    <img class="model" src="img/enzyme.png" alt="" style="left:400px;top:-30px;width:840px" />
+    <span class="pin" style="left:836px;top:266px">His57</span><span class="pin" style="left:800px;top:216px">Asp102</span><span class="pin" style="left:888px;top:330px">Ser195</span><span class="pin warm" style="left:940px;top:388px">Oxyanion hole</span>
+  </div>
+  <section class="lesson-panel panel">
+    <div class="lp-head"><div class="seg"><button class="on">Lessons</button><button>Explore</button></div><div class="crumb"><span>← All lessons</span><span>Lesson 2 · The catalytic triad</span></div><div class="dots"><i class="now"></i><i></i><i></i><i></i><i></i></div></div>
+    <div class="lp-body">
+      <h2>Three residues, one team</h2>
+      <p class="lp-text">The <span class="term">catalytic triad</span> is Ser195, His57, and Asp102. They’re linked by hydrogen bonds, and each has a job. Click Ser195: its side-chain oxygen is the <span class="term">nucleophile</span> that attacks the peptide bond.</p>
+      <div class="term-tip" style="left:62px;top:150px"><b>nucleophile</b>“Nucleus-loving.” An electron-rich species that donates an electron pair to form a new bond.</div>
+      <div class="task" style="margin-top:132px"><b>Your turn</b>Click serine 195 (Ser195).</div>
+    </div>
+    <div class="lp-foot"><button class="btn sm">Back</button><button class="btn sm">Skip <span data-icon="arrow"></span></button>
+      <span style="margin-left:auto;font-size:13px;color:var(--text-faint)">Explanations</span><button class="btn sm" style="font-weight:500;padding:0 10px">Standard <span data-icon="chev"></span></button></div>
+  </section>
+  <div class="slot src" style="left:440px;top:78px"><span class="tag exp">Experimental structure</span><span><b>Chymotrypsin</b> · PDB 6CHA ↗</span></div>
+  <div class="slot vbar" style="right:16px;top:72px"><button class="on">Labels</button><button>Spin</button><button>Reset view</button></div>
+  <div class="slot vbar" style="left:calc(416px + (100% - 416px) / 2);bottom:16px;transform:translateX(-50%)"><button class="on">Ribbon</button><button>Surface</button></div>
+  <div class="slot key" style="right:18px;bottom:18px"><span>Catalytic triad <i style="background:#5ee4ff"></i></span><span>Oxyanion hole <i style="background:#ffc94d"></i></span><span>Specificity pocket <i style="background:#b68cff"></i></span><span>Bound molecule <i style="background:#ff9ee6"></i></span></div>
+  <span class="num" style="left:6px;top:66px">1</span><span class="num" style="left:428px;top:66px">2</span><span class="num" style="right:6px;top:62px">3</span><span class="num" style="left:calc(416px + (100% - 416px) / 2 - 104px);bottom:22px">4</span><span class="num" style="right:6px;bottom:112px">5</span>
+</div>
+<div class="legend-list">
+  <div><b><span class="num">1</span>Lesson panel</b>Always on the left, same width. Lessons / Explore switch on top; Back and Next pinned at the bottom.</div>
+  <div><b><span class="num">2</span>Honesty label</b>Always top-left of the model: Experimental structure or Illustrative, plus what it is and its source.</div>
+  <div><b><span class="num">3</span>View options</b>Always top-right: Labels, Spin, Reset view (and each topic’s extra switches).</div>
+  <div><b><span class="num">4</span>Main control</b>Always bottom-center: the one thing you play with (style here; the timeline on Reactions; the builder on Shapes).</div>
+  <div><b><span class="num">5</span>Color key</b>Always bottom-right, in words as well as colors.</div>
+</div>
+<div class="mock-row" style="margin-top:14px"><p class="t-small" style="max-width:900px">The open definition shows the beginner tooltip: dotted-underlined words explain themselves on hover, keyboard focus, or tap. It opens inside the panel, so it never covers the model.</p></div>
+
+<p class="mock-label">Phone · option 1: bottom sheet you can drag <span class="opt">Recommended</span></p>
+<div class="mock-row">
+  <figure><div class="frame phone"><div class="haze" style="opacity:.7"></div><div data-phonebar="closed"></div>
+    <div class="p-viewer" style="height:330px"><img class="model" src="img/enzyme.png" alt="" style="left:-60px;top:-22px;width:500px;position:absolute;mix-blend-mode:screen" />
+      <span class="pin" style="left:206px;top:150px;font-size:11.5px">His57</span><span class="pin" style="left:236px;top:196px;font-size:11.5px">Ser195</span>
+      <span class="tag exp" style="position:absolute;left:12px;top:12px">Experimental structure</span>
+      <div style="position:absolute;right:12px;top:10px;display:grid;gap:8px"><span class="round-btn" data-icon="settings"></span></div></div>
+    <div class="p-sheet" style="top:384px"><div class="grab"></div>
+      <div class="lp-head"><div class="crumb"><span>← All lessons</span><span>Lesson 2 · The catalytic triad</span></div><div class="dots"><i class="now"></i><i></i><i></i><i></i><i></i></div></div>
+      <div class="lp-body"><h2>Three residues, one team</h2><p class="lp-text">The <span class="term">catalytic triad</span> is Ser195, His57, and Asp102. They’re linked by hydrogen bonds, and each has a job. Click Ser195: its side-chain oxygen is the <span class="term">nucleophile</span> that attacks the peptide bond.</p>
+        <div class="task" style="margin-top:12px"><b>Your turn</b>Click serine 195 (Ser195).</div></div>
+      <div class="lp-foot"><button class="btn sm">Back</button><button class="btn sm" style="flex:1">Skip <span data-icon="arrow"></span></button></div></div></div>
+    <figcaption><b style="color:var(--text)">Reading.</b> Model on top, lesson in a sheet below. The model area ends where the sheet begins, so the sheet never covers the model. Back and Next sit at the bottom, under your thumb.</figcaption></figure>
+  <figure><div class="frame phone"><div class="haze" style="opacity:.7"></div><div data-phonebar="closed"></div>
+    <div class="p-viewer" style="height:640px"><img class="model" src="img/enzyme.png" alt="" style="left:-150px;top:60px;width:700px;position:absolute;mix-blend-mode:screen" />
+      <span class="tag exp" style="position:absolute;left:12px;top:12px">Experimental structure</span>
+      <div style="position:absolute;right:12px;top:10px"><span class="round-btn" data-icon="settings"></span></div>
+      <div class="vbar" style="position:absolute;left:50%;bottom:14px;transform:translateX(-50%)"><button class="on">Ribbon</button><button>Surface</button></div></div>
+    <div class="p-sheet" style="top:694px"><div class="grab"></div>
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 16px 14px"><div style="flex:1;min-width:0"><p class="t-micro">Step 1 of 5 · Your turn</p><p style="font-weight:600;font-size:15.5px">Click serine 195 (Ser195).</p></div><button class="btn sm primary">Next <span data-icon="arrow"></span></button></div></div></div>
+    <figcaption><b style="color:var(--text)">Looking.</b> Drag the sheet down (or tap the model) and it shrinks to one line with the current task and Next, giving the model almost the whole screen. Drag up to read again.</figcaption></figure>
+  <figure><div class="frame land"><div data-phonebar="closed"></div>
+    <div style="position:absolute;left:0;top:54px;bottom:0;width:54%;overflow:hidden"><img src="img/enzyme.png" alt="" style="position:absolute;left:-30px;top:-34px;width:440px;mix-blend-mode:screen" /><span class="tag exp" style="position:absolute;left:10px;top:10px">Experimental structure</span></div>
+    <div style="position:absolute;right:0;top:54px;bottom:0;width:46%;background:#0e0f2b;border-left:1px solid var(--line-strong);display:flex;flex-direction:column">
+      <div class="lp-body" style="padding:12px 16px 0"><p class="t-micro">Lesson 2 · step 1 of 5</p><h2 style="font-size:18px;margin-top:4px">Three residues, one team</h2><p class="lp-text" style="font-size:14px;margin-top:6px;line-height:1.5">The <span class="term">catalytic triad</span> is Ser195, His57, and Asp102. They’re linked by hydrogen bonds, and each has a job…</p></div>
+      <div class="lp-foot" style="padding:8px 16px 10px"><button class="btn sm">Back</button><button class="btn sm" style="flex:1">Skip <span data-icon="arrow"></span></button></div></div></div>
+    <figcaption style="max-width:720px"><b style="color:var(--text)">Sideways (landscape).</b> Model on the left, lesson on the right. Today this view is broken; here nothing overlaps.</figcaption></figure>
+</div>
+<div class="mock-row" style="margin-top:16px"><p class="t-small" style="max-width:900px"><b style="color:var(--text)">Option 2: a fixed split with no dragging.</b> It looks exactly like the “Reading” picture, but the sheet can’t move. It’s simpler and can’t be mis-dragged, but the model is stuck at about 40% of the screen, which is small for a protein. I recommend option 1, with a visible handle and tap-to-toggle so it also works without dragging.</p></div>
+
+<p class="mock-label">End of a lesson</p>
+<div class="mock-row"><div class="panel" style="width:400px;padding:22px 20px">
+  <p class="eyebrow" style="color:var(--ok)">✓ Lesson finished</p>
+  <h2 style="font-size:23px;margin-top:8px">The catalytic triad</h2>
+  <p class="t-small" style="margin-top:8px">Nice work. Try a few questions on this while it’s fresh, or keep going.</p>
+  <div style="display:grid;gap:8px;margin-top:18px"><button class="btn primary">Practice this topic <span data-icon="arrow"></span></button><button class="btn">Next lesson: Picking the right target</button></div>
+</div><p class="t-small" style="max-width:420px;align-self:center">Every lesson ends with the same two choices. “Practice this topic” opens Practice with only that topic’s questions.</p></div>
+<div style="height:60px"></div>
+<script src="parts.js"></script><script src="contours.js"></script>
+</body></html>

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&family=Manrope:wght@400..800&family=Source+Serif+4:opsz,wght@8..60,400..700&family=Geist:wght@400..700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="mock.css" /><title>Mockup E · Fonts</title>
+<style>
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; max-width: 1240px; margin: 0 auto; padding: 0 32px; }
+  .fcard { position: relative; overflow: hidden; border: 1px solid var(--line-strong); border-radius: 18px; background: var(--bg-0); font-family: var(--font-body); }
+  .fcard h1, .fcard h2, .fcard h3, .fcard .brand { font-family: var(--font-display); }
+  .fname { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--line); background: var(--bg-1); font-family: 'Inter', sans-serif; }
+  .fname b { font-size: 15px; } .fname span { font-size: 12.5px; color: var(--text-faint); }
+  .fbar { display: flex; align-items: center; gap: 18px; height: 52px; padding: 0 20px; border-bottom: 1px solid var(--line); font-size: 14px; color: var(--text-dim); }
+  .fbar .brand { font-size: 15.5px; color: var(--text); margin-right: 6px; }
+  .fhero { padding: 30px 20px 26px; position: relative; }
+  .fhero h1 { font-size: 50px; line-height: 1.02; }
+  .fhero p { margin-top: 14px; font-size: 16.5px; line-height: 1.55; color: var(--text-dim); max-width: 430px; }
+  .flesson { margin: 0 20px 20px; padding: 18px; }
+  .flesson h2 { font-size: 21px; }
+  .flesson p { margin-top: 8px; font-size: 15.5px; line-height: 1.62; }
+  .glyphs { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 15px; color: var(--text-dim); }
+  .verdict { padding: 0 20px 20px; font: 400 13.5px/1.5 'Inter', sans-serif; color: var(--text-dim); }
+  .verdict b { color: var(--text); }
+  /* the four pairings */
+  .f-geist { --font-display: 'Geist', sans-serif; --font-body: 'Geist', sans-serif; }
+  .f-geist h1 { font-weight: 600; letter-spacing: -0.045em; }
+  .f-inter { --font-display: 'Inter', sans-serif; --font-body: 'Inter', sans-serif; }
+  .f-inter h1 { font-weight: 600; letter-spacing: -0.04em; }
+  .f-manrope { --font-display: 'Manrope', sans-serif; --font-body: 'Manrope', sans-serif; }
+  .f-manrope h1 { font-weight: 700; letter-spacing: -0.04em; } .f-manrope h2, .f-manrope .brand { font-weight: 700; }
+  .f-serif { --font-display: 'Source Serif 4', Georgia, serif; --font-body: 'Inter', sans-serif; }
+  .f-serif h1 { font-weight: 500; letter-spacing: -0.025em; font-size: 54px; } .f-serif h2 { font-weight: 600; letter-spacing: -0.015em; font-size: 23px; }
+  .f-serif .brand { font-family: 'Inter', sans-serif; }
+</style></head>
+<body>
+<div class="mock-note">
+  <p class="t-micro"><a href="index.html">← All mockups</a></p>
+  <h1>E · Three font pairings (plus today’s Geist, tuned, for comparison)</h1>
+  <p>Each card shows the same three things: the top bar, the home headline, and a lesson panel with real chemistry symbols. All four are free to use and would be hosted on your own site (no Google Fonts request). The last line of each card is a symbol test: chemistry needs subscripts, Greek letters, and arrows that many fonts don’t include. (In these previews, subscript digits and arrows come from a fallback font for all four, because Google’s delivery strips them. Hosting the font ourselves lets us keep them.)</p>
+</div>
+<div class="grid" id="grid" style="margin-top:22px"></div>
+<div style="height:60px"></div>
+<script src="parts.js"></script>
+<script>
+  const cards = [
+    { cls: 'f-inter', name: '1 · Inter', tag: 'Refined grotesk · Recommended', verdict: '<b>Clean, precise, very readable at small sizes.</b> The closest free match to the Apple/Stripe feel. Has Greek letters (α, β, δ), and its full font file also has subscripts and arrows, which I would include when hosting it ourselves.' },
+    { cls: 'f-manrope', name: '2 · Manrope', tag: 'Characterful modern sans', verdict: '<b>Friendlier and rounder, with more personality in headlines.</b> Slightly wider, so panels fit a little less text. Has Greek letters; I’d need to confirm subscripts and arrows in its full file.' },
+    { cls: 'f-serif', name: '3 · Source Serif 4 + Inter', tag: 'Serif headlines, sans body', verdict: '<b>Feels like a well-made textbook or magazine.</b> Most distinctive, and warm. Costs one extra font file, and serif headlines next to 3D models read as more “editorial” than “app”.' },
+    { cls: 'f-geist', name: 'Baseline · Geist (tuned)', tag: 'What the site uses today', verdict: '<b>Today’s font with tidier sizes and spacing.</b> Fine, but it is the default look of many new sites, and it lacks Greek letters, so α, β, δ come from a fallback font.' },
+  ]
+  document.getElementById('grid').innerHTML = cards.map((c) => `
+    <div class="fcard ${c.cls}">
+      <div class="fname"><b>${c.name}</b><span>${c.tag}</span></div>
+      <div class="fbar"><span class="brand">${ICON.logo}<span>protein-site</span></span><span>General Chem</span><span>Organic</span><span>Biochem</span><span>Practice</span></div>
+      <div class="fhero"><div class="haze" style="opacity:.6"></div><div style="position:relative"><h1>Chemistry<br/>you can see.</h1><p>Turn molecules around, watch reactions happen, and see why it works.</p><a class="btn primary" style="margin-top:18px">Pick your course ${ICON.arrow}</a></div></div>
+      <div class="flesson panel"><p class="t-micro">Lesson 2 · Lone pairs change the shape</p><h2 style="margin-top:6px">Ammonia: one lone pair</h2>
+        <p>NH₃ has four <span class="term">electron groups</span> (3 bonds + 1 lone pair), so its electron geometry is tetrahedral. Predict the molecular shape: just the atoms.</p>
+        <p class="glyphs">CO₂ · H₂O · S<sub>N</sub>2 · α-helix · β-sheet · δ+ δ− · ΔG‡ · 1.74 Å · sp³ · σ and π · HO⁻ → Br⁻</p></div>
+      <p class="verdict">${c.verdict}</p>
+    </div>`).join('')
+</script>
+</body></html>

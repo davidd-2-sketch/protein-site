@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin /><link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&display=swap" rel="stylesheet" /><link rel="stylesheet" href="mock.css" /><title>Mockup B · Home page</title>
+<style>
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 32px; }
+  .page { position: relative; overflow: hidden; }
+  .page .haze, .page .contours { height: 1000px; }
+  .hero { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; padding-top: 84px; padding-bottom: 96px; }
+  .hero-sub { margin-top: 22px; max-width: 470px; }
+  .hero-cta { display: flex; gap: 12px; margin-top: 30px; flex-wrap: wrap; }
+  .continue { display: inline-flex; align-items: center; gap: 12px; margin-top: 22px; padding: 10px 14px 10px 12px; border-radius: 12px; border: 1px solid var(--line-strong); background: rgba(13, 14, 39, 0.7); font-size: 14px; color: var(--text-dim); }
+  .continue b { color: var(--text); font-weight: 600; }
+  .continue .dot { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--grad-soft); color: var(--accent); }
+  .mol { position: relative; display: grid; justify-items: center; }
+  .mol::before { content: ''; position: absolute; inset: 4% 8% 18%; border-radius: 50%; background: radial-gradient(closest-side, rgba(98, 92, 230, 0.34), transparent); }
+  .mol img { position: relative; width: min(100%, 520px); height: auto; display: block; }
+  .mol-cap { position: relative; margin-top: 4px; text-align: center; }
+  .mol-cap h3 { font-size: 17px; letter-spacing: -0.015em; }
+  .mol-cap h3 span { color: var(--text-dim); font-weight: 400; }
+  .mol-meta { display: flex; gap: 12px; align-items: center; justify-content: center; margin-top: 10px; font-size: 13px; color: var(--text-faint); }
+  .section { position: relative; padding: 24px 0 96px; }
+  .section-head { max-width: 620px; margin-bottom: 34px; }
+  .section-head p { margin-top: 12px; }
+  .courses { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; align-items: start; }
+  .course { padding: 24px 14px 12px; border-radius: 20px; background: rgba(13, 14, 39, 0.82); border: 1px solid var(--line-strong); }
+  .course-head { padding: 0 12px 16px; }
+  .course-head p { margin-top: 6px; font-size: 14px; color: var(--text-dim); }
+  .topic { display: grid; grid-template-columns: 40px 1fr 16px; gap: 12px; align-items: center; padding: 12px; border-radius: 12px; border-top: 1px solid var(--line); }
+  .topic:hover { background: var(--bg-2); }
+  .topic .go { color: var(--text-faint); }
+  .topic:hover .go { color: var(--accent); }
+  .strip { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-top: 18px; padding: 22px 26px; border-radius: 20px; border: 1px solid var(--line-strong); background: var(--grad-soft); }
+  .trust { display: flex; align-items: center; gap: 12px; margin-top: 44px; font-size: 15px; color: var(--text-dim); }
+  .trust a { color: var(--text); text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 4px; }
+  .why { max-width: 720px; padding-left: 24px; border-left: 2px solid var(--violet); }
+  .why p { font-size: 21px; line-height: 1.5; letter-spacing: -0.015em; }
+  .why footer { margin-top: 14px; font-size: 14px; color: var(--text-faint); }
+  .foot { border-top: 1px solid var(--line); padding: 36px 0 44px; }
+  .foot-in { display: flex; justify-content: space-between; gap: 32px; flex-wrap: wrap; align-items: flex-start; }
+  .foot nav { display: flex; gap: 26px; font-size: 14.5px; color: var(--text-dim); }
+  .foot small { display: block; margin-top: 10px; font-size: 13px; color: var(--text-faint); max-width: 460px; line-height: 1.5; }
+  /* phone version */
+  .ph { padding: 30px 20px 0; position: relative; }
+  .ph .t-hero { font-size: 42px; }
+  .ph .t-lead { font-size: 16.5px; margin-top: 14px; }
+  .ph .btn { width: 100%; margin-top: 10px; }
+  .ph .mol img { width: 300px; }
+</style></head>
+<body>
+<div class="mock-note">
+  <p class="t-micro"><a href="index.html">← All mockups</a></p>
+  <h1>B · The new home page</h1>
+  <p>Everything below this line is the page itself, at full width. The molecule is a still picture of the real ATP model here; on the real site it stays live and draggable. Scroll to the bottom for the phone version and an alternative hero.</p>
+</div>
+
+<div class="page" style="border-top:1px solid var(--line-strong);margin-top:20px">
+  <div class="haze"></div><svg class="contours" data-o="0.17"></svg>
+  <div data-topbar='{}'></div>
+
+  <section class="hero wrap">
+    <div>
+      <p class="eyebrow">Free 3D chemistry lessons</p>
+      <h1 class="t-hero" style="margin-top:14px">Chemistry<br />you can see.</h1>
+      <p class="t-lead hero-sub">Turn molecules around, watch reactions happen, and see why it works. Short, visual lessons for Gen Chem, Organic, and Biochem.</p>
+      <div class="hero-cta">
+        <a class="btn primary" href="#courses">Pick your course <span data-icon="arrow"></span></a>
+        <a class="btn" href="#">Try a 3-minute lesson</a>
+      </div>
+      <a class="continue" href="#"><span class="dot" data-icon="arrow"></span><span>Continue: <b>Molecular shapes</b> · Lone pairs change the shape · step 3 of 4</span></a>
+    </div>
+    <figure class="mol" style="margin:0">
+      <img src="img/atp.png" alt="3D model of ATP" />
+      <figcaption class="mol-cap">
+        <h3>ATP <span>· the cell’s energy currency</span></h3>
+        <div class="mol-meta"><span class="tag ill">Illustrative</span><span>Computed 3D shape from PubChem</span><span>·</span><span>Drag to rotate</span></div>
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="section wrap" id="courses">
+    <div class="section-head">
+      <h2 class="t-h2">Pick your course</h2>
+      <p class="t-lead" style="font-size:17px">Go straight to what your class is covering. Every topic opens with a short guided lesson.</p>
+    </div>
+    <div class="courses" id="course-cards"></div>
+    <div class="strip">
+      <div><h3 class="t-h3">Practice</h3><p class="t-small" style="margin-top:4px">Calm flashcards with a 3D picture for every question. Missed ones come back later.</p></div>
+      <a class="btn" href="#">Start practicing <span data-icon="arrow"></span></a>
+    </div>
+    <p class="trust"><span class="tag exp">Experimental structure</span> Built on real Protein Data Bank structures. <a href="#">How we keep it accurate</a></p>
+  </section>
+
+  <section class="section wrap">
+    <blockquote class="why" style="margin:0">
+      <p>In organic chemistry, and again in biochemistry, I had a hard time picturing molecules, proteins, and mechanisms from flat textbook drawings. This is the tool I wish I’d had: free, quick to open, and built so you can look first and read second.</p>
+      <footer>A pre-med student, and the person who made this site · <a href="#" style="color:var(--text-dim);text-decoration:underline;text-underline-offset:3px">About</a></footer>
+    </blockquote>
+  </section>
+
+  <footer class="foot"><div class="wrap foot-in">
+    <div><a class="brand" href="#"><span data-icon="logo"></span><span>protein-site</span></a><small>Free for every student. No account, nothing to install. Your place in each lesson is saved only in this browser.</small></div>
+    <nav><a href="#">About</a><a href="#">Send feedback</a><a href="#">Data sources</a></nav>
+  </div></footer>
+</div>
+
+<p class="mock-label">Phone (390 px)</p>
+<div class="mock-row">
+  <figure><div class="frame phone"><div class="haze"></div><svg class="contours" data-o="0.17"></svg><div data-phonebar="closed"></div>
+    <div class="ph">
+      <p class="eyebrow">Free 3D chemistry lessons</p>
+      <h1 class="t-hero" style="margin-top:10px">Chemistry you can see.</h1>
+      <p class="t-lead">Turn molecules around, watch reactions happen, and see why it works.</p>
+      <a class="btn primary" style="margin-top:20px">Pick your course <span data-icon="arrow"></span></a>
+      <figure class="mol" style="margin:14px 0 0"><img src="img/atp.png" alt="" />
+        <figcaption class="mol-cap"><h3>ATP <span>· the cell’s energy currency</span></h3><div class="mol-meta"><span class="tag ill">Illustrative</span><span>Drag to rotate</span></div></figcaption></figure>
+    </div></div>
+    <figcaption>Top of the page. One clear button; the model follows right below the pitch, and its caption and hint sit under it, never on it.</figcaption></figure>
+  <figure><div class="frame phone"><div class="haze"></div><div data-phonebar="closed"></div>
+    <div class="ph" style="padding-top:22px"><h2 style="font-size:26px">Pick your course</h2>
+      <div id="course-phone" style="margin-top:16px;display:grid;gap:12px"></div></div></div>
+    <figcaption>Scrolled down: one course card per row, each topic a full-width tap target.</figcaption></figure>
+</div>
+
+<p class="mock-label">Alternative hero: centered</p>
+<div class="frame desktop" style="height:640px"><div class="haze"></div><svg class="contours" data-o="0.17"></svg><div data-topbar='{}'></div>
+  <div style="position:relative;text-align:center;padding-top:54px">
+    <h1 class="t-hero" style="font-size:60px">Chemistry you can see.</h1>
+    <p class="t-lead" style="margin:16px auto 0;max-width:560px;font-size:17px">Short, visual lessons for Gen Chem, Organic, and Biochem.</p>
+    <div class="hero-cta" style="justify-content:center;margin-top:22px"><a class="btn primary">Pick your course <span data-icon="arrow"></span></a></div>
+    <figure class="mol" style="margin:0"><img src="img/atp.png" alt="" style="width:330px" /><figcaption class="mol-cap"><h3>ATP <span>· the cell’s energy currency</span></h3></figcaption></figure>
+  </div></div>
+<div class="mock-row" style="margin-top:12px"><p class="t-small" style="max-width:900px"><b style="color:var(--text)">I recommend the side-by-side hero at the top of this page.</b> It gives the live molecule room to be big and draggable right away, and the headline stays large. The centered version looks calm, but pushes the molecule (the thing that makes the site special) smaller and lower.</p></div>
+<div style="height:60px"></div>
+
+<script src="parts.js"></script>
+<script>
+  const FOR = { gen: 'Shapes, electrons, and the periodic table.', org: 'How reactions actually happen.', bio: 'The molecules of life, from real lab data.' }
+  const card = (c) => '<div class="course"><div class="course-head"><h3 class="t-h3">' + c.name + '</h3><p>' + FOR[c.id] + '</p></div>' +
+    c.items.map((it) => '<a class="topic" href="#"><span class="menu-ico">' + ICON[it.icon] + '</span><span><span class="menu-title">' + it.title + '</span><span class="menu-desc">' + it.desc + '</span></span><span class="go">' + ICON.arrow + '</span></a>').join('') + '</div>'
+  document.getElementById('course-cards').innerHTML = COURSES.map(card).join('')
+  document.getElementById('course-phone').innerHTML = COURSES.slice(0, 2).map(card).join('')
+</script>
+<script src="contours.js"></script>
+</body></html>

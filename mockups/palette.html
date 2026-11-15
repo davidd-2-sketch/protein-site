@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="mock.css" /><title>Mockup F · Palette</title>
+<style>
+  .sw-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; max-width: 1180px; margin: 0 auto; padding: 0 32px; }
+  .sw { border-radius: 12px; border: 1px solid var(--line-strong); overflow: hidden; font-size: 12.5px; }
+  .sw i { display: block; height: 64px; }
+  .sw p { padding: 8px 10px; color: var(--text-dim); line-height: 1.4; }
+  .sw b { display: block; color: var(--text); font-weight: 600; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; max-width: 1180px; margin: 0 auto; padding: 0 32px; }
+  .two figure { margin: 0; } .two figcaption { margin-top: 8px; font-size: 13.5px; color: var(--text-dim); }
+  .cframe { position: relative; height: 300px; border-radius: 14px; border: 1px solid var(--line-strong); overflow: hidden; background: var(--bg-0); }
+  .old-panel { background: linear-gradient(180deg, rgba(19, 22, 54, 0.94), rgba(12, 14, 35, 0.93)) padding-box, linear-gradient(140deg, rgba(94, 228, 255, 0.32), rgba(168, 176, 255, 0.1) 32%, rgba(168, 176, 255, 0.07) 68%, rgba(182, 140, 255, 0.3)) border-box; border: 1px solid transparent; border-radius: 14px; }
+  .old-seg { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; padding: 3px; border-radius: 9px; background: rgba(7, 8, 22, 0.55); border: 1px solid rgba(168, 176, 255, 0.09); }
+  .old-seg span { height: 34px; display: grid; place-items: center; border-radius: 5px; font-size: 14px; color: #a9aecb; }
+  .old-seg span.on { background: #1d2148; color: #eef0fb; box-shadow: inset 0 0 0 1px rgba(94, 228, 255, 0.45), 0 4px 14px -6px rgba(94, 228, 255, 0.45); }
+  .demo { padding: 20px; display: grid; gap: 14px; }
+</style></head>
+<body>
+<div class="mock-note">
+  <p class="t-micro"><a href="index.html">← All mockups</a></p>
+  <h1>F · The same dark indigo and violet, refined</h1>
+  <p>No new colors. The existing ones are evened out so the site reads as one calm system: four clear surface steps, one kind of border, one soft shadow, and the cyan → violet gradient saved for a few key moments.</p>
+</div>
+
+<p class="mock-label">Surfaces and text</p>
+<div class="sw-row">
+  <div class="sw"><i style="background:#07071a"></i><p><b>Page</b>#07071a</p></div>
+  <div class="sw"><i style="background:#0d0e27"></i><p><b>Panel / card</b>#0d0e27</p></div>
+  <div class="sw"><i style="background:#151737"></i><p><b>Hover</b>#151737</p></div>
+  <div class="sw"><i style="background:#1e2150"></i><p><b>Selected</b>#1e2150</p></div>
+  <div class="sw"><i style="background:#0d0e27;display:grid;place-items:center;color:#f2f3fc;font-size:22px;font-weight:600;font-style:normal">Aa</i><p><b>Text</b>#f2f3fc · contrast 17:1</p></div>
+  <div class="sw"><i style="background:#0d0e27;display:grid;place-items:center;color:#b4b8d8;font-size:22px;font-weight:600;font-style:normal">Aa <span style="color:#8d92b6;margin-left:10px">Aa</span></i><p><b>Dim / faint</b>9.5:1 · 6:1 (AA passes)</p></div>
+</div>
+<p class="mock-label">Accents (used sparingly)</p>
+<div class="sw-row">
+  <div class="sw" style="grid-column:span 2"><i style="background:var(--grad)"></i><p><b>Signature gradient</b>Only: the main button, “you are here”, the current lesson step</p></div>
+  <div class="sw"><i style="background:#6fe3ff"></i><p><b>Cyan</b>Links, focus rings, interactive</p></div>
+  <div class="sw"><i style="background:#58e0b3"></i><p><b>Green</b>Experimental structure, correct</p></div>
+  <div class="sw"><i style="background:#bba9ff"></i><p><b>Violet</b>Illustrative label</p></div>
+  <div class="sw"><i style="background:#ffc95c"></i><p><b>Gold</b>Electrons, “try again” hints</p></div>
+</div>
+
+<p class="mock-label">Panels and controls: today vs refined</p>
+<div class="two">
+  <figure><div class="cframe"><div class="haze"></div><div class="old-panel demo" style="position:absolute;inset:24px 24px auto 24px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 2px 6px -2px rgba(0,0,0,.45),0 28px 64px -30px rgba(0,0,0,.8)">
+    <div class="old-seg"><span class="on">Lessons</span><span>Explore</span></div><h3 style="font-size:22px">Learn VSEPR</h3>
+    <div style="display:flex;gap:8px"><span class="btn sm primary" style="box-shadow:0 8px 22px -10px rgba(120,170,255,.65)">Next →</span><span class="btn sm">Back</span></div></div></div>
+    <figcaption><b style="color:var(--text)">Today.</b> Gradient borders, glowing selected states, and several shadow layers: each is fine alone, but together they compete.</figcaption></figure>
+  <figure><div class="cframe"><div class="haze"></div><div class="panel demo" style="position:absolute;inset:24px 24px auto 24px">
+    <div class="seg"><button class="on">Lessons</button><button>Explore</button></div><h3 style="font-size:22px">Learn VSEPR</h3>
+    <div style="display:flex;gap:8px"><span class="btn sm primary">Next →</span><span class="btn sm">Back</span></div></div></div>
+    <figcaption><b style="color:var(--text)">Refined.</b> One hairline border, one soft shadow, flat selected state. The gradient appears once, on the button that matters.</figcaption></figure>
+</div>
+
+<p class="mock-label">Background contour lines: today vs slightly stronger</p>
+<div class="two">
+  <figure><div class="cframe"><div class="haze"></div><svg class="contours" data-o="0.11"></svg></div><figcaption><b style="color:var(--text)">Today</b> (line strength 0.11).</figcaption></figure>
+  <figure><div class="cframe"><div class="haze"></div><svg class="contours" data-o="0.17"></svg></div><figcaption><b style="color:var(--text)">Proposed</b> (0.17): easier to notice, still quiet behind text. On the real site this becomes one small static picture drawn once, with no ongoing work for the computer.</figcaption></figure>
+</div>
+<div style="height:60px"></div>
+<script src="contours.js"></script>
+</body></html>
