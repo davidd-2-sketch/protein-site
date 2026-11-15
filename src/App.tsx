@@ -11,7 +11,7 @@ import TopBar from './components/TopBar'
 import LoadingScreen from './components/LoadingScreen'
 import HomePage from './pages/HomePage'
 import { installClickSounds } from './sound/sound'
-import { loadEnzymesPage, loadPolarityPage, loadPracticePage, loadTrendsPage } from './pages/loaders'
+import { loadAboutPage, loadEnzymesPage, loadPolarityPage, loadPracticePage, loadTrendsPage } from './pages/loaders'
 import { installLinkPrefetch, loadOrbitalsPage, loadProteinPage, loadReactionPage, loadVseprPage, prefetchWhenIdle } from './pages/loaders'
 
 /*
@@ -27,12 +27,17 @@ const TrendsPage = lazy(loadTrendsPage)
 const PolarityPage = lazy(loadPolarityPage)
 const EnzymesPage = lazy(loadEnzymesPage)
 const PracticePage = lazy(loadPracticePage)
+const AboutPage = lazy(loadAboutPage)
 
 export default function App() {
   const location = useLocation()
   // A link that names a lesson (e.g. Organic → Hybridization) reopens the page at that lesson,
   // even if the student is already on that page.
   const pageKey = location.pathname + (location.search.includes('lesson=') ? location.key : '')
+  // A new page starts at its top (unless the link points at a section, like /about#sources).
+  useEffect(() => {
+    if (!location.hash) window.scrollTo(0, 0)
+  }, [location.pathname, location.hash])
   // Quietly download the viewers in the background once the first page has settled.
   useEffect(() => prefetchWhenIdle(), [])
   // ...and any page the moment a student points at a link to it.
@@ -57,6 +62,7 @@ export default function App() {
             <Route path="/polarity" element={<PolarityPage />} />
             <Route path="/enzymes" element={<EnzymesPage />} />
             <Route path="/practice" element={<PracticePage />} />
+            <Route path="/about" element={<AboutPage />} />
             {/* The old Progress page is gone; its address sends people home instead of to an error. */}
             <Route path="/progress" element={<Navigate to="/" replace />} />
             {/* Any unknown URL falls back to the home page. */}

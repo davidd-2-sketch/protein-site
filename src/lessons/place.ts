@@ -8,9 +8,9 @@ import { getItem, setItem } from './progress'
 /** Each module: its page address and its name as shown to students. */
 export const MODULES = {
   protein: { path: '/protein', name: 'Proteins' },
-  vsepr: { path: '/shapes', name: 'Shapes' },
+  vsepr: { path: '/shapes', name: 'Molecular shapes' },
   orbitals: { path: '/orbitals', name: 'Orbitals' },
-  trends: { path: '/trends', name: 'Trends' },
+  trends: { path: '/trends', name: 'Periodic trends' },
   enzymes: { path: '/enzymes', name: 'Enzymes' },
 } as const
 export type ModuleKey = keyof typeof MODULES

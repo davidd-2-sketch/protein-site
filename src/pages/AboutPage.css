@@ -1,0 +1,122 @@
+/* AboutPage.css — a calm reading page. */
+.about {
+  position: relative;
+  min-height: 100%;
+}
+
+.about-body {
+  max-width: 760px;
+  padding-top: calc(var(--topbar-height) + 64px);
+}
+
+.about-head h1 {
+  margin-top: 12px;
+  font-size: clamp(34px, 5vw, 52px);
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+}
+
+.about-lead {
+  margin-top: 18px;
+  color: var(--text-dim);
+  font-size: var(--fs-lead);
+  line-height: 1.55;
+}
+
+.about section {
+  margin-top: var(--space-7);
+  scroll-margin-top: calc(var(--topbar-height) + 16px);
+}
+
+.about h2 {
+  font-size: 24px;
+  letter-spacing: -0.025em;
+}
+
+.about section p,
+.about-list {
+  margin-top: 14px;
+  color: var(--text-dim);
+  font-size: 16.5px;
+  line-height: 1.65;
+}
+
+.about section a:not(.btn) {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 4px;
+}
+
+.about section a:not(.btn):hover {
+  text-decoration-color: var(--accent);
+}
+
+.about-list {
+  padding-left: 20px;
+  display: grid;
+  gap: 8px;
+}
+
+.about-labels {
+  margin: 18px 0 0;
+  display: grid;
+  gap: 14px;
+}
+
+.about-labels > div {
+  padding: 16px 18px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line-strong);
+  background: var(--bg-1);
+}
+
+.about-labels dd {
+  margin: 10px 0 0;
+  color: var(--text-dim);
+  font-size: 15.5px;
+  line-height: 1.6;
+}
+
+.about-labels strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.about-table-wrap {
+  margin-top: 16px;
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line-strong);
+}
+
+.about-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+  background: var(--bg-1);
+}
+
+.about-table th,
+.about-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  color: var(--text-dim);
+}
+
+.about-table thead th {
+  color: var(--text-faint);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.about-table tbody tr:last-child th,
+.about-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.about-table tbody th {
+  font-weight: 500;
+  white-space: nowrap;
+}
