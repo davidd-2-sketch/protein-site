@@ -91,7 +91,6 @@ export default function EnzymePracticeStage({ structure, after, highlight, revea
         </p>
       )}
       {failed && <p className="practice-busy">This 3D view couldn’t start in this browser.</p>}
-      <span className="practice-source tag tag-experimental">Experimental structure · PDB {STRUCTURES[current].pdb}</span>
     </div>
   )
 }

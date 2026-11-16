@@ -248,6 +248,8 @@ export function QuizBox(props: {
   /** "Question {number} of {total}" within this lesson. */
   number: number
   total: number
+  /** What one item is called in the counter. Default: "Question". */
+  countWord?: string
   /** True when answering makes the 3D model appear (predict, then reveal). */
   reveals: boolean
   /** Optional wording overrides for the small label and the "pick an answer" line. */
@@ -296,7 +298,7 @@ export function QuizBox(props: {
       <div className="quiz-top">
         <span className="quiz-label">{props.label ?? (props.reveals ? 'Predict first' : 'Check yourself')}</span>
         <span className="quiz-count">
-          Question {props.number} of {props.total}
+          {props.countWord ?? 'Question'} {props.number} of {props.total}
         </span>
       </div>
       <p className="quiz-question">
