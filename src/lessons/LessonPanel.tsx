@@ -92,7 +92,7 @@ export default function LessonPanel(p: Props) {
         <div className="lesson-body">
         <h2>{step.title}</h2>
         <p className="lesson-text">
-          <RichText text={step.text[p.depth]} />
+          <RichText text={step.text[p.depth]} auto />
         </p>
 
         {step.quiz && (
@@ -356,7 +356,7 @@ export function QuizBox(props: {
               {result === 'shown' ? 'Here’s the answer' : tried.length === 0 ? '✓ Correct, first try!' : '✓ Correct!'}
             </p>
             <p>
-              <RichText text={quiz.explain} />
+              <RichText text={quiz.explain} auto />
             </p>
           </div>
         )}

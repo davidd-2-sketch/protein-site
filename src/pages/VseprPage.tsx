@@ -309,7 +309,7 @@ const ShapePanel = memo(function ShapePanel(props: {
 
       <div className="lesson-body" key={`${shape.bonds}-${shape.lone}`}>
         <p className="lesson-text">
-          <RichText text={shape.text[depth]} />
+          <RichText text={shape.text[depth]} auto />
         </p>
       </div>
 

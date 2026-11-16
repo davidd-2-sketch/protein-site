@@ -338,8 +338,13 @@
   font-size: 13.5px;
   line-height: 1.5;
   color: var(--text-dim);
+  max-width: calc(100vw - 16px);
   pointer-events: none;
   animation: fade-in var(--fast) var(--ease);
+}
+
+.term-tip.is-above {
+  transform: translate(-50%, -100%);
 }
 
 .term-tip strong {

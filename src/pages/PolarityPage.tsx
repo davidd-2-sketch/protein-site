@@ -6,6 +6,7 @@
   Molecules come in look-alike pairs (CO₂ vs H₂O, ...). For each one the student predicts
   "polar or nonpolar?" first; answering slides the arrows together to show why.
 */
+import RichText from '../lessons/RichText'
 import { Link } from 'react-router-dom'
 import Icon from '../components/Icon'
 import TopicLayout, { Toggle, ToolButton } from '../components/TopicLayout'
@@ -63,8 +64,7 @@ export default function PolarityPage() {
         <header>
           <h1 className="pol-title">Polarity</h1>
           <p className="pol-sub">
-            A molecule is polar when its bond dipoles don’t cancel. Ask two questions: are the bonds polar, and does the
-            shape let them cancel?
+            <RichText text="A molecule is polar when its [[bond dipoles|bond dipole]] don’t cancel. Ask two questions: are the bonds polar, and does the shape let them cancel?" />
           </p>
         </header>
 

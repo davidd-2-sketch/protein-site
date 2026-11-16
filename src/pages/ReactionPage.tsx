@@ -333,7 +333,7 @@ const ReactionPanel = memo(function ReactionPanel(props: {
           </p>
           <h2>{def.steps[stepIndex].title}</h2>
           <p className="lesson-text">
-            <RichText text={def.steps[stepIndex].text[depth]} />
+            <RichText text={def.steps[stepIndex].text[depth]} auto />
           </p>
         </div>
       )}

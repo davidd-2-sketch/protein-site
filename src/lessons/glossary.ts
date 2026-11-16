@@ -79,5 +79,14 @@ export const GLOSSARY: Record<string, string> = {
   'ionization energy': 'The energy needed to remove one electron from an atom in the gas phase.',
   electronegativity: 'How strongly an atom attracts the electrons it shares in a bond. The Pauling scale runs from about 0.7 to 4.0.',
   'electron affinity': 'The energy released when an atom in the gas phase gains one electron.',
+  'bond dipole': 'Uneven sharing of the electrons in a bond: the more electronegative atom ends up slightly negative (δ−) and the other slightly positive (δ+). Drawn as an arrow pointing toward the δ− end.',
+  'dipole moment': 'A number for how polar a whole molecule is, measured in debye (D). Zero means the bond dipoles cancel.',
   'X-ray crystallography': 'A method that finds where atoms are by shining X-rays through a crystal of the molecule.',
 }
+
+/*
+  Words that are NOT underlined automatically (see RichText's `auto`), because they also
+  have an everyday meaning ("a group of atoms", "a period of time"). Writers can still
+  mark them by hand with [[...]] where the chemistry meaning is intended.
+*/
+export const AUTO_SKIP = ['group', 'period', 'phase', 'node', 'intermediate', 'mutation', 'backbone']
