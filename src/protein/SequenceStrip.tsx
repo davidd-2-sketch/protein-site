@@ -4,7 +4,8 @@
   students can match a letter to its place in the chain.
   Hover a letter to highlight it in 3D; click to fly there.
 */
-import { RAINBOW, type ResidueRef } from './ProteinViewer'
+import { RAINBOW } from './colors'
+import type { ResidueRef } from './ProteinViewer'
 import { BY_ONE } from './aminoAcids'
 import type { ChainId } from './hemoglobin'
 

@@ -17,6 +17,7 @@
   changes for one view into a single "update" so the screen swaps in one frame.
 */
 import { frameWatcher, settings as quality } from '../perf/quality'
+import { RAINBOW } from './colors'
 import { PluginContext } from 'molstar/lib/mol-plugin/context'
 import { DefaultPluginSpec, PluginSpec } from 'molstar/lib/mol-plugin/spec'
 import { PluginConfig } from 'molstar/lib/mol-plugin/config'
@@ -112,8 +113,7 @@ export type PickInfo =
 
 const hex = (s: string) => Color(parseInt(s.slice(1), 16))
 
-/** N→C rainbow, also used by the on-screen sequence strip so both always match. */
-export const RAINBOW = ['#3f6bff', '#3fb8ff', '#4fe3b0', '#c6e84f', '#ffc94d', '#ff7a45', '#ff4d6a']
+export { RAINBOW }
 
 const SECONDARY_COLORS = { helix: '#e879c9', sheet: '#ffc94d', coil: '#b4b9d6' }
 const HYDROPHOBIC_COLOR = '#ff9a3d'

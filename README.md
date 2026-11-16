@@ -29,12 +29,22 @@ every time you save a file, the page updates by itself. Press `Ctrl + C` in Term
 src/
   main.tsx        Starts the app
   App.tsx         Top bar + which page shows for which URL
-  styles/         theme.css (all colors/fonts/sizes) and global.css (shared building blocks)
-  components/     Reusable pieces: top bar, loading screen
-  pages/          One file per page: Home, Protein, Reaction
-  protein/        Mol* viewer code (Phase 1)
-  reactions/      Three.js reaction code + reaction data files (Phase 2)
+  styles/         theme.css (all colors, fonts, sizes) and global.css (shared building blocks)
+  nav/            courses.ts: which topics belong to General Chem, Organic, and Biochem
+  components/     Reusable pieces. TopBar (menus), TopicLayout (the ONE layout every
+                  topic page uses), SettingsPanel, SiteFooter, HeroMolecule
+  pages/          One file per page: Home, About, Practice, and each topic
+  lessons/        Lesson panel, glossary (word definitions), saved place in lessons
+  practice/       Flashcard questions and their visuals
+  three/          Shared 3D helpers (quality3d.ts applies the "faster graphics" setting)
+  perf/           Graphics quality choice, and "wait until the page has appeared"
+  protein/        Mol* protein viewer
+  reactions/, vsepr/, orbitals/, trends/, polarity/, enzymes/
+                  The 3D scene and checked data for each topic
   data/           Structure files and science notes with sources
+scripts/          make-contours.mjs draws the home page's background lines (public/contours.svg)
+public/fonts/     The Inter font, hosted on this site
+mockups/          The design mockups the redesign was built from
 ```
 
 ## Honesty labels

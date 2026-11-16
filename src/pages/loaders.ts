@@ -6,7 +6,10 @@
   hovers a link. By the time they click, the code is usually already downloaded.
   Calling a loader twice is free: the browser reuses the first download.
 */
+import { afterFirstPaint } from '../perf/afterPaint'
 export const loadProteinPage = () => import('./ProteinPage')
+/** Mol*, the protein viewer: large, so it is fetched separately from the pages that use it. */
+export const loadProteinViewer = () => import('../protein/ProteinViewer')
 export const loadReactionPage = () => import('./ReactionPage')
 export const loadVseprPage = () => import('./VseprPage')
 export const loadOrbitalsPage = () => import('./OrbitalsPage')
@@ -41,19 +44,20 @@ export function prefetchWhenIdle() {
     void loadPolarityPage()
     void loadPracticePage()
   }
-  const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }
-  if (w.requestIdleCallback) w.requestIdleCallback(run, { timeout: 5000 })
-  else setTimeout(run, 3000)
+  // Well after the page has appeared, so this never slows down what the student came to see.
+  return afterFirstPaint(run, 2500)
 }
 
 const BY_PATH: Record<string, () => Promise<unknown>> = {
-  '/protein': loadProteinPage,
+  // The page, plus the 3D viewer it will ask for a moment later (pointing at the link means
+  // "I'm about to open this", so the big download is worth starting).
+  '/protein': () => Promise.all([loadProteinPage(), loadProteinViewer()]),
   '/reaction': loadReactionPage,
   '/shapes': loadVseprPage,
   '/orbitals': loadOrbitalsPage,
   '/trends': loadTrendsPage,
   '/polarity': loadPolarityPage,
-  '/enzymes': loadEnzymesPage,
+  '/enzymes': () => Promise.all([loadEnzymesPage(), loadProteinViewer()]),
   '/practice': loadPracticePage,
   '/about': loadAboutPage,
 }

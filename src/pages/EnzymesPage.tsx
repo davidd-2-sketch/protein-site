@@ -23,7 +23,8 @@ import { SlidingPill } from '../components/motion'
 import OverlayLabels from '../lessons/OverlayLabels'
 import { useStoredState } from '../lessons/progress'
 import { BY_THREE } from '../protein/aminoAcids'
-import { ProteinViewer } from '../protein/ProteinViewer'
+// Type only: the viewer itself (Mol*, a large download) is fetched after the page appears.
+import type { ProteinViewer } from '../protein/ProteinViewer'
 import { CHYMO_SITE, GK_GLUCOSE_SITE, GK_OPEN_MISSING, STRUCTURES, type StructureId } from '../enzymes/structures'
 import { GK_LID, GROUP_COLORS, GROUP_NAMES, siteInfo, VIEWS } from '../enzymes/views'
 import EnergyChart from '../enzymes/EnergyChart'
@@ -113,6 +114,9 @@ export default function EnzymesPage() {
     let v: ProteinViewer | null = null
     ;(async () => {
       try {
+        // Downloaded here, not with the page: the lesson text shows while the 3D viewer loads.
+        const { ProteinViewer } = await import('../protein/ProteinViewer')
+        if (disposed) return
         v = await ProteinViewer.create(hostRef.current!, { chains: VIEWS['chymo-ts'].chainStyles })
         if (disposed) return v.dispose()
         v.onHover(setHover)

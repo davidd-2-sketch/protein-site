@@ -10,6 +10,7 @@
   The caption, honesty label, and "drag to rotate" hint sit UNDER the model, so
   nothing is ever drawn on top of it.
 */
+import { afterFirstPaint } from '../perf/afterPaint'
 import { useEffect, useRef, useState } from 'react'
 import type { HoveredAtom } from '../three/MoleculeScene'
 import './HeroMolecule.css'
@@ -23,7 +24,7 @@ export default function HeroMolecule() {
     let scene: { dispose(): void } | undefined
     let cancelled = false
     // Download Three.js + the ATP data only once the page itself is on screen and the
-    // browser is idle: the text appears first, the molecule a moment later.
+    // browser is idle (see afterPaint.ts): the text appears first, the molecule a moment later.
     const start = () =>
       Promise.all([import('../three/MoleculeScene'), import('../data/molecules/atp')]).then(([{ MoleculeScene }, { default: atp }]) => {
         if (cancelled || !canvasHost.current) return
@@ -32,13 +33,10 @@ export default function HeroMolecule() {
         scene = s
         setReady(true)
       })
-    // (requestIdleCallback isn't in every browser; a short timer is the fallback.)
-    const idle = 'requestIdleCallback' in window
-    const id = idle ? window.requestIdleCallback(() => void start(), { timeout: 1500 }) : window.setTimeout(() => void start(), 300)
+    const cancel = afterFirstPaint(() => void start())
     return () => {
       cancelled = true
-      if (idle) window.cancelIdleCallback(id)
-      else window.clearTimeout(id)
+      cancel()
       scene?.dispose()
     }
   }, [])

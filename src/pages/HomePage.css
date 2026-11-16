@@ -149,7 +149,7 @@
   padding: 0;
 }
 
-.topic {
+.home-topic {
   display: grid;
   grid-template-columns: 40px 1fr 16px;
   gap: 12px;
@@ -160,18 +160,18 @@
   transition: background var(--fast) var(--ease);
 }
 
-.topic:hover {
+.home-topic:hover {
   background: var(--bg-2);
 }
 
-.topic-go {
+.home-topic-go {
   color: var(--text-faint);
   transition:
     color var(--fast) var(--ease),
     transform var(--medium) var(--ease);
 }
 
-.topic:hover .topic-go {
+.home-topic:hover .home-topic-go {
   color: var(--accent);
   transform: translateX(2px);
 }

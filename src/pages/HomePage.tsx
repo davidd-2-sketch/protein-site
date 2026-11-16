@@ -72,7 +72,7 @@ export default function HomePage() {
               <ul>
                 {c.topics.map((t) => (
                   <li key={t.to}>
-                    <Link to={t.to} className="topic" onClick={() => rememberCourse(c.id)}>
+                    <Link to={t.to} className="home-topic" onClick={() => rememberCourse(c.id)}>
                       <span className="menu-ico">
                         <Icon name={t.icon} />
                       </span>
@@ -80,7 +80,7 @@ export default function HomePage() {
                         <span className="menu-title">{t.title}</span>
                         <span className="menu-desc">{t.desc}</span>
                       </span>
-                      <span className="topic-go">
+                      <span className="home-topic-go">
                         <Icon name="arrow" size={16} />
                       </span>
                     </Link>

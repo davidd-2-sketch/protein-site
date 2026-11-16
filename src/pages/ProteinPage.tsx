@@ -19,15 +19,9 @@ import LoadingScreen from '../components/LoadingScreen'
 import InfoPanel from '../protein/InfoPanel'
 import SequenceStrip from '../protein/SequenceStrip'
 import { ALL_CHAINS, CHAINS, SEQUENCES, type ChainId as HbChain } from '../protein/hemoglobin'
-import {
-  ProteinViewer,
-  RAINBOW,
-  type ColorMode,
-  type PickInfo,
-  type RenderStyle,
-  type ResidueRef,
-  type ViewState,
-} from '../protein/ProteinViewer'
+import { RAINBOW } from '../protein/colors'
+// Types only: the viewer itself (Mol*, a large download) is fetched after the page appears.
+import type { ColorMode, PickInfo, ProteinViewer, RenderStyle, ResidueRef, ViewState } from '../protein/ProteinViewer'
 import LessonPanel, { type TaskStatus } from '../lessons/LessonPanel'
 import OverlayLabels from '../lessons/OverlayLabels'
 import { PROTEIN_LESSONS } from '../lessons/proteinLessons'
@@ -109,6 +103,9 @@ export default function ProteinPage() {
     let v: ProteinViewer | null = null
     ;(async () => {
       try {
+        // Downloaded here, not with the page: the lesson text shows while the 3D viewer loads.
+        const { ProteinViewer } = await import('../protein/ProteinViewer')
+        if (disposed) return
         v = await ProteinViewer.create(hostRef.current!)
         if (disposed) return v.dispose()
         await v.load('/structures/4hhb.bcif')
