@@ -9,6 +9,8 @@
   The "Lessons | Explore" switch sits at the top in both states.
 */
 import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
+import Icon from '../components/Icon'
 import ModeSwitch from '../components/ModeSwitch'
 import { CheckIcon, CrossIcon, SlidingPill, SmoothHeight, StepTransition } from '../components/motion'
 import { revealInPanel } from '../components/revealInPanel'
@@ -27,6 +29,8 @@ interface Props {
   listBlurb?: string
   /** Called when the step's quiz is answered correctly or the answer is revealed. */
   onQuizDone?: () => void
+  /** The Practice topic with questions on this page's material (see practice/questions.ts). */
+  practiceTopic?: string
   stepIndex: number
   depth: Depth
   taskStatus: TaskStatus
@@ -57,7 +61,7 @@ export default function LessonPanel(p: Props) {
   const pending = (step.quiz && answeredKey !== stepKey) || (step.task && p.taskStatus !== 'correct')
 
   return (
-    <section className="lesson panel" aria-label={`Lesson: ${lesson.title}`}>
+    <section className="lesson panel in-step" aria-label={`Lesson: ${lesson.title}`}>
       <ModeSwitch mode="lessons" onChange={p.onClose} />
       <header className="lesson-head">
         <button className="lesson-back" onClick={p.onExit}>
@@ -121,6 +125,18 @@ export default function LessonPanel(p: Props) {
         )}
 
         {step.note && <p className="lesson-note">{step.note}</p>}
+
+        {/* The end of every lesson offers the same next step: practice what you just learned. */}
+        {isLast && p.practiceTopic && (
+          <div className="lesson-end">
+            <p>
+              <strong>That’s the end of this lesson.</strong> Try a few questions on it while it’s fresh.
+            </p>
+            <Link to={`/practice?topic=${p.practiceTopic}`} className="btn btn-sm">
+              Practice this topic <Icon name="arrow" size={16} />
+            </Link>
+          </div>
+        )}
         </div>
       </StepTransition>
 

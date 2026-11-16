@@ -30,6 +30,9 @@ import { DURATION_SECONDS, type Speed } from '../reactions/playback'
 import { REACTIONS, type Face, type ReactionDef } from '../reactions/reactions'
 import ReactionLabels from '../reactions/ReactionLabels'
 import '../components/ModeSwitch.css'
+import { Link } from 'react-router-dom'
+import Icon from '../components/Icon'
+import TopicLayout, { Toggle, ToolButton } from '../components/TopicLayout'
 import './ReactionPage.css'
 
 type View = 'sn2' | 'sn1' | 'compare'
@@ -186,48 +189,44 @@ function SingleReaction({ def, onView }: { def: ReactionDef; onView: (v: View) =
   useEffect(() => scene?.setOptions({ arrows: showArrows }), [scene, showArrows])
 
   return (
-    <div className="reaction-page">
-      <div className="reaction-backdrop" aria-hidden="true" />
-
-      <div className="reaction-stage">
-        <div
-          ref={hostRef}
-          className="reaction-canvas"
-          role="img"
-          aria-label={`3D animation of ${def.ariaName}, currently at: ${step.title}. Drag to rotate, scroll to zoom.`}
+    <TopicLayout
+      className="reaction-page"
+      panel={
+        <ReactionPanel
+          def={def}
+          stepIndex={stepIndex}
+          depth={depth}
+          config={config}
+          face={face}
+          onFace={setFace}
+          asking={p.asking}
+          answered={p.answered}
+          onAnswered={() => p.setAnswered(true)}
+          onContinue={p.continueAfterAnswer}
+          onDepth={setDepth}
+          onSeek={seek}
+          onView={onView}
         />
-        {scene && showLabels && <ReactionLabels scene={scene} s={s} labels={def.labels} />}
-      </div>
-
-      {/* ===== Left: what's happening now ===== */}
-      <ReactionPanel
-        def={def}
-        stepIndex={stepIndex}
-        depth={depth}
-        config={config}
-        face={face}
-        onFace={setFace}
-        asking={p.asking}
-        answered={p.answered}
-        onAnswered={() => p.setAnswered(true)}
-        onContinue={p.continueAfterAnswer}
-        onDepth={setDepth}
-        onSeek={seek}
-        onView={onView}
-      />
-
-      {/* ===== Top-right: what to show ===== */}
-      <div className="reaction-toggles panel" role="group" aria-label="Show or hide">
-        <Toggle label="Questions" on={questionsOn} onChange={setQuestionsOn} />
-        <Toggle label="Electron arrows" on={showArrows} onChange={setShowArrows} />
-        <Toggle label="Labels" on={showLabels} onChange={setShowLabels} />
-        <button className="tool-btn" onClick={() => scene?.resetCamera()}>
-          Reset view
-        </button>
-      </div>
-
-      {/* ===== Bottom: timeline + energy diagram ===== */}
-      <div className="reaction-bottom">
+      }
+      label={{
+        kind: 'illustrative',
+        name: (
+          <>
+            S<sub>N</sub>
+            {def.number} reaction
+          </>
+        ),
+        source: 'the motion is a teaching model',
+      }}
+      options={
+        <>
+          <Toggle label="Questions" on={questionsOn} onChange={setQuestionsOn} />
+          <Toggle label="Electron arrows" on={showArrows} onChange={setShowArrows} />
+          <Toggle label="Labels" on={showLabels} onChange={setShowLabels} />
+          <ToolButton onClick={() => scene?.resetCamera()}>Reset view</ToolButton>
+        </>
+      }
+      control={
         <Timeline
           s={s}
           playing={p.playing}
@@ -239,11 +238,25 @@ function SingleReaction({ def, onView }: { def: ReactionDef; onView: (v: View) =
           onTogglePlay={p.togglePlay}
           onSpeed={p.setSpeed}
         />
-      </div>
+      }
+      peek={{
+        kicker: `Step ${stepIndex + 1} of ${def.steps.length}`,
+        title: step.title,
+        action: { label: p.playing ? 'Pause' : 'Play', onClick: p.togglePlay },
+      }}
+    >
+      <div
+        ref={hostRef}
+        className="topic-canvas"
+        role="img"
+        aria-label={`3D animation of ${def.ariaName}, currently at: ${step.title}. Drag to rotate, scroll to zoom.`}
+      />
+      {scene && showLabels && <ReactionLabels scene={scene} s={s} labels={def.labels} />}
+      {/* Energy diagram: bottom-right on wide screens (hidden when there's no room). */}
       <div className="reaction-energy">
         <EnergyDiagram s={s} onSeek={seek} energy={def.energy} notes={def.energyNotes} eaAt={def.eaAt} />
       </div>
-    </div>
+    </TopicLayout>
   )
 }
 
@@ -270,12 +283,9 @@ const ReactionPanel = memo(function ReactionPanel(props: {
   const { def, stepIndex, depth, config, onDepth, asking } = props
   const seek = props.onSeek
   return (
-    <section className="lesson reaction-panel panel" aria-label="Reaction explanation">
+    <section className="lesson reaction-panel" aria-label="Reaction explanation">
       <ReactionSwitch view={def.id} onView={props.onView} />
       <header className="reaction-head">
-        <div className="reaction-tags">
-          <span className="tag tag-illustrative">Illustrative motion</span>
-        </div>
         <h1>
           S<sub>N</sub>
           {def.number} substitution
@@ -328,6 +338,17 @@ const ReactionPanel = memo(function ReactionPanel(props: {
         </div>
       )}
       </StepTransition>
+
+      {asking === null && stepIndex === def.steps.length - 1 && (
+        <div className="lesson-end">
+          <p>
+            <strong>That’s the whole reaction.</strong> Try a few questions on it while it’s fresh.
+          </p>
+          <Link to="/practice?topic=reactions" className="btn btn-sm">
+            Practice this topic <Icon name="arrow" size={16} />
+          </Link>
+        </div>
+      )}
 
       <dl className="reaction-facts">
         <div>
@@ -397,35 +418,10 @@ function CompareView({ onView }: { onView: (v: View) => void }) {
   const step1 = sn1.steps[Math.max(0, sn1.steps.findIndex((st) => s >= st.from && s <= st.to + 1e-9))]
 
   return (
-    <div className="reaction-page is-compare">
-      <div className="reaction-backdrop" aria-hidden="true" />
-
-      <div className="compare-stage">
-        {(
-          [
-            [sn2, host2, scene2, step2, config2],
-            [sn1, host1, scene1, step1, config1],
-          ] as const
-        ).map(([def, host, scene, step, config]) => (
-          <div className="compare-half" key={def.id}>
-            <div className="compare-title panel">
-              <strong>
-                S<sub>N</sub>
-                {def.number}
-              </strong>
-              <span>{step.title}</span>
-              <span className="mono">C{def.stereoAtom.slice(1)}: {config ? `(${config})` : 'flat'}</span>
-            </div>
-            <div ref={host} className="reaction-canvas" role="img" aria-label={`3D animation of ${def.ariaName}, currently at: ${step.title}.`} />
-            {scene && <ReactionLabels scene={scene} s={s} labels={def.labels} kinds={['element', 'group', 'charge']} />}
-            <div className="compare-energy">
-              <EnergyDiagram s={s} onSeek={seek} energy={def.energy} notes={def.energyNotes} eaAt={def.eaAt} title={`Sₙ${def.number} energy`} />
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <section className="lesson reaction-panel panel" aria-label="SN1 and SN2 compared">
+    <TopicLayout
+      className="reaction-page is-compare"
+      panel={
+      <section className="lesson reaction-panel" aria-label="SN1 and SN2 compared">
         <ReactionSwitch view="compare" onView={onView} />
         <header className="reaction-head">
           <h1>
@@ -464,22 +460,43 @@ function CompareView({ onView }: { onView: (v: View) => void }) {
           see the front.
         </p>
       </section>
-
-      <div className="reaction-bottom">
-        <Timeline s={s} playing={p.playing} speed={p.speed} steps={[]} middle={null} onSeek={seek} onTogglePlay={p.togglePlay} onSpeed={p.setSpeed} />
+      }
+      label={{
+        kind: 'illustrative',
+        name: (
+          <>
+            S<sub>N</sub>2 and S<sub>N</sub>1, side by side
+          </>
+        ),
+      }}
+      control={<Timeline s={s} playing={p.playing} speed={p.speed} steps={[]} middle={null} onSeek={seek} onTogglePlay={p.togglePlay} onSpeed={p.setSpeed} />}
+      peek={{ kicker: 'Compare', title: 'SN2 vs SN1', action: { label: p.playing ? 'Pause' : 'Play', onClick: p.togglePlay } }}
+    >
+      <div className="compare-stage">
+        {(
+          [
+            [sn2, host2, scene2, step2, config2],
+            [sn1, host1, scene1, step1, config1],
+          ] as const
+        ).map(([def, host, scene, step, config]) => (
+          <div className="compare-half" key={def.id}>
+            <div className="compare-title panel">
+              <strong>
+                S<sub>N</sub>
+                {def.number}
+              </strong>
+              <span>{step.title}</span>
+              <span className="mono">C{def.stereoAtom.slice(1)}: {config ? `(${config})` : 'flat'}</span>
+            </div>
+            <div ref={host} className="reaction-canvas" role="img" aria-label={`3D animation of ${def.ariaName}, currently at: ${step.title}.`} />
+            {scene && <ReactionLabels scene={scene} s={s} labels={def.labels} kinds={['element', 'group', 'charge']} />}
+            <div className="compare-energy">
+              <EnergyDiagram s={s} onSeek={seek} energy={def.energy} notes={def.energyNotes} eaAt={def.eaAt} title={`Sₙ${def.number} energy`} />
+            </div>
+          </div>
+        ))}
       </div>
-    </div>
+    </TopicLayout>
   )
 }
 
-/* ---------- Small on/off switch ---------- */
-function Toggle({ label, on, onChange }: { label: string; on: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <button className={`toggle ${on ? 'is-on' : ''}`} role="switch" aria-checked={on} onClick={() => onChange(!on)}>
-      <span className="toggle-track" aria-hidden="true">
-        <span className="toggle-thumb" />
-      </span>
-      {label}
-    </button>
-  )
-}

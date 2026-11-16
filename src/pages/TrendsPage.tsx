@@ -10,6 +10,8 @@
 */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import ModeSwitch from '../components/ModeSwitch'
+import TopicLayout, { Toggle, ToolButton } from '../components/TopicLayout'
+import { lessonPeek } from '../lessons/peek'
 import LessonPanel from '../lessons/LessonPanel'
 import { useStoredState } from '../lessons/progress'
 import type { Depth } from '../lessons/types'
@@ -93,26 +95,8 @@ export default function TrendsPage() {
   const hoverEl = hovered ? byZ(hovered) : null
   const shown = view.props
 
-  return (
-    <div className={`trends-page ${selected !== null ? 'has-card' : ''}`}>
-      <div className="trends-backdrop" aria-hidden="true" />
-      <div className="trends-stage">
-        <div
-          ref={hostRef}
-          className="trends-canvas"
-          role="img"
-          aria-label={`Periodic table${shown.length ? ` showing ${shown.map((p) => PROPS.find((x) => x.id === p)!.name.toLowerCase()).join(' and ')} as column heights` : ''}. Click an element for details.`}
-        />
-        {scene && <SymbolLabels scene={scene} />}
-        <p className="trends-hover mono" aria-hidden="true">
-          {hoverEl
-            ? `${hoverEl.z} · ${hoverEl.name}${shown.map((p) => ` · ${formatValue(p, hoverEl.values[p])}`).join('')}`
-            : 'Click an element for details · drag to rotate'}
-        </p>
-      </div>
-
-      {/* ===== Left: lessons, or the property picker ===== */}
-      {mode === 'lessons' ? (
+  const panel =
+    mode === 'lessons' ? (
         <LessonPanel
           listTitle="Learn periodic trends"
           listBlurb="Four short lessons: how to read the table, then radius, ionization energy, and electronegativity."
@@ -128,9 +112,10 @@ export default function TrendsPage() {
           onExit={L.exit}
           onClose={() => setMode('explore')}
           onQuizDone={L.onQuizDone}
+          practiceTopic="trends"
         />
       ) : (
-        <section className="lesson trends-panel panel" aria-label="Choose what to show">
+        <section className="lesson trends-panel" aria-label="Choose what to show">
           <ModeSwitch mode="explore" onChange={() => setMode('lessons')} />
           <header>
             <h1 className="trends-title">Periodic trends</h1>
@@ -156,12 +141,7 @@ export default function TrendsPage() {
             })}
           </div>
 
-          <button className={`toggle ${mainOnly ? 'is-on' : ''}`} role="switch" aria-checked={mainOnly} onClick={() => setMainOnly(!mainOnly)}>
-            <span className="toggle-track" aria-hidden="true">
-              <span className="toggle-thumb" />
-            </span>
-            Main-group elements only
-          </button>
+          <Toggle label="Main-group elements only" on={mainOnly} onChange={setMainOnly} />
 
           <div className="lesson-note">
             <p>
@@ -175,20 +155,37 @@ export default function TrendsPage() {
             ))}
           </div>
         </section>
-      )}
+      )
 
-      {/* ===== Top-right toggles ===== */}
-      <div className="trends-toggles panel" role="group" aria-label="View options">
-        {!inLesson && <Toggle label="Flat table" on={flat} onChange={setFlat} />}
-        <Toggle label="Spin" on={spin} onChange={setSpin} />
-        <button className="tool-btn" onClick={() => scene?.setCamera(view.flat)}>
-          Reset view
-        </button>
-      </div>
-
-      {/* ===== Right: the element you clicked ===== */}
+  return (
+    <TopicLayout
+      className={`trends-page ${selected !== null ? 'has-card' : ''}`}
+      panel={panel}
+      label={{ kind: 'illustrative', name: 'Periodic table', source: 'column heights are real data (PubChem); radii are calculated' }}
+      options={
+        <>
+          {!inLesson && <Toggle label="Flat table" on={flat} onChange={setFlat} />}
+          <Toggle label="Spin" on={spin} onChange={setSpin} />
+          <ToolButton onClick={() => scene?.setCamera(view.flat)}>Reset view</ToolButton>
+        </>
+      }
+      peek={lessonPeek(mode === 'lessons' ? L : { lesson: null, step: null, stepIndex: 0 }, 'Periodic trends', L.goTo)}
+    >
+      <div
+        ref={hostRef}
+        className="topic-canvas"
+        role="img"
+        aria-label={`Periodic table${shown.length ? ` showing ${shown.map((p) => PROPS.find((x) => x.id === p)!.name.toLowerCase()).join(' and ')} as column heights` : ''}. Click an element for details.`}
+      />
+      {scene && <SymbolLabels scene={scene} />}
+      <p className="topic-busy trends-hover" aria-hidden="true">
+        {hoverEl
+          ? `${hoverEl.z} · ${hoverEl.name}${shown.map((p) => ` · ${formatValue(p, hoverEl.values[p])}`).join('')}`
+          : 'Click an element for details · drag to rotate'}
+      </p>
+      {/* The element you clicked */}
       {selected !== null && <ElementCard z={selected} shown={shown} onClose={() => setSelected(null)} />}
-    </div>
+    </TopicLayout>
   )
 }
 
@@ -251,15 +248,3 @@ function ElementCard({ z, shown, onClose }: { z: number; shown: PropId[]; onClos
     </aside>
   )
 }
-
-function Toggle({ label, on, onChange }: { label: string; on: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <button className={`toggle ${on ? 'is-on' : ''}`} role="switch" aria-checked={on} onClick={() => onChange(!on)}>
-      <span className="toggle-track" aria-hidden="true">
-        <span className="toggle-thumb" />
-      </span>
-      {label}
-    </button>
-  )
-}
-

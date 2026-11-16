@@ -29,6 +29,8 @@ import { GK_LID, GROUP_COLORS, GROUP_NAMES, siteInfo, VIEWS } from '../enzymes/v
 import EnergyChart from '../enzymes/EnergyChart'
 import KineticsChart, { type KineticsPlot } from '../enzymes/KineticsChart'
 import { apparent, DEMO, INHIBITION_INFO, rate, type Inhibition } from '../enzymes/kinetics'
+import TopicLayout, { Legend, ToolButton } from '../components/TopicLayout'
+import { lessonPeek } from '../lessons/peek'
 import '../components/ModeSwitch.css'
 import './ProteinPage.css'
 import './EnzymesPage.css'
@@ -216,38 +218,8 @@ export default function EnzymesPage() {
   const labels = !shown ? [] : lessonStructure ? (lessonStructure.labels ?? VIEWS[shown].labels) : labelsOn ? VIEWS[shown].labels : []
   const lines = lessonStructure?.lines ?? []
 
-  return (
-    <div className={`protein-page enzymes-page has-lessons is-${effTab}`}>
-      <div className="protein-backdrop" aria-hidden="true" />
-      <div className="stage">
-        <div
-          ref={hostRef}
-          className={`protein-canvas ${ready ? 'is-ready' : ''} ${switching && ready ? 'is-switching' : ''}`}
-          role="img"
-          aria-label={`3D model of ${s.enzyme}, ${s.state} (PDB ${s.pdb}). Drag to rotate, scroll to zoom, click a residue for details.`}
-        />
-        {ready && shown && effTab === 'structure' && <OverlayLabels key={`${shown}-${stepKey}`} viewer={viewer} labels={labels} lines={lines} />}
-      </div>
-
-      {effTab !== 'structure' && (
-        <div className="enz-chart-stage" key={effTab}>
-          {effTab === 'energy' ? (
-            <EnergyChart showUncatalyzed={energy.un} showCatalyzed={energy.cat} />
-          ) : (
-            <KineticsChart plot={kin.plot} type={kin.type} inhibitor={kin.inhibitor} substrate={kin.substrate} />
-          )}
-        </div>
-      )}
-
-      {status === 'loading' && <LoadingScreen label="Loading enzyme" />}
-      {status === 'error' && (
-        <div className="protein-error panel" role="alert">
-          <h2>The 3D viewer couldn't start</h2>
-          <p>Your browser may have 3D graphics (WebGL) turned off. Try another browser, or update this one.</p>
-        </div>
-      )}
-
-      {mode === 'lessons' ? (
+  const panel =
+    mode === 'lessons' ? (
         <LessonPanel
           listTitle="Learn enzymes"
           listBlurb="Six short lessons on real enzymes: the active site, the catalytic triad, induced fit, lowering the barrier, kinetics, and inhibitors."
@@ -263,9 +235,10 @@ export default function EnzymesPage() {
           onExit={L.exit}
           onClose={() => setMode('explore')}
           onQuizDone={L.onQuizDone}
+          practiceTopic="enzymes"
         />
       ) : (
-      <section className="lesson enzyme-panel panel" aria-label="Enzymes">
+      <section className="lesson enzyme-panel" aria-label="Enzymes">
         <ModeSwitch mode="explore" onChange={() => setMode('lessons')} />
         <header>
           <h1 className="enz-title">Enzymes</h1>
@@ -325,14 +298,43 @@ export default function EnzymesPage() {
         </>
         )}
       </section>
-      )}
+      )
 
-      {effTab === 'structure' && (
-      <>
-      <div className="protein-bottom">
-        <div className="toolbar panel" role="toolbar" aria-label="View controls">
-          {!inLesson && (
+  const onStructure = effTab === 'structure'
+
+  return (
+    <TopicLayout
+      className={`protein-page enzymes-page is-${effTab}`}
+      panel={panel}
+      label={
+        onStructure
+          ? {
+              kind: 'experimental',
+              name: s.enzyme,
+              source: (
+                <a href={`https://www.rcsb.org/structure/${s.pdb}`} target="_blank" rel="noreferrer" className="mono">
+                  PDB {s.pdb} ↗
+                </a>
+              ),
+            }
+          : null
+      }
+      options={
+        onStructure ? (
           <>
+            <ToolButton pressed={labelsOn} onClick={() => setLabelsOn((l) => !l)}>
+              Labels
+            </ToolButton>
+            <ToolButton pressed={spin} onClick={() => setSpin((v) => !v)}>
+              Spin
+            </ToolButton>
+            <ToolButton onClick={() => viewer?.focusResidues(VIEWS[effStructure].focus, 14, 700)}>Active site</ToolButton>
+            <ToolButton onClick={() => viewer?.resetCamera()}>Whole enzyme</ToolButton>
+          </>
+        ) : undefined
+      }
+      control={
+        onStructure && !inLesson ? (
           <div className="segmented" role="radiogroup" aria-label="Style">
             {(
               [
@@ -345,46 +347,53 @@ export default function EnzymesPage() {
               </button>
             ))}
           </div>
-          <span className="toolbar-divider" aria-hidden="true" />
-          </>
-          )}
-          <button className={`tool-btn ${labelsOn ? 'is-on' : ''}`} aria-pressed={labelsOn} onClick={() => setLabelsOn((l) => !l)}>
-            Labels
-          </button>
-          <button className="tool-btn" onClick={() => viewer?.focusResidues(VIEWS[effStructure].focus, 14, 700)}>
-            Active site
-          </button>
-          <button className="tool-btn" onClick={() => viewer?.resetCamera()}>
-            Whole enzyme
-          </button>
-          <button className={`tool-btn ${spin ? 'is-on' : ''}`} aria-pressed={spin} onClick={() => setSpin((v) => !v)}>
-            Spin
-          </button>
-        </div>
-      </div>
+        ) : undefined
+      }
+      legend={
+        onStructure ? (
+          <Legend
+            items={[
+              ...VIEWS[effStructure].groups.map((g) => ({ label: GROUP_NAMES[g.group], color: GROUP_COLORS[g.group] })),
+              ...(VIEWS[effStructure].ligands.length > 0
+                ? [{ label: `Bound molecule${VIEWS[effStructure].ligands.length > 1 ? 's' : ''}`, color: '#ff9ee6' }]
+                : []),
+            ]}
+          />
+        ) : undefined
+      }
+      peek={lessonPeek(mode === 'lessons' ? L : { lesson: null, step: null, stepIndex: 0 }, 'Enzymes', L.goTo)}
+    >
+      <div
+        ref={hostRef}
+        className={`topic-canvas protein-canvas ${ready ? 'is-ready' : ''} ${switching && ready ? 'is-switching' : ''}`}
+        role="img"
+        aria-label={`3D model of ${s.enzyme}, ${s.state} (PDB ${s.pdb}). Drag to rotate, scroll to zoom, click a residue for details.`}
+      />
+      {ready && shown && onStructure && <OverlayLabels key={`${shown}-${stepKey}`} viewer={viewer} labels={labels} lines={lines} />}
 
-      <div className="readout">
-        <p className="readout-hover mono">{hover ?? 'Drag to rotate · scroll to zoom · click a residue'}</p>
-        <ul className="legend-list" aria-label="Color key">
-          {VIEWS[effStructure].groups.map((g) => (
-            <li key={g.group}>
-              <span className="legend-chip" style={{ background: GROUP_COLORS[g.group] }} aria-hidden="true" />
-              {GROUP_NAMES[g.group]}
-            </li>
-          ))}
-          {VIEWS[effStructure].ligands.length > 0 && (
-            <li>
-              <span className="legend-chip" style={{ background: '#ff9ee6' }} aria-hidden="true" />
-              Bound molecule{VIEWS[effStructure].ligands.length > 1 ? 's' : ''}
-            </li>
+      {!onStructure && (
+        <div className="enz-chart-stage" key={effTab}>
+          {effTab === 'energy' ? (
+            <EnergyChart showUncatalyzed={energy.un} showCatalyzed={energy.cat} />
+          ) : (
+            <KineticsChart plot={kin.plot} type={kin.type} inhibitor={kin.inhibitor} substrate={kin.substrate} />
           )}
-        </ul>
-      </div>
-      </>
+        </div>
       )}
-    </div>
+
+      {status === 'loading' && <LoadingScreen label="Loading enzyme" />}
+      {status === 'error' && (
+        <div className="protein-error panel" role="alert">
+          <h2>The 3D viewer couldn't start</h2>
+          <p>Your browser may have 3D graphics (WebGL) turned off. Try another browser, or update this one.</p>
+        </div>
+      )}
+
+      {onStructure && <p className="topic-hover mono">{hover ?? 'Drag to rotate · scroll to zoom · click a residue'}</p>}
+    </TopicLayout>
   )
 }
+
 
 /* ---------- the structure's ID card: what it is and where it comes from ---------- */
 function StructureCard({ id }: { id: StructureId }) {

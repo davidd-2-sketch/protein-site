@@ -1,39 +1,6 @@
-/* =========================================================
-   ProteinPage.css — full-screen viewer with floating panels
-   ========================================================= */
 
-.protein-page {
-  position: fixed;
-  inset: 0;
-  overflow: hidden;
-  background: var(--bg-0);
-}
-
-/* Deep indigo/blue atmosphere behind the (transparent) 3D canvas. */
-.protein-backdrop {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(55% 60% at 55% 45%, rgba(43, 36, 112, 0.55), transparent 70%),
-    radial-gradient(40% 50% at 90% 10%, rgba(15, 59, 117, 0.55), transparent 70%),
-    radial-gradient(35% 45% at 10% 95%, rgba(74, 31, 110, 0.4), transparent 70%);
-}
-
-/* The 3D area. Starts right of the lessons panel when it's open (on wider screens). */
-.stage {
-  position: absolute;
-  inset: 0;
-}
-
-@media (min-width: 801px) {
-  .has-lessons .stage {
-    left: 412px; /* lessons panel width (380) + margin (16) + gap (16) */
-  }
-}
 
 .protein-canvas {
-  position: absolute;
-  inset: 0;
   opacity: 0;
   transition: opacity var(--slow) var(--ease);
 }
@@ -68,56 +35,10 @@
 }
 
 /* ---------- Floating panels share this ---------- */
-.info-panel,
-.toolbar,
-.sequence {
+.info-panel {
   position: absolute;
-  z-index: 5;
-  box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.7);
-}
-
-/* Small title card shown when lessons are hidden */
-.title-card {
-  position: absolute;
-  z-index: 5;
-  top: calc(var(--topbar-height) + 16px);
-  left: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-3);
-  padding: var(--space-5);
-  border-radius: var(--radius-lg);
-  background: var(--panel);
-  border: 1px solid var(--line-strong);
-}
-
-.title-card {
-  width: 300px;
-  align-items: stretch;
-}
-
-.title-card-hint {
-  color: var(--text-dim);
-  font-size: 13.5px;
-}
-
-.title-card-name {
-  font-size: 24px;
-  font-weight: 600;
-  letter-spacing: -0.03em;
-}
-
-.title-card-meta {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  font-size: 12px;
-  color: var(--text-dim);
-}
-
-.title-card-meta a:hover {
-  color: var(--accent);
+  z-index: 6;
+  box-shadow: var(--shadow-panel);
 }
 
 /* =========================================================
@@ -212,10 +133,10 @@
    Info panel (right)
    ========================================================= */
 .info-panel {
-  top: calc(var(--topbar-height) + 16px);
+  top: 60px;
   right: 16px;
   width: 330px;
-  max-height: calc(100% - var(--topbar-height) - 104px);
+  max-height: calc(100% - 76px);
   overflow-y: auto;
   padding: var(--space-5);
   animation: slide-in var(--medium) var(--ease);
@@ -356,70 +277,6 @@
   height: 34px;
 }
 
-/* =========================================================
-   Bottom: toolbar + "More" menu
-   ========================================================= */
-.protein-bottom {
-  position: absolute;
-  z-index: 6;
-  left: 50%;
-  bottom: 16px;
-  transform: translateX(-50%);
-  display: flex;
-  justify-content: center;
-  max-width: calc(100% - 32px);
-}
-
-.toolbar {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: 6px;
-}
-
-.toolbar-divider {
-  width: 1px;
-  height: 24px;
-  background: var(--line-strong);
-  flex-shrink: 0;
-}
-
-.segmented {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
-
-.segmented-btn,
-.tool-btn {
-  height: 34px;
-  padding: 0 14px;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--text-dim);
-  font: 500 13.5px/1 var(--font-sans);
-  white-space: nowrap;
-  cursor: pointer;
-  transition:
-    background var(--fast) var(--ease),
-    color var(--fast) var(--ease);
-}
-
-.segmented-btn:hover,
-.tool-btn:hover {
-  background: var(--bg-2);
-  color: var(--text);
-}
-
-.segmented-btn.is-active,
-.tool-btn.is-on {
-  background: var(--bg-3);
-  color: var(--text);
-  box-shadow: inset 0 0 0 1px var(--line-strong);
-}
-
 .more {
   position: relative;
 }
@@ -474,23 +331,9 @@
   font-weight: 400;
 }
 
-/* =========================================================
-   Sequence strip
-   ========================================================= */
-.sequence-wrap {
-  position: absolute;
-  z-index: 5;
-  left: 412px; /* lessons panel width (380) + margin (16) + gap (16) */
-  right: 16px;
-  bottom: 76px;
-  display: flex;
-  justify-content: center;
-}
-
 .sequence {
   position: relative;
-  width: 100%;
-  max-width: 860px;
+  width: min(860px, 100%);
   padding: var(--space-3) var(--space-4) var(--space-2);
   animation: rise-in var(--medium) var(--ease);
 }
@@ -547,60 +390,6 @@
   font-size: 9.5px;
 }
 
-/* =========================================================
-   Readout + legend (bottom-right)
-   ========================================================= */
-.readout {
-  position: absolute;
-  z-index: 4;
-  right: 24px;
-  bottom: 24px;
-  max-width: 260px;
-  text-align: right;
-  pointer-events: none;
-}
-
-.readout-hover {
-  font-size: 12px;
-  color: var(--text-dim);
-  min-height: 18px;
-}
-
-.legend-list {
-  list-style: none;
-  margin: var(--space-3) 0 0;
-  padding: 0;
-  display: grid;
-  gap: 6px;
-  font-size: 12.5px;
-  color: var(--text-dim);
-}
-
-.legend-list li {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.legend-chip {
-  width: 10px;
-  height: 10px;
-  border-radius: 3px;
-  flex-shrink: 0;
-}
-
-.legend-chip.is-wide {
-  width: 34px;
-}
-
-/* While the info panel is open on smaller screens, it needs the right side. */
-@media (max-width: 1440px) {
-  .has-pick .readout {
-    display: none;
-  }
-}
-
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -621,35 +410,53 @@
   }
 }
 
-/* =========================================================
-   Phones / small tablets: panels become bottom sheets
-   ========================================================= */
-@media (max-width: 800px) {
-  .title-card {
-    left: 8px;
-    top: calc(var(--topbar-height) + 8px);
-    padding: var(--space-3) var(--space-4);
-  }
-  .title-card-name {
-    font-size: 18px;
-  }
-  .info-panel {
-    left: 8px;
-    right: 8px;
-    width: auto;
-    top: calc(var(--topbar-height) + 8px);
-    max-height: 40%;
-  }
-  .protein-bottom {
-    bottom: 8px;
-  }
-  .readout,
-  .sequence-wrap {
-    display: none;
-  }
+/* ---------- where the protein's pieces sit in the shared layout ---------- */
+.protein-explore-title {
+  font-size: var(--fs-h1);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-heading);
+  line-height: var(--lh-tight);
 }
 
-/* The protein toolbar is centered on the page, so leave room under the lesson panel. */
-.protein-page .lesson {
-  max-height: calc(100% - var(--topbar-height) - 104px);
+.protein-tools {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.protein-page.has-sequence {
+  --control-space: 104px;
+}
+
+.protein-page.has-sequence .topic-control {
+  width: calc(100% - var(--gap) * 2);
+}
+
+/* The clicked part's details take the right side; the color key steps aside. */
+.has-pick .topic-legend {
+  display: none;
+}
+
+/* Phones: details become a strip at the bottom of the model area. */
+@media (max-width: 899px) {
+  .info-panel {
+    top: auto;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    width: auto;
+    max-height: 52%;
+    padding: var(--space-4);
+  }
+  .protein-page.has-sequence {
+    --control-space: 92px;
+  }
+  .more-menu {
+    left: auto;
+    right: 0;
+    transform: none;
+    max-height: 46dvh;
+    overflow-y: auto;
+  }
 }

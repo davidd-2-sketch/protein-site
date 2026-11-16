@@ -6,6 +6,9 @@
   Molecules come in look-alike pairs (CO₂ vs H₂O, ...). For each one the student predicts
   "polar or nonpolar?" first; answering slides the arrows together to show why.
 */
+import { Link } from 'react-router-dom'
+import Icon from '../components/Icon'
+import TopicLayout, { Toggle, ToolButton } from '../components/TopicLayout'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { QuizBox } from '../lessons/LessonPanel'
 import { SlidingPill, StepTransition } from '../components/motion'
@@ -55,30 +58,8 @@ export default function PolarityPage() {
     chooseMolecule(0)
   }
 
-  return (
-    <div className="pol-page">
-      <div className="pol-backdrop" aria-hidden="true" />
-      <div className="pol-stage">
-        <div
-          ref={hostRef}
-          className="pol-canvas"
-          role="img"
-          aria-label={`3D model of ${molecule.name} (${molecule.formula}) with bond dipole arrows${summed ? ', added tip to tail' : ''}. Drag to rotate.`}
-        />
-        {scene && <PolarityLabels scene={scene} molecule={molecule} charges={charges} />}
-
-        <div className="pol-steps panel has-pill" role="radiogroup" aria-label="Arrows">
-          <SlidingPill active={summed} />
-          <button role="radio" aria-checked={!summed} className={`pol-step ${!summed ? 'is-active' : ''}`} onClick={() => setSummed(false)}>
-            <span className="pol-step-num">1</span> Bond dipoles
-          </button>
-          <button role="radio" aria-checked={summed} className={`pol-step ${summed ? 'is-active' : ''}`} onClick={() => setSummed(true)}>
-            <span className="pol-step-num">2</span> Add them up
-          </button>
-        </div>
-      </div>
-
-      <section className="lesson pol-panel panel" aria-label="Polarity">
+  const panel = (
+      <section className="lesson pol-panel" aria-label="Polarity">
         <header>
           <h1 className="pol-title">Polarity</h1>
           <p className="pol-sub">
@@ -142,21 +123,51 @@ export default function PolarityPage() {
           </button>
         )}
 
+        <Link to="/practice?topic=polarity" className="btn btn-sm pol-practice">
+          Practice this topic <Icon name="arrow" size={16} />
+        </Link>
+
         <p className="lesson-note">
           Bond lengths and angles are measured values. Arrow lengths come from electronegativity differences (Pauling
           scale), drawn to scale within each molecule (and between HF and HCl). It is a simple model that predicts polar vs nonpolar but not exact sizes: lone pairs also contribute. Arrows
           point toward the δ− end, with a + on the tail (the usual chemistry convention).
         </p>
       </section>
+  )
 
-      <div className="pol-toggles panel" role="group" aria-label="Show or hide">
-        <Toggle label="Partial charges" on={charges} onChange={setCharges} />
-        <Toggle label="Lone pairs" on={lonePairs} onChange={setLonePairs} />
-        <button className="tool-btn" onClick={() => scene?.resetView()}>
-          Reset view
-        </button>
-      </div>
-    </div>
+  return (
+    <TopicLayout
+      className="pol-page"
+      panel={panel}
+      label={{ kind: 'illustrative', name: <>{molecule.name}</>, source: 'measured shape; arrows are a model' }}
+      options={
+        <>
+          <Toggle label="Partial charges" on={charges} onChange={setCharges} />
+          <Toggle label="Lone pairs" on={lonePairs} onChange={setLonePairs} />
+          <ToolButton onClick={() => scene?.resetView()}>Reset view</ToolButton>
+        </>
+      }
+      control={
+        <div className="pol-steps has-pill" role="radiogroup" aria-label="Arrows">
+          <SlidingPill active={summed} />
+          <button role="radio" aria-checked={!summed} className={`pol-step ${!summed ? 'is-active' : ''}`} onClick={() => setSummed(false)}>
+            <span className="pol-step-num">1</span> Bond dipoles
+          </button>
+          <button role="radio" aria-checked={summed} className={`pol-step ${summed ? 'is-active' : ''}`} onClick={() => setSummed(true)}>
+            <span className="pol-step-num">2</span> Add them up
+          </button>
+        </div>
+      }
+      peek={{ kicker: 'Polarity', title: `Is ${molecule.formula} polar or nonpolar?` }}
+    >
+      <div
+        ref={hostRef}
+        className="topic-canvas"
+        role="img"
+        aria-label={`3D model of ${molecule.name} (${molecule.formula}) with bond dipole arrows${summed ? ', added tip to tail' : ''}. Drag to rotate.`}
+      />
+      {scene && <PolarityLabels scene={scene} molecule={molecule} charges={charges} />}
+    </TopicLayout>
   )
 }
 
@@ -178,16 +189,5 @@ function Facts({ molecule }: { molecule: PolarMolecule }) {
         <dd className="mono">{bonds.map(([k, d]) => `${k} ${d.toFixed(2)}`).join(' · ')}</dd>
       </div>
     </dl>
-  )
-}
-
-function Toggle({ label, on, onChange }: { label: string; on: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <button className={`toggle ${on ? 'is-on' : ''}`} role="switch" aria-checked={on} onClick={() => onChange(!on)}>
-      <span className="toggle-track" aria-hidden="true">
-        <span className="toggle-thumb" />
-      </span>
-      {label}
-    </button>
   )
 }

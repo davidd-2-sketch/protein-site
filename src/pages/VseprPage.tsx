@@ -23,6 +23,8 @@ import { VseprScene, type SceneState } from '../vsepr/VseprScene'
 import ModeSwitch from '../components/ModeSwitch'
 import SceneLabelsOverlay from '../vsepr/SceneLabels'
 import { byFormula, idealState, moleculeState } from '../vsepr/states'
+import TopicLayout, { Toggle, ToolButton } from '../components/TopicLayout'
+import { lessonPeek } from '../lessons/peek'
 import './VseprPage.css'
 
 
@@ -108,103 +110,102 @@ export default function VseprPage() {
     setExploreView({})
   }
 
-  return (
-    <div className="vsepr-page">
-      <div className="vsepr-backdrop" aria-hidden="true" />
-      <div className="vsepr-stage">
-        <div
-          ref={hostRef}
-          className="vsepr-canvas"
-          role="img"
-          aria-label={
-            mystery
-              ? 'A central atom. Predict the shape, then the model will appear.'
-              : `3D model: ${molecule ? molecule.name : 'a central atom'} with ${shape.bonds} bonded atoms and ${shape.lone} lone pairs, ${shape.name} shape. Drag to rotate.`
-          }
-        />
-        {scene && <SceneLabelsOverlay scene={scene} />}
-        {/* A compact name tag for the shape on screen (lesson mode has no facts panel). */}
-        {inLesson && (
-          <p className="shape-tag">
-            {mystery ? (
-              <>Predict the shape</>
-            ) : (
-              <>
-                {molecule ? `${molecule.formula} · ` : ''}
-                {shape.name} · AX<sub>{shape.bonds}</sub>
-                {shape.lone > 0 && (
-                  <>
-                    E<sub>{shape.lone}</sub>
-                  </>
-                )}
-              </>
-            )}
-          </p>
-        )}
-      </div>
+  const panel =
+    mode === 'lessons' ? (
+      <LessonPanel
+        listTitle="Learn VSEPR"
+        listBlurb="Four short lessons: why molecules have shapes, what lone pairs do, and how to predict any shape."
+        lessons={L.lessons}
+        lesson={L.lesson}
+        stepIndex={L.stepIndex}
+        depth={depth}
+        taskStatus={L.taskStatus}
+        completed={L.completed}
+        onDepth={setDepth}
+        onOpen={L.open}
+        onStep={L.goTo}
+        onExit={L.exit}
+        onClose={() => setMode('explore')}
+        onQuizDone={L.onQuizDone}
+        practiceTopic="shapes"
+      />
+    ) : (
+      <ShapePanel shape={shape} molecule={molecule} depth={depth} onDepth={setDepth} onLessons={() => setMode('lessons')} />
+    )
 
-      {/* ===== Left: lessons or the facts panel ===== */}
-      {mode === 'lessons' ? (
-        <LessonPanel
-          listTitle="Learn VSEPR"
-          listBlurb="Four short lessons: why molecules have shapes, what lone pairs do, and how to predict any shape."
-          lessons={L.lessons}
-          lesson={L.lesson}
-          stepIndex={L.stepIndex}
-          depth={depth}
-          taskStatus={L.taskStatus}
-          completed={L.completed}
-          onDepth={setDepth}
-          onOpen={L.open}
-          onStep={L.goTo}
-          onExit={L.exit}
-          onClose={() => setMode('explore')}
-          onQuizDone={L.onQuizDone}
-        />
-      ) : (
-        <ShapePanel shape={shape} molecule={molecule} depth={depth} onDepth={setDepth} onLessons={() => setMode('lessons')} />
+  // What the model is, in words (the same spot on every topic page).
+  const modelName = mystery ? (
+    <>Predict the shape</>
+  ) : (
+    <>
+      {molecule ? `${molecule.formula} · ` : ''}
+      {shape.name} · AX<sub>{shape.bonds}</sub>
+      {shape.lone > 0 && (
+        <>
+          E<sub>{shape.lone}</sub>
+        </>
       )}
+    </>
+  )
+  const showBuilder = !inLesson || view.build
 
-      {/* ===== Top-right toggles ===== */}
-      <div className="vsepr-toggles panel" role="group" aria-label="Show or hide">
-        <Toggle label="Angles" on={showArcs} onChange={setShowArcs} />
-        {!inLesson && <Toggle label="Electron geometry" on={showHull} onChange={setShowHull} />}
-        <Toggle label="Spin" on={spin} onChange={setSpin} />
-        <button className="tool-btn" onClick={() => scene?.stage.fit(3.2, true)}>
-          Reset view
-        </button>
-      </div>
-
-      {/* ===== Bottom: molecule chips (explore) + builder (explore, or lesson tasks) ===== */}
-      <div className="vsepr-bottom">
-        {!inLesson && (
-          <div className="chips" role="group" aria-label="Real molecules">
-            {MOLECULES.map((m) => (
-              <button
-                key={m.formula}
-                className={`chip ${exploreView.molecule === m.formula ? 'is-active' : ''}`}
-                aria-pressed={exploreView.molecule === m.formula}
-                onClick={() => setExploreView({ molecule: m.formula })}
-                title={m.name}
-              >
-                {m.formula}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {(!inLesson || view.build) && (
-          <Builder
-            bonds={building ? counts.bonds : shape.bonds}
-            lone={building ? counts.lone : shape.lone}
-            onChange={(db, dl) => {
-              if (!building) startBuildingFrom(shape.bonds + db, shape.lone + dl)
-              else change(db, dl)
-            }}
-          />
-        )}
-      </div>
-    </div>
+  return (
+    <TopicLayout
+      className={`vsepr-page ${!inLesson ? 'has-chips' : ''}`}
+      panel={panel}
+      label={{ kind: 'illustrative', name: modelName, source: molecule ? 'measured angles' : 'ideal shape' }}
+      options={
+        <>
+          <Toggle label="Angles" on={showArcs} onChange={setShowArcs} />
+          {!inLesson && <Toggle label="Electron geometry" on={showHull} onChange={setShowHull} />}
+          <Toggle label="Spin" on={spin} onChange={setSpin} />
+          <ToolButton onClick={() => scene?.stage.fit(3.2, true)}>Reset view</ToolButton>
+        </>
+      }
+      control={
+        showBuilder ? (
+          <>
+            {/* Molecule chips (explore) + builder (explore, or lesson tasks) */}
+            {!inLesson && (
+              <div className="chips is-bare" role="group" aria-label="Real molecules">
+                {MOLECULES.map((m) => (
+                  <button
+                    key={m.formula}
+                    className={`chip ${exploreView.molecule === m.formula ? 'is-active' : ''}`}
+                    aria-pressed={exploreView.molecule === m.formula}
+                    onClick={() => setExploreView({ molecule: m.formula })}
+                    title={m.name}
+                  >
+                    {m.formula}
+                  </button>
+                ))}
+              </div>
+            )}
+            <Builder
+              bonds={building ? counts.bonds : shape.bonds}
+              lone={building ? counts.lone : shape.lone}
+              onChange={(db, dl) => {
+                if (!building) startBuildingFrom(shape.bonds + db, shape.lone + dl)
+                else change(db, dl)
+              }}
+            />
+          </>
+        ) : undefined
+      }
+      peek={lessonPeek(mode === 'lessons' ? L : { lesson: null, step: null, stepIndex: 0 }, 'Molecular shapes', L.goTo)}
+    >
+      <div
+        ref={hostRef}
+        className="topic-canvas"
+        role="img"
+        aria-label={
+          mystery
+            ? 'A central atom. Predict the shape, then the model will appear.'
+            : `3D model: ${molecule ? molecule.name : 'a central atom'} with ${shape.bonds} bonded atoms and ${shape.lone} lone pairs, ${shape.name} shape. Drag to rotate.`
+        }
+      />
+      {scene && <SceneLabelsOverlay scene={scene} />}
+    </TopicLayout>
   )
 }
 
@@ -212,7 +213,7 @@ export default function VseprPage() {
 
 function Builder({ bonds, lone, onChange }: { bonds: number; lone: number; onChange: (db: number, dl: number) => void }) {
   return (
-    <div className="builder panel" role="group" aria-label="Build a shape">
+    <div className="builder" role="group" aria-label="Build a shape">
       <Stepper label="Bonded atoms" value={bonds} onMinus={() => onChange(-1, 0)} onPlus={() => onChange(1, 0)} canMinus={isValid(bonds - 1, lone)} canPlus={isValid(bonds + 1, lone)} />
       <span className="builder-divider" aria-hidden="true" />
       <Stepper label="Lone pairs" value={lone} onMinus={() => onChange(0, -1)} onPlus={() => onChange(0, 1)} canMinus={isValid(bonds, lone - 1)} canPlus={isValid(bonds, lone + 1)} lone />
@@ -241,7 +242,7 @@ const ShapePanel = memo(function ShapePanel(props: {
   const { shape, molecule, depth } = props
   const measured = molecule?.arcs.map((a) => a[2]).join(' and ')
   return (
-    <section className="lesson vsepr-panel panel" aria-label="Shape explanation">
+    <section className="lesson vsepr-panel" aria-label="Shape explanation">
       <ModeSwitch mode="explore" onChange={props.onLessons} />
       <header className="vsepr-panel-head">
         <div>
@@ -341,7 +342,11 @@ function Stepper(props: {
     <div className="stepper" role="group" aria-label={props.label}>
       <span className="stepper-label">
         {props.lone ? <span className="dot-lone" aria-hidden="true" /> : <span className="dot-bond" aria-hidden="true" />}
-        {props.label}
+        {/* A shorter name on phones, so both steppers fit side by side. */}
+        <span className="stepper-long">{props.label}</span>
+        <span className="stepper-short" aria-hidden="true">
+          {props.lone ? 'Lone pairs' : 'Atoms'}
+        </span>
       </span>
       <button className="stepper-btn" onClick={props.onMinus} disabled={!props.canMinus} aria-label={`Fewer ${props.label.toLowerCase()}`}>
         −
@@ -355,15 +360,3 @@ function Stepper(props: {
     </div>
   )
 }
-
-function Toggle({ label, on, onChange }: { label: string; on: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <button className={`toggle ${on ? 'is-on' : ''}`} role="switch" aria-checked={on} onClick={() => onChange(!on)}>
-      <span className="toggle-track" aria-hidden="true">
-        <span className="toggle-thumb" />
-      </span>
-      {label}
-    </button>
-  )
-}
-

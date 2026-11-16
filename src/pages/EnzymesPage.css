@@ -1,9 +1,4 @@
-/* EnzymesPage.css — reuses the protein page's layout (ProteinPage.css) and lesson panel. */
 
-.enzyme-panel {
-  bottom: 16px;
-  max-height: none;
-}
 
 .enz-title {
   font-size: 30px;
@@ -203,14 +198,6 @@ span.enz-chip {
   cursor: help;
 }
 
-@media (max-width: 800px) {
-  .enzyme-panel {
-    top: auto;
-    bottom: 76px;
-    max-height: 44%;
-  }
-}
-
 /* ---------- chart tabs ---------- */
 .enzymes-page:not(.is-structure) .protein-canvas {
   visibility: hidden; /* kept alive (no reload), just not shown */
@@ -218,7 +205,7 @@ span.enz-chip {
 
 .enz-chart-stage {
   position: absolute;
-  inset: calc(var(--topbar-height) + 16px) 16px 16px 428px;
+  inset: var(--gap);
   display: grid;
   place-items: center;
   animation: fade-up 320ms var(--spring-soft);
@@ -587,39 +574,11 @@ span.enz-chip {
   font-size: 13px;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 899px) {
   .enz-chart-stage {
-    inset: calc(var(--topbar-height) + 8px) 8px 46% 8px;
+    inset: 6px;
   }
-}
-
-/* ---------- Phones: model or chart on top, panel as a sheet on the bottom ---------- */
-@media (max-width: 800px) {
-  .enzymes-page .stage {
-    inset: var(--topbar-height) 0 50% 0;
-  }
-  .enzymes-page .lesson {
-    top: auto;
-    left: 8px;
-    right: 8px;
-    bottom: 64px;
-    width: auto;
-    max-height: calc(50% - 72px);
-  }
-  .enzymes-page .enz-chart-stage {
-    inset: calc(var(--topbar-height) + 4px) 4px 50% 4px;
-  }
-  .enzymes-page .enz-chart {
+  .enz-chart {
     padding: var(--space-2);
-  }
-  .enzymes-page .protein-bottom {
-    left: 8px;
-    right: 8px;
-    transform: none;
-  }
-  .enzymes-page .toolbar {
-    max-width: 100%;
-    overflow-x: auto;
-    scrollbar-width: none;
   }
 }

@@ -23,7 +23,7 @@ interface Props {
 
 export default function Timeline({ s, playing, speed, steps, marks = [], middle = { at: 0.5, label: 'Transition state' }, onSeek, onTogglePlay, onSpeed }: Props) {
   return (
-    <div className="timeline panel">
+    <div className="timeline">
       <button className="play-btn" onClick={onTogglePlay} aria-label={playing ? 'Pause' : s >= 1 ? 'Replay' : 'Play'}>
         {playing ? <PauseIcon /> : s >= 1 ? <ReplayIcon /> : <PlayIcon />}
       </button>

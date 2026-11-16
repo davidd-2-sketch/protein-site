@@ -1,60 +1,13 @@
-/* =========================================================
-   PolarityPage.css — Polarity module
-   Shares .lesson / .quiz styles from lessons.css.
-   ========================================================= */
-.pol-page {
-  position: fixed;
-  inset: 0;
-  overflow: hidden;
-  background: var(--bg-0);
-}
-
-.pol-backdrop {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(50% 55% at 60% 45%, rgba(43, 36, 112, 0.5), transparent 70%),
-    radial-gradient(40% 50% at 92% 10%, rgba(15, 59, 117, 0.5), transparent 70%),
-    radial-gradient(35% 45% at 10% 95%, rgba(110, 31, 90, 0.35), transparent 70%);
-}
-
-.pol-stage {
-  position: absolute;
-  inset: var(--topbar-height) 0 0 412px;
-}
-
-.pol-canvas {
-  position: absolute;
-  inset: 0;
-}
-
-.pol-canvas canvas {
-  outline: none;
-  cursor: grab;
-}
-
-.pol-stage .overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  pointer-events: none;
-  overflow: hidden;
-}
 
 
 /* Bottom: 1 Bond dipoles / 2 Add them up */
 .pol-steps {
-  position: absolute;
-  z-index: 5;
-  left: 50%;
-  bottom: 24px;
-  transform: translateX(-50%);
   display: flex;
   gap: 4px;
-  padding: 5px;
 }
 
 .pol-step {
+  white-space: nowrap;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -87,12 +40,6 @@
   border-radius: 50%;
   border: 1.5px solid currentColor;
   font: 600 11px/1 var(--font-sans);
-}
-
-/* ---------- Panel ---------- */
-.pol-panel {
-  bottom: 16px;
-  max-height: none;
 }
 
 .pol-title {
@@ -206,96 +153,7 @@
   text-align: right;
 }
 
-/* ---------- Top-right toggles (same look as the other viewers) ---------- */
-.pol-toggles {
-  position: absolute;
-  z-index: 5;
-  top: calc(var(--topbar-height) + 16px);
-  right: 16px;
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: 6px;
-}
-
-.pol-page .toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 32px;
-  padding: 0 10px;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--text-dim);
-  font: 500 13px/1 var(--font-sans);
-  cursor: pointer;
-}
-
-.pol-page .toggle:hover,
-.pol-page .tool-btn:hover {
-  background: var(--bg-2);
-  color: var(--text);
-}
-
-.pol-page .toggle-track {
-  position: relative;
-  width: 28px;
-  height: 16px;
-  border-radius: 8px;
-  background: var(--bg-3);
-  border: 1px solid var(--line-strong);
-}
-
-.pol-page .toggle-thumb {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--text-dim);
-  transition: transform var(--fast) var(--ease);
-}
-
-.pol-page .toggle.is-on {
-  color: var(--text);
-}
-
-.pol-page .toggle.is-on .toggle-track {
-  background: rgba(94, 228, 255, 0.25);
-  border-color: var(--line-accent);
-}
-
-.pol-page .toggle.is-on .toggle-thumb {
-  transform: translateX(12px);
-  background: var(--accent);
-}
-
-.pol-page .tool-btn {
-  height: 32px;
-  padding: 0 12px;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--text-dim);
-  font: 500 13px/1 var(--font-sans);
-  cursor: pointer;
-}
-
-@media (max-width: 800px) {
-  .pol-stage {
-    inset: var(--topbar-height) 0 50% 0;
-  }
-  .pol-panel {
-    top: auto;
-    bottom: 8px;
-    max-height: 48%;
-  }
-  .pol-toggles {
-    display: none;
-  }
-  .pol-steps {
-    bottom: 8px;
-  }
+.pol-practice {
+  justify-self: start;
+  align-self: flex-start;
 }

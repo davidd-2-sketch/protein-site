@@ -18,6 +18,8 @@ import { ORBITAL_LESSONS } from '../orbitals/lessons'
 import { OrbitalScene, type OrbitalView } from '../orbitals/OrbitalScene'
 import { BONDS, ORBITALS } from '../orbitals/wavefunctions'
 import ModeSwitch from '../components/ModeSwitch'
+import TopicLayout, { Legend, Toggle, ToolButton } from '../components/TopicLayout'
+import { lessonPeek } from '../lessons/peek'
 import AxisLabels from '../orbitals/AxisLabels'
 import './OrbitalsPage.css'
 
@@ -92,119 +94,104 @@ export default function OrbitalsPage() {
   useEffect(() => scene?.setAxes(showAxes), [scene, showAxes])
   useEffect(() => scene?.stage.setAutoRotate(spin), [scene, spin])
 
-  return (
-    <div className="orb-page">
-      <div className="orb-backdrop" aria-hidden="true" />
-      <div className="orb-stage">
-        <div ref={hostRef} className="orb-canvas" role="img" aria-label="3D orbital surface. Drag to rotate, scroll to zoom." />
-        {scene && showAxes && <AxisLabels scene={scene} />}
-        {busy && (
-          <p className="orb-busy" role="status">
-            Computing surface…
-          </p>
-        )}
-      </div>
-
-      {/* ===== Left: lessons, or the explore picker ===== */}
-      {mode === 'lessons' ? (
-        <LessonPanel
-          listTitle="Learn orbitals"
-          listBlurb="Three short lessons: orbital shapes and nodes, hybridization, and how overlap makes bonds."
-          lessons={L.lessons}
-          lesson={L.lesson}
-          stepIndex={L.stepIndex}
-          depth={depth}
-          taskStatus={L.taskStatus}
-          completed={L.completed}
-          onDepth={setDepth}
-          onOpen={L.open}
-          onStep={L.goTo}
-          onExit={L.exit}
-          onClose={() => setMode('explore')}
-          onQuizDone={L.onQuizDone}
-        />
-      ) : (
-        <section className="lesson orb-panel panel" aria-label="Choose what to view">
-          <ModeSwitch mode="explore" onChange={() => setMode('lessons')} />
-          <header className="orb-panel-head">
-            <h1>Orbitals</h1>
-          </header>
-          {EXPLORE.map((g) => (
-            <div key={g.group} className="orb-group">
-              <p className="orb-group-label">{g.group}</p>
-              <div className="orb-choices">
-                {g.items.map((item) => (
-                  <button
-                    key={item.label}
-                    className={`chip ${explore.label === item.label ? 'is-active' : ''}`}
-                    aria-pressed={explore.label === item.label}
-                    onClick={() => setExplore(item)}
-                  >
-                    <RichText text={item.label} />
-                  </button>
-                ))}
-              </div>
+  const panel =
+    mode === 'lessons' ? (
+      <LessonPanel
+        listTitle="Learn orbitals"
+        listBlurb="Three short lessons: orbital shapes and nodes, hybridization, and how overlap makes bonds."
+        lessons={L.lessons}
+        lesson={L.lesson}
+        stepIndex={L.stepIndex}
+        depth={depth}
+        taskStatus={L.taskStatus}
+        completed={L.completed}
+        onDepth={setDepth}
+        onOpen={L.open}
+        onStep={L.goTo}
+        onExit={L.exit}
+        onClose={() => setMode('explore')}
+        onQuizDone={L.onQuizDone}
+        practiceTopic="orbitals"
+      />
+    ) : (
+      <section className="lesson orb-panel" aria-label="Choose what to view">
+        <ModeSwitch mode="explore" onChange={() => setMode('lessons')} />
+        <header className="orb-panel-head">
+          <h1>Orbitals</h1>
+        </header>
+        {EXPLORE.map((g) => (
+          <div key={g.group} className="orb-group">
+            <p className="orb-group-label">{g.group}</p>
+            <div className="orb-choices">
+              {g.items.map((item) => (
+                <button key={item.label} className={`chip ${explore.label === item.label ? 'is-active' : ''}`} aria-pressed={explore.label === item.label} onClick={() => setExplore(item)}>
+                  <RichText text={item.label} />
+                </button>
+              ))}
             </div>
-          ))}
-          {facts && (
-            <dl className="orb-facts">
-              <div>
-                <dt>Orbital</dt>
-                <dd>
-                  <RichText text={facts.label} />
-                </dd>
-              </div>
-              <div>
-                <dt>n, l</dt>
-                <dd className="mono">
-                  {facts.n}, {facts.l}
-                </dd>
-              </div>
-              <div>
-                <dt>Nodes</dt>
-                <dd>
-                  {facts.radial} spherical + {facts.angular} angular = {facts.radial + facts.angular}
-                </dd>
-              </div>
-            </dl>
-          )}
-          <p className="lesson-note">
-            Surfaces are computed from hydrogen’s exact wavefunctions and enclose 90% of the electron probability.
-            Orbitals of other atoms have the same shapes but different sizes. Bond surfaces use a simple model (adding
-            or subtracting atomic orbitals).
-          </p>
-        </section>
-      )}
+          </div>
+        ))}
+        {facts && (
+          <dl className="orb-facts">
+            <div>
+              <dt>Orbital</dt>
+              <dd>
+                <RichText text={facts.label} />
+              </dd>
+            </div>
+            <div>
+              <dt>n, l</dt>
+              <dd className="mono">
+                {facts.n}, {facts.l}
+              </dd>
+            </div>
+            <div>
+              <dt>Nodes</dt>
+              <dd>
+                {facts.radial} spherical + {facts.angular} angular = {facts.radial + facts.angular}
+              </dd>
+            </div>
+          </dl>
+        )}
+        <p className="lesson-note">
+          Surfaces are computed from hydrogen’s exact wavefunctions and enclose 90% of the electron probability.
+          Orbitals of other atoms have the same shapes but different sizes. Bond surfaces use a simple model (adding
+          or subtracting atomic orbitals).
+        </p>
+      </section>
+    )
 
-      {/* ===== Top-right: toggles + phase legend ===== */}
-      <div className="orb-toggles panel" role="group" aria-label="Show or hide">
-        {!inLesson && <Toggle label="Cutaway" on={cutaway} onChange={setCutaway} />}
-        {!inLesson && <Toggle label="Axes" on={axes} onChange={setAxes} />}
-        <Toggle label="Spin" on={spin} onChange={setSpin} />
-        <button className="tool-btn" onClick={() => scene?.stage.fit(4, true)}>
-          Reset view
-        </button>
-      </div>
-      <ul className="orb-legend panel" aria-label="Phase key">
-        <li>
-          <span className="swatch plus" aria-hidden="true" /> + phase
-        </li>
-        <li>
-          <span className="swatch minus" aria-hidden="true" /> − phase (mesh pattern)
-        </li>
-      </ul>
-    </div>
-  )
-}
-
-function Toggle({ label, on, onChange }: { label: string; on: boolean; onChange: (v: boolean) => void }) {
   return (
-    <button className={`toggle ${on ? 'is-on' : ''}`} role="switch" aria-checked={on} onClick={() => onChange(!on)}>
-      <span className="toggle-track" aria-hidden="true">
-        <span className="toggle-thumb" />
-      </span>
-      {label}
-    </button>
+    <TopicLayout
+      className="orb-page"
+      panel={panel}
+      label={{ kind: 'illustrative', name: 'Orbital surface', source: 'calculated from hydrogen’s wavefunctions' }}
+      options={
+        <>
+          {!inLesson && <Toggle label="Cutaway" on={cutaway} onChange={setCutaway} />}
+          {!inLesson && <Toggle label="Axes" on={axes} onChange={setAxes} />}
+          <Toggle label="Spin" on={spin} onChange={setSpin} />
+          <ToolButton onClick={() => scene?.stage.fit(4, true)}>Reset view</ToolButton>
+        </>
+      }
+      legend={
+        <Legend
+          items={[
+            { label: '+ phase', color: '#4f8bff' },
+            // The − swatch shows the same mesh pattern as the 3D surface (not color alone).
+            { label: '− phase (mesh pattern)', color: 'repeating-linear-gradient(45deg, rgba(42, 22, 6, 0.55) 0 1.5px, transparent 1.5px 4px), #ff8a3d' },
+          ]}
+        />
+      }
+      peek={lessonPeek(mode === 'lessons' ? L : { lesson: null, step: null, stepIndex: 0 }, 'Orbitals', L.goTo)}
+    >
+      <div ref={hostRef} className="topic-canvas" role="img" aria-label="3D orbital surface. Drag to rotate, scroll to zoom." />
+      {scene && showAxes && <AxisLabels scene={scene} />}
+      {busy && (
+        <p className="topic-busy" role="status">
+          Computing surface…
+        </p>
+      )}
+    </TopicLayout>
   )
 }
-

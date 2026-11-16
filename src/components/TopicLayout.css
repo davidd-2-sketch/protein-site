@@ -1,0 +1,608 @@
+/*
+  TopicLayout.css — the shared layout for every topic page (see TopicLayout.tsx).
+  Wide screens: panel on the left, model filling the rest, four slots around the model.
+  Under 900 px: model on top, panel as a bottom sheet. Sideways phones: side by side.
+*/
+.topic {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: var(--bg-0);
+  --gap: 16px;
+}
+
+/* Still indigo/violet haze behind the (transparent) 3D canvas. */
+.topic-backdrop {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(55% 60% at 60% 45%, rgba(52, 42, 132, 0.42), transparent 70%),
+    radial-gradient(40% 50% at 94% 8%, rgba(22, 62, 128, 0.42), transparent 70%),
+    radial-gradient(36% 46% at 8% 96%, rgba(88, 38, 128, 0.3), transparent 70%);
+}
+
+/* ---------- the model's area ---------- */
+.topic-stage {
+  position: absolute;
+  top: var(--topbar-height);
+  left: calc(var(--panel-width) + var(--gap) * 2);
+  right: 0;
+  bottom: 0;
+}
+
+/* The 3D canvas (and overlays pinned to it) fill the stage, minus a strip at the top for
+   the label and options, and a strip at the bottom when there is a main control, so those
+   never sit on top of the model. */
+.topic-canvas,
+.topic-stage .overlay {
+  position: absolute;
+  inset: 52px 0 0 0;
+}
+
+.topic.has-control .topic-canvas,
+.topic.has-control .topic-stage .overlay {
+  bottom: var(--control-space, 68px);
+}
+
+.topic-stage .overlay {
+  z-index: 3;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.topic-canvas canvas {
+  outline: none;
+  cursor: grab;
+}
+
+.topic-canvas canvas:active {
+  cursor: grabbing;
+}
+
+/* ---------- slot 1: the panel ---------- */
+.topic-panel {
+  position: absolute;
+  z-index: 5;
+  top: calc(var(--topbar-height) + var(--gap));
+  left: var(--gap);
+  bottom: var(--gap);
+  width: var(--panel-width);
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-lg);
+  background: var(--panel-bg);
+  border: 1px solid var(--line-strong);
+  box-shadow: var(--shadow-panel);
+  overflow: hidden;
+}
+
+.topic-panel-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Whatever panel a page provides (lesson panel or its own) fills the slot and scrolls inside it. */
+.topic-panel .lesson {
+  position: static;
+  flex: 1;
+  min-height: 0;
+  width: auto;
+  max-height: none;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  animation: none;
+}
+
+.topic-grab,
+.topic-peek {
+  display: none;
+}
+
+/* ---------- slot 2: honesty label ---------- */
+.topic-label {
+  position: absolute;
+  z-index: 4;
+  top: var(--gap);
+  left: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-dim);
+  font-size: 13.5px;
+  line-height: 1.3;
+  pointer-events: none;
+}
+
+.topic-label > * {
+  pointer-events: auto;
+}
+
+/* Long descriptions are cut with "…" instead of running under the options. */
+.topic-label {
+  max-width: 56%;
+}
+
+.topic-label-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.topic-label .tag {
+  flex-shrink: 0;
+}
+
+.topic-label strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.topic-label a {
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 3px;
+}
+
+.topic-label a:hover {
+  color: var(--accent);
+}
+
+/* ---------- slot 3: view options ---------- */
+.topic-options {
+  position: absolute;
+  z-index: 6;
+  top: 10px;
+  right: var(--gap);
+}
+
+.topic-options-btn {
+  display: none;
+}
+
+.topic-options-bar,
+.topic-control > * {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border-radius: var(--radius);
+  background: var(--panel-bg);
+  border: 1px solid var(--line-strong);
+}
+
+.topic-options-legend {
+  display: none;
+}
+
+/* ---------- slot 4: main control ---------- */
+.topic-control {
+  position: absolute;
+  z-index: 5;
+  left: 50%;
+  bottom: var(--gap);
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100% - var(--gap) * 2);
+}
+
+/* A control that wants to be a bare row (it styles itself). */
+.topic-control > .is-bare {
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+/* ---------- slot 5: color key ---------- */
+.topic-legend {
+  position: absolute;
+  z-index: 4;
+  right: var(--gap);
+  bottom: var(--gap);
+  pointer-events: none;
+}
+
+.legend-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  justify-items: end;
+  color: var(--text-dim);
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.legend-list li {
+  display: flex;
+  align-items: center;
+  flex-direction: row-reverse;
+  gap: 8px;
+}
+
+.legend-chip {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.legend-chip.is-wide {
+  width: 34px;
+}
+
+/* ---------- shared small controls ---------- */
+.toggle,
+.tool-btn,
+.segmented-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 11px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-dim);
+  font: 500 13.5px/1 var(--font-sans);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.toggle:hover,
+.tool-btn:hover,
+.segmented-btn:hover {
+  background: var(--bg-2);
+  color: var(--text);
+}
+
+.tool-btn.is-on,
+.segmented-btn.is-active {
+  background: var(--bg-3);
+  color: var(--text);
+}
+
+.toggle.is-on {
+  color: var(--text);
+}
+
+.toggle-track {
+  position: relative;
+  flex-shrink: 0;
+  width: 28px;
+  height: 16px;
+  border-radius: 8px;
+  background: var(--bg-3);
+  border: 1px solid var(--line-strong);
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--text-dim);
+}
+
+.toggle.is-on .toggle-track {
+  background: rgba(111, 227, 255, 0.25);
+  border-color: var(--line-accent);
+}
+
+.toggle.is-on .toggle-thumb {
+  transform: translateX(12px);
+  background: var(--accent);
+}
+
+.segmented {
+  display: flex;
+  gap: 2px;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 18px;
+  margin: 0 4px;
+  background: var(--line-strong);
+}
+
+/* =========================================================
+   Phones and tablets: model on top, panel as a bottom sheet
+   ========================================================= */
+/* Narrow windows, tablets and phones: no room for a row of switches beside the label. */
+@media (max-width: 1179px) {
+  .topic-label {
+    max-width: calc(100% - 72px);
+  }
+
+  /* View options fold into one round button. */
+  .topic-options-btn {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    margin-left: auto;
+    border-radius: 50%;
+    border: 1px solid var(--line-strong);
+    background: var(--panel-bg);
+    color: var(--text-dim);
+    cursor: pointer;
+  }
+
+  .topic-options.is-open .topic-options-btn {
+    color: var(--text);
+    background: var(--bg-3);
+  }
+
+  .topic-options-bar {
+    display: none;
+    position: absolute;
+    top: 48px;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    min-width: 200px;
+    padding: 8px;
+    background: var(--menu-bg);
+    box-shadow: var(--shadow-panel);
+  }
+
+  .topic-options.is-open .topic-options-bar {
+    display: flex;
+  }
+
+  .topic-options-bar .toggle,
+  .topic-options-bar .tool-btn {
+    height: 42px;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 899px) {
+  .topic {
+    --gap: 10px;
+    --sheet-open: min(50dvh, 500px);
+    --sheet-peek: 78px;
+  }
+
+  /* The model's area stops exactly where the sheet starts. */
+  .topic-stage {
+    left: 0;
+    bottom: var(--sheet-open);
+  }
+
+  .topic.is-collapsed .topic-stage {
+    bottom: var(--sheet-peek);
+  }
+
+  .topic-panel {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    height: var(--sheet-open);
+    border-radius: 20px 20px 0 0;
+    border-width: 1px 0 0;
+    background: var(--panel-solid);
+    box-shadow: 0 -18px 40px -20px rgba(0, 0, 0, 0.8);
+    transition: transform var(--medium) var(--ease);
+  }
+
+  .topic.is-collapsed .topic-panel {
+    transform: translateY(calc(var(--sheet-open) - var(--sheet-peek)));
+  }
+
+  /* The handle: a wide, easy target. Drag it or tap it. */
+  .topic-grab {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 100%;
+    height: 24px;
+    border: 0;
+    background: none;
+    cursor: grab;
+    touch-action: none;
+  }
+
+  .topic-grab-bar {
+    width: 40px;
+    height: 5px;
+    border-radius: 3px;
+    background: rgba(172, 178, 255, 0.4);
+  }
+
+  /* Collapsed: one line with the current step and Next. */
+  .topic.is-collapsed .topic-peek {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 16px;
+    height: calc(var(--sheet-peek) - 24px - env(safe-area-inset-bottom, 0px));
+  }
+
+  .topic-peek-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .topic-peek-kicker {
+    color: var(--text-faint);
+    font-size: 12.5px;
+    line-height: 1.3;
+  }
+
+  .topic-peek-title {
+    overflow: hidden;
+    font-size: 15.5px;
+    font-weight: 600;
+    line-height: 1.3;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .topic.is-collapsed .topic-panel-body {
+    visibility: hidden;
+  }
+
+  .topic-panel .lesson {
+    padding: 4px var(--space-4) var(--space-4);
+    gap: var(--space-3);
+  }
+
+  /* Inside a lesson step, save room for the text: the Lessons | Explore switch is one tap
+     away ("All lessons"), and the explanation-level row gets smaller. */
+  .topic-panel .lesson.in-step > .mode-switch {
+    display: none;
+  }
+
+  .topic-panel .lesson.in-step > .depth {
+    padding: 6px 0;
+  }
+
+  .topic-panel .lesson-head {
+    gap: var(--space-2);
+  }
+
+  .topic-canvas,
+  .topic-stage .overlay {
+    top: 46px;
+  }
+
+  .topic-label {
+    left: var(--gap);
+    max-width: calc(100% - 64px);
+  }
+
+  .topic-busy {
+    bottom: 10px;
+    max-width: calc(100% - 16px);
+    white-space: nowrap;
+    font-size: 12px;
+  }
+
+  .topic-label-source {
+    display: none;
+  }
+
+  .topic-options-legend {
+    display: block;
+    margin-top: 6px;
+    padding: 10px 10px 4px;
+    border-top: 1px solid var(--line);
+  }
+
+  .topic-options-legend .legend-list {
+    justify-items: start;
+  }
+
+  .topic-options-legend .legend-list li {
+    flex-direction: row;
+  }
+
+  .topic-legend {
+    display: none;
+  }
+
+  .topic-control {
+    bottom: 8px;
+    max-width: calc(100% - 16px);
+  }
+
+  .topic-control > * {
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+}
+
+/* =========================================================
+   A phone held sideways: model on the left, panel on the right
+   ========================================================= */
+@media (max-width: 899px) and (orientation: landscape) and (max-height: 520px) {
+  .topic-stage,
+  .topic.is-collapsed .topic-stage {
+    right: 46%;
+    bottom: 0;
+  }
+
+  .topic-panel,
+  .topic.is-collapsed .topic-panel {
+    top: var(--topbar-height);
+    left: auto;
+    width: 46%;
+    height: auto;
+    border-radius: 0;
+    border-width: 0 0 0 1px;
+    transform: none;
+  }
+
+  .topic-grab,
+  .topic.is-collapsed .topic-peek {
+    display: none;
+  }
+
+  .topic.is-collapsed .topic-panel-body {
+    visibility: visible;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .topic-panel {
+    transition: none;
+  }
+}
+
+/* A small status note at the bottom of the model area (e.g. "Computing surface…"). */
+.topic-busy {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--panel-bg);
+  border: 1px solid var(--line-strong);
+  color: var(--text-dim);
+  font-size: 12.5px;
+}
+
+/* Legend chips can carry a pattern (given as a full CSS background). */
+.legend-chip[style*='repeating'] {
+  width: 12px;
+  height: 12px;
+}
+
+/* Hover readout: what's under the pointer (bottom-left of the model area; not on phones). */
+.topic-hover {
+  position: absolute;
+  z-index: 4;
+  left: 10px;
+  bottom: var(--gap);
+  max-width: calc(50% - 170px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-faint);
+  font-size: 12.5px;
+  line-height: 1.4;
+  pointer-events: none;
+}
+
+@media (max-width: 899px) {
+  .topic-hover {
+    display: none;
+  }
+}

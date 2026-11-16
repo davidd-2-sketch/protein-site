@@ -36,6 +36,8 @@ import type { Depth, LessonStep } from '../lessons/types'
 import ModeSwitch from '../components/ModeSwitch'
 import { readLessonLink, rememberPlace } from '../lessons/place'
 import { play } from '../sound/sound'
+import TopicLayout, { Legend, ToolButton } from '../components/TopicLayout'
+import { lessonPeek } from '../lessons/peek'
 import './ProteinPage.css'
 
 /* The three main styles are always visible; the rest live under "More". */
@@ -240,20 +242,92 @@ export default function ProteinPage() {
 
   const ready = status === 'ready'
 
-  return (
-    <div className={`protein-page ${pick ? 'has-pick' : ''} ${lessonsOpen ? 'has-lessons' : ''}`}>
-      <div className="protein-backdrop" aria-hidden="true" />
-      {/* The "stage" holds the 3D canvas and its floating labels. When the lessons panel is open,
-          the stage starts to the right of it, so the panel never covers the model. */}
-      <div className="stage">
-        <div
-          ref={hostRef}
-          className={`protein-canvas ${ready ? 'is-ready' : ''}`}
-          aria-label="3D model of hemoglobin. Drag to rotate, scroll to zoom, click a part for details."
-          role="img"
-        />
-        {ready && step && <OverlayLabels viewer={viewer} labels={step.labels ?? []} lines={step.lines ?? []} />}
+  const panel = lessonsOpen ? (
+    <LessonPanel
+      listTitle="Learn with hemoglobin"
+      listBlurb="Six short lessons, from one amino acid to a whole working protein."
+      lessons={PROTEIN_LESSONS}
+      lesson={lesson}
+      stepIndex={stepIndex}
+      depth={depth}
+      taskStatus={taskStatus}
+      completed={completed}
+      onDepth={setDepth}
+      onOpen={openLesson}
+      onStep={goToStep}
+      onExit={exitLesson}
+      onClose={() => {
+        exitLesson() // Explore always shows the whole protein, not a lesson's view
+        setLessonsOpen(false)
+      }}
+    />
+  ) : (
+    <section className="lesson protein-explore" aria-label="Explore hemoglobin">
+      <ModeSwitch mode="explore" onChange={() => setLessonsOpen(true)} />
+      <header>
+        <p className="lesson-kicker">Explore</p>
+        <h1 className="protein-explore-title">Hemoglobin</h1>
+      </header>
+      <p className="lesson-text">Click any part of the protein to learn what it is.</p>
+    </section>
+  )
+
+  // The main control: the drawing style (explore), or the sequence strip on lesson steps that use it.
+  const control = !lesson ? (
+    <div className="protein-tools" role="toolbar" aria-label="Drawing style">
+      <div className="segmented" role="radiogroup" aria-label="Style">
+        {MAIN_STYLES.map((o) => (
+          <button
+            key={o.id}
+            role="radio"
+            aria-checked={style === o.id}
+            className={`segmented-btn ${style === o.id ? 'is-active' : ''}`}
+            onClick={() => setStyle(o.id)}
+          >
+            {o.label}
+          </button>
+        ))}
       </div>
+      <MoreMenu style={style} color={color} onStyle={setStyle} onColor={setColor} />
+    </div>
+  ) : ready && step?.showSequence ? (
+    <SequenceStrip chain="A" sequence={SEQUENCES.alpha} onHover={(r) => viewer?.highlightResidue(r)} onSelect={focusResidue} />
+  ) : undefined
+
+  return (
+    <TopicLayout
+      className={`protein-page ${pick ? 'has-pick' : ''} ${lesson && step?.showSequence ? 'has-sequence' : ''}`}
+      panel={panel}
+      label={{
+        kind: 'experimental',
+        name: 'Hemoglobin',
+        source: (
+          <a href="https://www.rcsb.org/structure/4HHB" target="_blank" rel="noreferrer" className="mono">
+            PDB 4HHB ↗
+          </a>
+        ),
+      }}
+      options={
+        <>
+          <ToolButton pressed={spin} onClick={() => setSpin((s) => !s)}>
+            Spin
+          </ToolButton>
+          <ToolButton onClick={() => viewer?.resetCamera()} title="Reset view (R)">
+            Reset view
+          </ToolButton>
+        </>
+      }
+      control={control}
+      legend={<Legend items={legendItems(view)} />}
+      peek={lessonPeek({ lesson, step, stepIndex }, 'Hemoglobin', goToStep)}
+    >
+      <div
+        ref={hostRef}
+        className={`topic-canvas protein-canvas ${ready ? 'is-ready' : ''}`}
+        aria-label="3D model of hemoglobin. Drag to rotate, scroll to zoom, click a part for details."
+        role="img"
+      />
+      {ready && step && <OverlayLabels viewer={viewer} labels={step.labels ?? []} lines={step.lines ?? []} />}
 
       {status === 'loading' && <LoadingScreen label="Loading hemoglobin" />}
       {status === 'error' && (
@@ -263,91 +337,11 @@ export default function ProteinPage() {
         </div>
       )}
 
-      {/* ===== Left: optional lessons ===== */}
-      {lessonsOpen ? (
-        <LessonPanel
-          listTitle="Learn with hemoglobin"
-          listBlurb="Six short lessons, from one amino acid to a whole working protein."
-          lessons={PROTEIN_LESSONS}
-          lesson={lesson}
-          stepIndex={stepIndex}
-          depth={depth}
-          taskStatus={taskStatus}
-          completed={completed}
-          onDepth={setDepth}
-          onOpen={openLesson}
-          onStep={goToStep}
-          onExit={exitLesson}
-          onClose={() => {
-            exitLesson() // Explore always shows the whole protein, not a lesson's view
-            setLessonsOpen(false)
-          }}
-        />
-      ) : (
-        <div className="title-card">
-          <ModeSwitch mode="explore" onChange={() => setLessonsOpen(true)} />
-          <p className="title-card-name">Hemoglobin</p>
-          <p className="title-card-meta">
-            <span className="tag tag-experimental">Experimental structure</span>
-            <a href="https://www.rcsb.org/structure/4HHB" target="_blank" rel="noreferrer" className="mono">
-              PDB 4HHB ↗
-            </a>
-          </p>
-          <p className="title-card-hint">Click any part of the protein to learn what it is.</p>
-        </div>
-      )}
+      <p className="topic-hover mono">{hoverLabel ?? 'Drag to rotate · scroll to zoom · click for details'}</p>
 
-      {/* ===== Right: what you clicked ===== */}
+      {/* What you clicked */}
       {pick && <InfoPanel pick={pick} onClose={() => setPick(null)} onFocus={focusResidue} />}
-
-      {/* ===== Sequence strip (some lesson steps) ===== */}
-      {ready && step?.showSequence && (
-        <div className="sequence-wrap">
-          <SequenceStrip
-            chain="A"
-            sequence={SEQUENCES.alpha}
-            onHover={(r) => viewer?.highlightResidue(r)}
-            onSelect={focusResidue}
-          />
-        </div>
-      )}
-
-      {/* ===== Bottom toolbar ===== */}
-      <div className="protein-bottom">
-        <div className="toolbar panel" role="toolbar" aria-label="View controls">
-          {!lesson && (
-            <>
-              <div className="segmented" role="radiogroup" aria-label="Style">
-                {MAIN_STYLES.map((o) => (
-                  <button
-                    key={o.id}
-                    role="radio"
-                    aria-checked={style === o.id}
-                    className={`segmented-btn ${style === o.id ? 'is-active' : ''}`}
-                    onClick={() => setStyle(o.id)}
-                  >
-                    {o.label}
-                  </button>
-                ))}
-              </div>
-              <MoreMenu style={style} color={color} onStyle={setStyle} onColor={setColor} />
-              <span className="toolbar-divider" aria-hidden="true" />
-            </>
-          )}
-          <button className="tool-btn" onClick={() => viewer?.resetCamera()} title="Reset view (R)">
-            Reset view
-          </button>
-          <button className={`tool-btn ${spin ? 'is-on' : ''}`} aria-pressed={spin} onClick={() => setSpin((s) => !s)}>
-            Spin
-          </button>
-        </div>
-      </div>
-
-      <div className="readout">
-        <p className="readout-hover mono">{hoverLabel ?? 'Drag to rotate · scroll to zoom · click for details'}</p>
-        <Legend view={view} />
-      </div>
-    </div>
+    </TopicLayout>
   )
 }
 
@@ -420,33 +414,24 @@ function MoreMenu(props: {
 
 /* ---------- Color key for whatever is on screen. Every swatch has a text label. ---------- */
 
-function Legend({ view }: { view: ViewState }) {
-  const items: { label: string; swatch: string }[] = []
+function legendItems(view: ViewState) {
+  const items: { label: string; color: string }[] = []
   if (view.chains.length && (view.color === 'chain' || view.color === 'element')) {
-    view.chains.forEach((c) => items.push({ label: `${CHAINS[c as HbChain].label} chain`, swatch: CHAINS[c as HbChain].color }))
+    view.chains.forEach((c) => items.push({ label: `${CHAINS[c as HbChain].label} chain`, color: CHAINS[c as HbChain].color }))
   }
   if (view.chains.length && view.color === 'secondary') {
-    items.push({ label: 'α-helix', swatch: '#e879c9' }, { label: 'Loop', swatch: '#b4b9d6' })
+    items.push({ label: 'α-helix', color: '#e879c9' }, { label: 'Loop', color: '#b4b9d6' })
   }
   if (view.chains.length && view.color === 'rainbow') {
-    items.push({ label: 'Start → end of chain', swatch: `linear-gradient(90deg, ${RAINBOW.join(',')})` })
+    items.push({ label: 'Start → end of chain', color: `linear-gradient(90deg, ${RAINBOW.join(',')})` })
   }
   if (view.detail?.length || view.color === 'element') {
-    if (view.detail?.length) items.push({ label: 'Carbon', swatch: '#aab1d6' })
-    items.push({ label: 'Nitrogen', swatch: '#3050f8' }, { label: 'Oxygen', swatch: '#ff0d0d' })
+    if (view.detail?.length) items.push({ label: 'Carbon', color: '#aab1d6' })
+    items.push({ label: 'Nitrogen', color: '#3050f8' }, { label: 'Oxygen', color: '#ff0d0d' })
   }
-  if (view.hemes) items.push({ label: 'Heme', swatch: '#c9cde6' })
-  if (view.hydrophobic) items.push({ label: 'Oily (hydrophobic) side chain', swatch: '#ff9a3d' })
-  if (view.highlights?.length) items.push({ label: 'Highlighted', swatch: '#5ee4ff' })
+  if (view.hemes) items.push({ label: 'Heme', color: '#c9cde6' })
+  if (view.hydrophobic) items.push({ label: 'Oily (hydrophobic) side chain', color: '#ff9a3d' })
+  if (view.highlights?.length) items.push({ label: 'Highlighted', color: '#5ee4ff' })
 
-  return (
-    <ul className="legend-list" aria-label="Color key">
-      {items.map((i) => (
-        <li key={i.label}>
-          <span className={`legend-chip ${i.swatch.startsWith('linear') ? 'is-wide' : ''}`} style={{ background: i.swatch }} aria-hidden="true" />
-          {i.label}
-        </li>
-      ))}
-    </ul>
-  )
+  return items
 }

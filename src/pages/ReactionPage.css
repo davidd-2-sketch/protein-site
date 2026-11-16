@@ -1,29 +1,4 @@
-/* =========================================================
-   ReactionPage.css — the SN2 mechanism viewer
-   ========================================================= */
 
-.reaction-page {
-  position: fixed;
-  inset: 0;
-  overflow: hidden;
-  background: var(--bg-0);
-}
-
-.reaction-backdrop {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(55% 60% at 60% 45%, rgba(43, 36, 112, 0.55), transparent 70%),
-    radial-gradient(40% 50% at 92% 10%, rgba(15, 59, 117, 0.55), transparent 70%),
-    radial-gradient(35% 45% at 10% 95%, rgba(74, 31, 110, 0.4), transparent 70%);
-}
-
-/* 3D area: starts to the right of the explanation panel on laptops. */
-.reaction-stage {
-  position: absolute;
-  /* Bottom inset clears the timeline AND the energy diagram, so neither covers the molecule. */
-  inset: var(--topbar-height) 0 200px 412px;
-}
 
 .reaction-canvas {
   position: absolute;
@@ -37,12 +12,6 @@
 
 .reaction-canvas canvas:active {
   cursor: grabbing;
-}
-
-/* ---------- Left panel (reuses .lesson styles from lessons.css) ---------- */
-.reaction-panel {
-  bottom: 16px;
-  max-height: none;
 }
 
 .reaction-head h1 {
@@ -119,97 +88,6 @@
 .reaction-facts dd {
   margin: 0;
   color: var(--text);
-}
-
-/* ---------- Top-right toggles ---------- */
-.reaction-toggles {
-  position: absolute;
-  z-index: 5;
-  top: calc(var(--topbar-height) + 16px);
-  right: 16px;
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: 6px;
-}
-
-.toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 32px;
-  padding: 0 10px;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--text-dim);
-  font: 500 13px/1 var(--font-sans);
-  cursor: pointer;
-}
-
-.toggle:hover {
-  background: var(--bg-2);
-  color: var(--text);
-}
-
-.toggle-track {
-  position: relative;
-  width: 28px;
-  height: 16px;
-  border-radius: 8px;
-  background: var(--bg-3);
-  border: 1px solid var(--line-strong);
-  transition: background var(--fast) var(--ease);
-}
-
-.toggle-thumb {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--text-dim);
-  transition: transform var(--fast) var(--ease);
-}
-
-.toggle.is-on {
-  color: var(--text);
-}
-
-.toggle.is-on .toggle-track {
-  background: rgba(94, 228, 255, 0.25);
-  border-color: var(--line-accent);
-}
-
-.toggle.is-on .toggle-thumb {
-  transform: translateX(12px);
-  background: var(--accent);
-}
-
-.tool-btn {
-  height: 32px;
-  padding: 0 12px;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--text-dim);
-  font: 500 13px/1 var(--font-sans);
-  cursor: pointer;
-}
-
-.tool-btn:hover {
-  background: var(--bg-2);
-  color: var(--text);
-}
-
-/* ---------- Bottom: timeline ---------- */
-.reaction-bottom {
-  position: absolute;
-  z-index: 5;
-  left: 412px;
-  right: 352px; /* leave room for the energy diagram */
-  bottom: 16px;
 }
 
 .timeline {
@@ -391,15 +269,6 @@
   box-shadow: inset 0 0 0 1px var(--line-strong);
 }
 
-/* ---------- Bottom-right: energy diagram ---------- */
-.reaction-energy {
-  position: absolute;
-  z-index: 5;
-  right: 16px;
-  bottom: 16px;
-  width: 320px;
-}
-
 .energy {
   margin: 0;
   padding: var(--space-3) var(--space-3) var(--space-2);
@@ -463,14 +332,6 @@
   stroke-width: 2;
 }
 
-/* ---------- Floating atom labels ---------- */
-.overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  pointer-events: none;
-}
-
 .rx-label {
   position: absolute;
   top: 0;
@@ -524,52 +385,6 @@
   text-shadow: 0 0 4px rgba(0, 0, 0, 0.85), 0 0 1px rgba(0, 0, 0, 1);
 }
 
-/* ---------- Smaller laptops ---------- */
-@media (max-width: 1200px) {
-  .reaction-bottom {
-    right: 272px;
-  }
-  .reaction-energy {
-    width: 240px;
-  }
-}
-
-/* Narrow windows: no room beside the timeline, so the energy diagram is hidden. */
-@media (max-width: 1000px) {
-  .reaction-bottom {
-    right: 16px;
-  }
-  .reaction-energy {
-    display: none;
-  }
-}
-
-/* ---------- Phones / small tablets ---------- */
-@media (max-width: 800px) {
-  .reaction-stage {
-    inset: var(--topbar-height) 0 46% 0;
-  }
-  .reaction-panel {
-    top: auto;
-    bottom: 96px;
-    max-height: 36%;
-  }
-  .reaction-bottom {
-    left: 8px;
-    right: 8px;
-    bottom: 8px;
-  }
-  .reaction-energy,
-  .reaction-toggles,
-  .scrub-labels {
-    display: none;
-  }
-  .reaction-facts,
-  .reaction-panel .lesson-note {
-    display: none;
-  }
-}
-
 /* ---------- Pause-and-ask question in the left panel ---------- */
 .reaction-question .quiz {
   margin-top: var(--space-3);
@@ -593,14 +408,6 @@
   font-size: 13px;
 }
 
-/* ---------- Compare view: two stages side by side ---------- */
-.compare-stage {
-  position: absolute;
-  inset: var(--topbar-height) 0 84px 412px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-}
-
 .compare-half {
   position: relative;
   min-width: 0;
@@ -610,13 +417,6 @@
 /* Leave room under each molecule for its energy diagram. */
 .compare-half .reaction-canvas {
   inset: 56px 0 190px 0;
-}
-
-.compare-half .overlay {
-  position: absolute;
-  inset: 56px 0 190px 0;
-  pointer-events: none;
-  overflow: hidden;
 }
 
 .compare-title {
@@ -646,10 +446,6 @@
   bottom: 8px;
   width: min(320px, calc(100% - 24px));
   transform: translateX(-50%);
-}
-
-.is-compare .reaction-bottom {
-  right: 16px;
 }
 
 .compare-table {
@@ -682,7 +478,78 @@
   color: var(--text-dim);
 }
 
-@media (max-width: 1000px) {
+.compare-intro {
+  margin-top: var(--space-2);
+  color: var(--text-dim);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+/* ---------- where the reaction's pieces sit in the shared layout ---------- */
+.reaction-canvas {
+  position: absolute;
+  inset: 0;
+}
+
+/* The timeline is the main control: it spans the model area, leaving room for the
+   energy diagram on the right. */
+.reaction-page {
+  --control-space: 108px;
+}
+
+.reaction-page .topic-control {
+  left: var(--gap);
+  right: 352px;
+  transform: none;
+  max-width: none;
+  align-items: stretch;
+}
+
+.reaction-page.is-compare .topic-control {
+  right: var(--gap);
+}
+
+.reaction-energy {
+  position: absolute;
+  z-index: 5;
+  right: var(--gap);
+  bottom: var(--gap);
+  width: 320px;
+}
+
+.reaction-energy .energy {
+  border-radius: var(--radius);
+  background: var(--panel-bg);
+  border: 1px solid var(--line-strong);
+}
+
+.compare-stage {
+  position: absolute;
+  inset: 44px 0 var(--control-space) 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.compare-half .overlay {
+  position: absolute;
+  inset: 56px 0 190px 0;
+}
+
+@media (max-width: 1240px) {
+  .reaction-page .topic-control {
+    right: 272px;
+  }
+  .reaction-energy {
+    width: 240px;
+  }
+}
+
+/* No room beside the timeline: the energy diagram is hidden. */
+@media (max-width: 1179px) {
+  .reaction-page .topic-control {
+    right: var(--gap);
+  }
+  .reaction-energy,
   .compare-energy {
     display: none;
   }
@@ -692,15 +559,29 @@
   }
 }
 
-@media (max-width: 800px) {
-  .compare-stage {
-    inset: var(--topbar-height) 0 46% 0;
+@media (max-width: 899px) {
+  .reaction-page {
+    --control-space: 78px;
   }
-}
-
-.compare-intro {
-  margin-top: var(--space-2);
-  color: var(--text-dim);
-  font-size: 14px;
-  line-height: 1.55;
+  .reaction-page .topic-control {
+    left: 8px;
+    right: 8px;
+  }
+  .scrub-labels,
+  .reaction-panel .reaction-facts {
+    display: none;
+  }
+  .timeline {
+    gap: var(--space-3);
+    padding: 24px 10px 8px;
+  }
+  .compare-title span:not(.mono) {
+    display: none;
+  }
+  /* Smaller atom labels, so they collide less on a small model. */
+  .rx-name span,
+  .rx-group span {
+    padding: 2px 5px;
+    font-size: 10.5px;
+  }
 }

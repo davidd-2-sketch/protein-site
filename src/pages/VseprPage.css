@@ -1,48 +1,4 @@
-/* =========================================================
-   VseprPage.css — Molecular shapes (VSEPR)
-   Shares .lesson / .depth / .term styles from lessons.css.
-   ========================================================= */
 
-.vsepr-page {
-  position: fixed;
-  inset: 0;
-  overflow: hidden;
-  background: var(--bg-0);
-}
-
-.vsepr-backdrop {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(50% 55% at 60% 45%, rgba(43, 36, 112, 0.55), transparent 70%),
-    radial-gradient(40% 50% at 92% 10%, rgba(15, 59, 117, 0.5), transparent 70%),
-    radial-gradient(35% 45% at 10% 95%, rgba(74, 31, 110, 0.4), transparent 70%);
-}
-
-.vsepr-stage {
-  position: absolute;
-  inset: var(--topbar-height) 0 150px 412px;
-}
-
-.vsepr-canvas {
-  position: absolute;
-  inset: 0;
-}
-
-.vsepr-canvas canvas {
-  outline: none;
-  cursor: grab;
-}
-
-.vsepr-canvas canvas:active {
-  cursor: grabbing;
-}
-
-/* ---------- Left panel ---------- */
-.vsepr-panel {
-  bottom: 16px;
-  max-height: none;
-}
 
 .vsepr-title {
   margin-top: var(--space-1);
@@ -112,104 +68,6 @@
 
 .confidence.is-textbook {
   color: var(--electron);
-}
-
-.vsepr-panel .lesson-note p + p {
-  margin-top: var(--space-2);
-}
-
-/* ---------- Toggles (top-right) ---------- */
-.vsepr-toggles {
-  position: absolute;
-  z-index: 5;
-  top: calc(var(--topbar-height) + 16px);
-  right: 16px;
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: 6px;
-}
-
-.toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 32px;
-  padding: 0 10px;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--text-dim);
-  font: 500 13px/1 var(--font-sans);
-  cursor: pointer;
-}
-
-.toggle:hover {
-  background: var(--bg-2);
-  color: var(--text);
-}
-
-.toggle-track {
-  position: relative;
-  width: 28px;
-  height: 16px;
-  border-radius: 8px;
-  background: var(--bg-3);
-  border: 1px solid var(--line-strong);
-}
-
-.toggle-thumb {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--text-dim);
-  transition: transform var(--fast) var(--ease);
-}
-
-.toggle.is-on {
-  color: var(--text);
-}
-
-.toggle.is-on .toggle-track {
-  background: rgba(94, 228, 255, 0.25);
-  border-color: var(--line-accent);
-}
-
-.toggle.is-on .toggle-thumb {
-  transform: translateX(12px);
-  background: var(--accent);
-}
-
-.tool-btn {
-  height: 32px;
-  padding: 0 12px;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--text-dim);
-  font: 500 13px/1 var(--font-sans);
-  cursor: pointer;
-}
-
-.tool-btn:hover {
-  background: var(--bg-2);
-  color: var(--text);
-}
-
-/* ---------- Bottom: molecule chips + builder ---------- */
-.vsepr-bottom {
-  position: absolute;
-  z-index: 5;
-  left: 412px;
-  right: 16px;
-  bottom: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-3);
 }
 
 .chips {
@@ -332,14 +190,6 @@
   color: var(--accent);
 }
 
-/* ---------- Labels on the 3D model ---------- */
-.overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  pointer-events: none;
-}
-
 .v-atom,
 .v-angle {
   position: absolute;
@@ -364,36 +214,6 @@
   font: 500 12.5px/1.2 var(--font-mono);
 }
 
-/* ---------- Smaller screens ---------- */
-@media (max-width: 800px) {
-  .vsepr-stage {
-    inset: var(--topbar-height) 0 50% 0;
-  }
-  .vsepr-panel {
-    top: auto;
-    bottom: 150px;
-    max-height: 32%;
-  }
-  .vsepr-bottom {
-    left: 8px;
-    right: 8px;
-    bottom: 8px;
-  }
-  .vsepr-toggles {
-    display: none;
-  }
-  .builder {
-    gap: var(--space-2);
-    padding: 6px 10px;
-  }
-  .stepper-label {
-    font-size: 12px;
-  }
-  .builder-sn {
-    display: none;
-  }
-}
-
 /* ---------- Additions for lessons ---------- */
 .vsepr-panel-head {
   display: flex;
@@ -402,19 +222,57 @@
   gap: var(--space-3);
 }
 
-/* Small name tag over the 3D view, shown during lessons */
-.shape-tag {
-  position: absolute;
-  z-index: 4;
-  top: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 6px 14px;
-  border-radius: 999px;
-  background: var(--panel);
-  border: 1px solid var(--line-strong);
-  color: var(--text);
-  font: 500 14px/1.2 var(--font-sans);
+.vsepr-panel .lesson-note p + p {
+  margin-top: 6px;
+}
+
+.stepper-label {
   white-space: nowrap;
-  pointer-events: none;
+}
+
+.stepper-short {
+  display: none;
+}
+
+/* The control slot: molecule chips on top (explore), the builder below. */
+.vsepr-page.has-chips {
+  --control-space: 132px;
+}
+
+@media (max-width: 899px) {
+  /* Chips become one row you can swipe sideways; the builder drops its summary. */
+  .chips {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 0 2px;
+  }
+  .chip {
+    flex-shrink: 0;
+  }
+  .builder-sn,
+  .builder-divider:last-of-type {
+    display: none;
+  }
+  .stepper-label {
+    font-size: 12.5px;
+  }
+  .stepper-long {
+    display: none;
+  }
+  .stepper-short {
+    display: inline;
+  }
+  .builder {
+    gap: var(--space-2);
+    padding: 6px 8px;
+  }
+  .stepper {
+    gap: 6px;
+  }
+  .vsepr-page.has-chips {
+    --control-space: 112px;
+  }
 }
