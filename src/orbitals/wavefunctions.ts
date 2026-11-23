@@ -100,6 +100,74 @@ export const BONDS: Record<string, { label: string; fn: Fn; extent: number; nucl
   },
 }
 
+/* ---------- Molecular orbitals for the MO theory page ----------
+   Same LCAO idea, now with properly normalized hydrogen-like orbitals so the WEIGHTS mean
+   something when the two atoms differ:
+     2s: Z^1.5 (2 − Zr) e^(−Zr/2)      2p: Z^2.5 u e^(−Zr/2)      1s: Z^1.5 e^(−Zr)
+   (shared constant factors dropped). Bonds lie along x.
+   • Same atoms: carbon-sized orbitals (Z_eff 3.25), C=C-like spacing, as above.
+   • Unequal atoms ("polar-"): left atom C (Z_eff 3.25), right atom O (Z_eff 4.55, Slater's
+     rules), 2.13 a₀ apart (CO, 112.8 pm). Bonding MOs lean toward O (weights 0.75 : 1.25),
+     antibonding toward C (1.25 : 0.75). The weights are illustrative, not computed.
+   • HF: H 1s and F 2p (Z_eff 5.2), 1.73 a₀ apart (91.7 pm); σ ≈ 0.45 H + 0.89 F, typical of
+     simple calculations, so the bonding electrons sit mostly on fluorine. */
+const s2n = (Z: number) => (x: number, y: number, z: number) => {
+  const r = r3(x, y, z)
+  return Z ** 1.5 * (2 - Z * r) * Math.exp((-Z * r) / 2)
+}
+const p2n = (Z: number) => (u: number, x: number, y: number, z: number) => Z ** 2.5 * u * Math.exp((-Z * r3(x, y, z)) / 2)
+const s1n = (Z: number) => (x: number, y: number, z: number) => Z ** 1.5 * Math.exp(-Z * r3(x, y, z))
+
+type Shape = { label: string; fn: Fn; extent: number; nuclei: [number, number, number][] }
+
+/** σ from two s orbitals, σ/π from two p orbitals; `sign` +1 bonding, −1 antibonding. */
+function pair(kind: 's' | 'p-sigma' | 'p-pi', sign: 1 | -1, half: number, ZL: number, ZR: number, wL: number, wR: number) {
+  const L = (x: number) => x + half
+  const R = (x: number) => x - half
+  if (kind === 's') {
+    const a = s2n(ZL)
+    const b = s2n(ZR)
+    return (x: number, y: number, z: number) => wL * a(L(x), y, z) + sign * wR * b(R(x), y, z)
+  }
+  const a = p2n(ZL)
+  const b = p2n(ZR)
+  if (kind === 'p-sigma') return (x: number, y: number, z: number) => wL * a(L(x), L(x), y, z) - sign * wR * b(R(x), R(x), y, z)
+  return (x: number, y: number, z: number) => wL * a(z, L(x), y, z) + sign * wR * b(z, R(x), y, z)
+}
+
+const CO_HALF = 2.13 / 2
+const HF_H = -1.73 / 2
+const HF_F = 1.73 / 2
+const ZF = 5.2
+const homo = (kind: 's' | 'p-sigma' | 'p-pi', sign: 1 | -1) => pair(kind, sign, CC_HALF, 3.25, 3.25, 1, 1)
+const polar = (kind: 's' | 'p-sigma' | 'p-pi', sign: 1 | -1) =>
+  pair(kind, sign, CO_HALF, 3.25, 4.55, sign > 0 ? 0.75 : 1.25, sign > 0 ? 1.25 : 0.75)
+const two = (half: number): [number, number, number][] => [[-half, 0, 0], [half, 0, 0]]
+const hH = s1n(1)
+const fP = p2n(ZF)
+const fS = s2n(ZF)
+
+export const MO_SHAPES: Record<string, Shape> = {
+  'mo-s2-sigma': { label: 'σ_2s', extent: 5, nuclei: two(CC_HALF), fn: homo('s', 1) },
+  'mo-s2-sigma*': { label: 'σ*_2s', extent: 5, nuclei: two(CC_HALF), fn: homo('s', -1) },
+  'mo-p-sigma*': { label: 'σ*_2p', extent: 5, nuclei: two(CC_HALF), fn: homo('p-sigma', -1) },
+  'mo-p-pi*': { label: 'π*_2p', extent: 5, nuclei: two(CC_HALF), fn: homo('p-pi', -1) },
+  'polar-s2-sigma': { label: 'σ', extent: 5, nuclei: two(CO_HALF), fn: polar('s', 1) },
+  'polar-s2-sigma*': { label: 'σ*', extent: 5, nuclei: two(CO_HALF), fn: polar('s', -1) },
+  'polar-p-sigma': { label: 'σ', extent: 5, nuclei: two(CO_HALF), fn: polar('p-sigma', 1) },
+  'polar-p-sigma*': { label: 'σ*', extent: 5, nuclei: two(CO_HALF), fn: polar('p-sigma', -1) },
+  'polar-p-pi': { label: 'π', extent: 5, nuclei: two(CO_HALF), fn: polar('p-pi', 1) },
+  'polar-p-pi*': { label: 'π*', extent: 5, nuclei: two(CO_HALF), fn: polar('p-pi', -1) },
+  // F at +x, so the F 2p lobe facing H is its NEGATIVE lobe: subtract it for in-phase overlap.
+  'hf-sigma': { label: 'σ (HF)', extent: 5, nuclei: [[HF_H, 0, 0], [HF_F, 0, 0]], fn: (x, y, z) => 0.45 * 0.564 * hH(x - HF_H, y, z) - 0.89 * 0.0997 * fP(x - HF_F, x - HF_F, y, z) },
+  'hf-sigma*': { label: 'σ* (HF)', extent: 5, nuclei: [[HF_H, 0, 0], [HF_F, 0, 0]], fn: (x, y, z) => 0.89 * 0.564 * hH(x - HF_H, y, z) + 0.45 * 0.0997 * fP(x - HF_F, x - HF_F, y, z) },
+  'hf-nb': { label: 'Nonbonding F 2p', extent: 5, nuclei: [[HF_H, 0, 0], [HF_F, 0, 0]], fn: (x, y, z) => fP(z, x - HF_F, y, z) },
+  'hf-2s': { label: 'Nonbonding F 2s', extent: 5, nuclei: [[HF_H, 0, 0], [HF_F, 0, 0]], fn: (x, y, z) => fS(x - HF_F, y, z) },
+}
+
+/** A bond or molecular-orbital surface by id. */
+export const bondShape = (id: string): Shape => BONDS[id] ?? MO_SHAPES[id]
+
 /* ---------- Sampling on a grid + the 90% threshold ---------- */
 
 /** Sample fn on an N×N×N grid spanning ±extent, in the index layout three's MarchingCubes uses. */

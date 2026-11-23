@@ -17,6 +17,8 @@ export const loadTrendsPage = () => import('./TrendsPage')
 export const loadPolarityPage = () => import('./PolarityPage')
 export const loadEnzymesPage = () => import('./EnzymesPage')
 export const loadPracticePage = () => import('./PracticePage')
+export const loadLewisPage = () => import('./LewisPage')
+export const loadMoPage = () => import('./MoPage')
 export const loadAboutPage = () => import('./AboutPage')
 
 type NetworkInfo = { saveData?: boolean; effectiveType?: string }
@@ -43,6 +45,8 @@ export function prefetchWhenIdle() {
     void loadTrendsPage() // small: same 3D engine
     void loadPolarityPage()
     void loadPracticePage()
+    void loadLewisPage()
+    void loadMoPage()
   }
   // Well after the page has appeared, so this never slows down what the student came to see.
   return afterFirstPaint(run, 2500)
@@ -60,6 +64,8 @@ const BY_PATH: Record<string, () => Promise<unknown>> = {
   '/enzymes': () => Promise.all([loadEnzymesPage(), loadProteinViewer()]),
   '/practice': loadPracticePage,
   '/about': loadAboutPage,
+  '/lewis': loadLewisPage,
+  '/mo': loadMoPage,
 }
 
 /**

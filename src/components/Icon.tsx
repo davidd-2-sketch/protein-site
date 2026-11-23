@@ -10,6 +10,8 @@ const PATHS = {
   reaction: <path d="M3 7h11.5M11.5 4l3 3-3 3M17 13H5.5M8.5 10l-3 3 3 3" />,
   protein: <path d="M3 13c2-6 4-6 5.5-1.5S12 16 14 9s2.6-5 3-4" />,
   enzymes: <><path d="M16.2 6.2A7 7 0 1 0 16.2 13.8L10.5 10z" /><circle cx="15.6" cy="10" r="1.2" /></>,
+  lewis: <><path d="M4.5 10h3.5M12 10h3.5" /><circle cx="10" cy="6.3" r=".9" fill="currentColor" stroke="none" /><circle cx="10" cy="13.7" r=".9" fill="currentColor" stroke="none" /><circle cx="10" cy="10" r="1.6" /></>,
+  mo: <path d="M3.5 15.5h4M12.5 15.5h4M7.5 6h5M7.5 12h5M7.5 12 5.5 15.5M12.5 12l2 3.5M7.5 6 5.5 15.5M12.5 6l2 9.5" />,
   practice: <><rect x="3.5" y="5.5" width="11" height="9" rx="2" /><path d="M6.5 3.5h8a2 2 0 0 1 2 2v6.5" /></>,
   sound: <><path d="M3.5 7.8h2.6L10 4.6v10.8L6.1 12.2H3.5z" /><path d="M13 7.6a3.4 3.4 0 0 1 0 4.8" /></>,
   soundOff: <><path d="M3.5 7.8h2.6L10 4.6v10.8L6.1 12.2H3.5z" /><path d="M13 8l4 4M17 8l-4 4" /></>,

@@ -44,3 +44,50 @@ monomeric allosteric enzyme human glucokinase", Structure 12, 429–438 (2004).
   move (average Cα spacing 9.9 Å open vs 9.7 Å closed).
 - The activator MRK binds a separate (allosteric) site lined by residues 61–66, 210–220, 235,
   452 and 455; its nearest atom is 16.2 Å from glucose.
+
+## Lewis structures (`src/lewis/molecules.ts`)
+
+Rules (valence electron count, octet/duet, formal charge, resonance, exceptions) as taught in
+OpenStax *Chemistry 2e* §7.3–7.4, Tro, and Zumdahl. Every structure is checked automatically by
+`tests/lewis.test.ts` (electron count, octets, formal charges summing to the overall charge).
+
+Measured values quoted in the lessons:
+- O₃: both O–O bonds 127.8 pm (bond angle 116.8°). H₂O₂ O–O single bond 147.5 pm; O₂ O=O 120.7 pm.
+- CO₂: both C–O bonds 116 pm (116.3 pm).
+- CO: dipole moment 0.11 D, negative end on carbon.
+- Carbonate and nitrate: all three bonds equal in length (stated qualitatively; no number shown).
+
+## MO theory (`src/mo/diatomics.ts`)
+
+Level order: standard Gen Chem (OpenStax *Chemistry 2e* §8.4; Tro; Housecroft):
+Li₂–N₂ σ2s < σ*2s < π2p < σ2p < π*2p < σ*2p; O₂–Ne₂ σ2s < σ*2s < σ2p < π2p < π*2p < σ*2p.
+Energies in the diagrams are schematic (order only). For CO, NO and HF the atoms' orbital heights
+follow the order of measured valence orbital ionization energies (eV): H 1s −13.6; C 2s −19.4,
+2p −10.7; N 2s −25.6, 2p −13.2; O 2s −32.4, 2p −15.9; F 2s −40.2, 2p −18.7 (Miessler, Fischer &
+Tarr, *Inorganic Chemistry*). Bond orders and magnetism are computed by filling the diagrams and
+checked against textbook values in `tests/mo.test.ts`.
+
+Measured data shown (neutral molecules):
+
+| Molecule | Bond length (pm) | Bond energy, 298 K (kJ/mol) | Magnetism |
+|---|---|---|---|
+| H₂ | 74.1 | 436.0 | diamagnetic |
+| Li₂ | 267.3 | not shown | not shown |
+| B₂ | 159.0 | not shown | paramagnetic |
+| C₂ | 124.2 | not shown | diamagnetic |
+| N₂ | 109.8 | 945.3 | diamagnetic |
+| O₂ | 120.7 | 498.4 | paramagnetic |
+| F₂ | 141.2 | 158.8 | diamagnetic |
+| CO | 112.8 | 1076.5 | diamagnetic |
+| NO | 115.1 | not shown | paramagnetic |
+| HF | 91.7 | 569.9 | diamagnetic |
+
+Bond lengths: Huber & Herzberg, *Constants of Diatomic Molecules* (1979), as listed by NIST.
+Bond energies: CRC Handbook of Chemistry and Physics, cross-checked 2026-11-22 against the
+Queen's University bond energy table and WebElements (N₂ 945.33, F₂ 158.78, CO 1076.5).
+Li₂ (267 pm) and C₂ (124.2 pm) were cross-checked against recent papers citing Huber & Herzberg;
+B₂ (159 pm) against a university MO handout. Not shown because they were not confirmed: NO's bond
+energy, and bond lengths of the ions (O₂⁺, O₂⁻, O₂²⁻, NO⁺); the lessons only state their trend.
+
+3D molecular orbital surfaces are an illustrative LCAO model (Slater effective nuclear charges;
+CO geometry for the "polar" shapes; HF coefficients 0.45 H : 0.89 F), not computed orbitals.

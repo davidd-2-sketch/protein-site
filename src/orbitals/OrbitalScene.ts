@@ -22,7 +22,7 @@ import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 import { Stage3D } from '../three/Stage3D'
 import { glossy } from '../three/quality3d'
 import { settings } from '../perf/quality'
-import { BOHR, BONDS, HYBRID_SETS, ORBITALS, hybrid, isoForFraction, sampleGrid, type Fn } from './wavefunctions'
+import { BOHR, HYBRID_SETS, ORBITALS, bondShape, hybrid, isoForFraction, sampleGrid, type Fn } from './wavefunctions'
 
 export type OrbitalView = (
   | { kind: 'orbital'; id: string }
@@ -149,7 +149,7 @@ export class OrbitalScene {
       case 'set':
         return view.ids.flatMap((id, i) => both(id, ORBITALS[id].fn, ORBITALS[id].extent, SET_COLORS[i % SET_COLORS.length]))
       case 'bond': {
-        const b = BONDS[view.id]
+        const b = bondShape(view.id)
         return both(view.id, b.fn, b.extent)
       }
       case 'hybrids': {
@@ -182,7 +182,7 @@ export class OrbitalScene {
 
   private setNuclei(view: OrbitalView) {
     this.nuclei.clear()
-    const positions: [number, number, number][] = view.kind === 'bond' ? BONDS[view.id].nuclei : [[0, 0, 0]]
+    const positions: [number, number, number][] = view.kind === 'bond' ? bondShape(view.id).nuclei : [[0, 0, 0]]
     const mat = new THREE.MeshStandardMaterial({ color: '#ffffff', emissive: '#ffffff', emissiveIntensity: 0.4 })
     for (const [x, y, z] of positions) {
       const m = new THREE.Mesh(new THREE.SphereGeometry(0.09, 20, 14), mat)

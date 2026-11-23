@@ -12,6 +12,8 @@ export const MODULES = {
   orbitals: { path: '/orbitals', name: 'Orbitals' },
   trends: { path: '/trends', name: 'Periodic trends' },
   enzymes: { path: '/enzymes', name: 'Enzymes' },
+  lewis: { path: '/lewis', name: 'Lewis structures' },
+  mo: { path: '/mo', name: 'MO theory' },
 } as const
 export type ModuleKey = keyof typeof MODULES
 

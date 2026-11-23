@@ -11,7 +11,7 @@ import TopBar from './components/TopBar'
 import LoadingScreen from './components/LoadingScreen'
 import HomePage from './pages/HomePage'
 import { installClickSounds } from './sound/sound'
-import { loadAboutPage, loadEnzymesPage, loadPolarityPage, loadPracticePage, loadTrendsPage } from './pages/loaders'
+import { loadAboutPage, loadLewisPage, loadMoPage, loadEnzymesPage, loadPolarityPage, loadPracticePage, loadTrendsPage } from './pages/loaders'
 import { installLinkPrefetch, loadOrbitalsPage, loadProteinPage, loadReactionPage, loadVseprPage, prefetchWhenIdle } from './pages/loaders'
 
 /*
@@ -28,6 +28,8 @@ const PolarityPage = lazy(loadPolarityPage)
 const EnzymesPage = lazy(loadEnzymesPage)
 const PracticePage = lazy(loadPracticePage)
 const AboutPage = lazy(loadAboutPage)
+const LewisPage = lazy(loadLewisPage)
+const MoPage = lazy(loadMoPage)
 
 export default function App() {
   const location = useLocation()
@@ -66,6 +68,8 @@ export default function App() {
             <Route path="/enzymes" element={<EnzymesPage />} />
             <Route path="/practice" element={<PracticePage />} />
             <Route path="/about" element={<AboutPage />} />
+            <Route path="/lewis" element={<LewisPage />} />
+            <Route path="/mo" element={<MoPage />} />
             {/* The old Progress page is gone; its address sends people home instead of to an error. */}
             <Route path="/progress" element={<Navigate to="/" replace />} />
             {/* Any unknown URL falls back to the home page. */}

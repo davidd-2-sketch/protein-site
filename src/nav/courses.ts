@@ -31,8 +31,10 @@ export const COURSES: Course[] = [
     name: 'General Chem',
     blurb: 'Shapes, electrons, and the periodic table.',
     topics: [
+      { to: '/lewis', icon: 'lewis', title: 'Lewis structures', desc: 'Count electrons, draw the structure, and see it turn 3D.', practice: 'lewis' },
       { to: '/shapes', icon: 'shapes', title: 'Molecular shapes', desc: 'Why molecules bend, and how to predict their 3D shape.', practice: 'shapes' },
       { to: '/orbitals', icon: 'orbitals', title: 'Orbitals', desc: 'Where electrons live, shown as 3D clouds.', practice: 'orbitals' },
+      { to: '/mo', icon: 'mo', title: 'MO theory', desc: 'Bonding and antibonding orbitals, bond order, and why O₂ is magnetic.', practice: 'mo' },
       { to: '/polarity', icon: 'polarity', title: 'Polarity', desc: 'Which molecules have a + end and a − end, and why.', practice: 'polarity' },
       { to: '/trends', icon: 'trends', title: 'Periodic trends', desc: 'How atoms change in size and pull across the table.', practice: 'trends' },
     ],

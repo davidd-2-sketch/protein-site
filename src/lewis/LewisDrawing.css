@@ -1,0 +1,113 @@
+/* LewisDrawing.css — the 2D Lewis structure. */
+.lewis {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  font-family: var(--font-sans);
+}
+
+.lewis-bond line {
+  stroke: var(--text);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+}
+
+.lewis-bond line.is-partial {
+  stroke-dasharray: 5 5;
+  stroke: var(--text-dim);
+}
+
+.lewis-bond .lewis-hit {
+  stroke: transparent;
+  stroke-width: 26;
+}
+
+.lewis-symbol {
+  fill: var(--text);
+  font-size: 27px;
+  font-weight: 600;
+}
+
+.lewis-pair circle,
+.lewis-single {
+  fill: var(--electron);
+}
+
+.lewis-charge {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.lewis-charge.is-plus {
+  fill: #ff9a8a;
+}
+
+.lewis-charge.is-minus {
+  fill: var(--accent);
+}
+
+.lewis-ring {
+  fill: transparent;
+  stroke: transparent;
+  stroke-width: 2;
+}
+
+.lewis-bracket path {
+  fill: none;
+  stroke: var(--text-dim);
+  stroke-width: 2;
+}
+
+.lewis-ion-charge {
+  fill: var(--text);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* Editing */
+.lewis.is-editable .lewis-atom,
+.lewis.is-editable .lewis-bond {
+  cursor: pointer;
+}
+
+.lewis.is-editable .lewis-atom:hover .lewis-ring {
+  fill: rgba(172, 178, 255, 0.06);
+  stroke: var(--line-strong);
+}
+
+.lewis.is-editable .lewis-bond:hover line:not(.lewis-hit) {
+  stroke: var(--accent);
+}
+
+.lewis-atom.is-selected .lewis-ring {
+  fill: rgba(111, 227, 255, 0.1);
+  stroke: var(--accent);
+}
+
+.lewis-bond.is-selected line:not(.lewis-hit) {
+  stroke: var(--accent);
+}
+
+.lewis-atom.is-highlight .lewis-ring {
+  stroke: var(--electron);
+  stroke-dasharray: 4 4;
+}
+
+.lewis-atom:focus,
+.lewis-bond:focus {
+  outline: none;
+}
+
+.lewis-atom:focus-visible .lewis-ring {
+  stroke: var(--accent);
+  stroke-width: 2.5;
+}
+
+.lewis-bond:focus-visible line:not(.lewis-hit) {
+  stroke: var(--accent);
+}
+
+.lewis.is-small .lewis-symbol {
+  font-size: 30px;
+}

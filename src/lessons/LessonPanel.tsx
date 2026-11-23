@@ -115,11 +115,7 @@ export default function LessonPanel(p: Props) {
               {p.taskStatus === 'correct' ? '✓ Done' : p.taskStatus === 'wrong' ? 'Not yet · try again' : 'Your turn'}
             </p>
             <p>
-              {p.taskStatus === 'correct'
-                ? step.task.success
-                : p.taskStatus === 'wrong'
-                  ? step.task.hint
-                  : step.task.prompt}
+              <RichText text={p.taskStatus === 'correct' ? step.task.success : p.taskStatus === 'wrong' ? step.task.hint : step.task.prompt} />
             </p>
           </div>
         )}

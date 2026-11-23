@@ -31,6 +31,10 @@ export interface SceneState {
   arcs: [number, number, string][]
   /** Directions to outline when no groups are drawn (a "mystery" step's empty electron geometry). */
   hullDirs?: [number, number, number][]
+  /** Optional, per bonded atom (in the order bonds appear in `domains`): its element and
+      bond order, for molecules with different outer atoms (e.g. H–C≡N from the Lewis page). */
+  ligands?: string[]
+  orders?: number[]
 }
 
 export interface SceneLabels {
@@ -48,7 +52,11 @@ interface Slot {
   atom: THREE.Mesh
   bondA: THREE.Mesh
   bondB: THREE.Mesh // second stick for double bonds
+  bondC: THREE.Mesh // third stick for triple bonds
   lobe: THREE.Mesh
+  /** This slot's outer atom and bond order (from SceneState.ligands / orders). */
+  el: string
+  order: number
 }
 
 export class VseprScene {
@@ -116,10 +124,13 @@ export class VseprScene {
         atom: new THREE.Mesh(sphere, this.material('X')),
         bondA: new THREE.Mesh(cylinder, this.bondMaterial),
         bondB: new THREE.Mesh(cylinder, this.bondMaterial),
+        bondC: new THREE.Mesh(cylinder, this.bondMaterial),
         lobe: new THREE.Mesh(lobeGeo, this.lobeMaterial),
+        el: 'X',
+        order: 1,
       }
       slot.lobe.renderOrder = 2 // draw clouds after solid atoms so they blend correctly
-      this.stage.scene.add(slot.atom, slot.bondA, slot.bondB, slot.lobe)
+      this.stage.scene.add(slot.atom, slot.bondA, slot.bondB, slot.bondC, slot.lobe)
       this.slots.push(slot)
     }
 
@@ -140,7 +151,6 @@ export class VseprScene {
     this.central.material = this.material(next.central)
     this.central.scale.setScalar(this.radius(next.central))
     this.bondLength = this.radius(next.central) + this.radius(next.ligand) + 0.9
-    this.slots.forEach((s) => (s.atom.material = this.material(next.ligand)))
 
     // Match each new group to the closest existing one, so motion is as small as possible.
     const targets = next.domains.map((d) => new THREE.Vector3(...d.dir).normalize())
@@ -185,6 +195,17 @@ export class VseprScene {
 
     // Remember which slot is "bond #i" so angle arcs can find them.
     this.bondSlots = next.domains.map((d, k) => (d.kind === 'bond' ? assignment[k] : -1)).filter((i) => i >= 0)
+    // Each bonded slot's element and bond order (the same for all, unless given per bond).
+    this.slots.forEach((s) => {
+      s.el = next.ligand
+      s.order = next.order
+    })
+    this.bondSlots.forEach((slot, i) => {
+      const s = this.slots[slot]
+      s.el = next.ligands?.[i] ?? next.ligand
+      s.order = next.orders?.[i] ?? next.order
+    })
+    this.slots.forEach((s) => (s.atom.material = this.material(s.el)))
     this.t = prev ? 0 : 1
     this.layout()
     this.stage.requestRender()
@@ -239,9 +260,7 @@ export class VseprScene {
   private layout() {
     if (!this.state) return
     const e = ease(this.t)
-    const { order, ligand } = this.state
-    const L = this.bondLength
-    const rLig = this.radius(ligand)
+    const rCentral = this.radius(this.state.central)
     const atomLabels: SceneLabels['atoms'] = [{ text: this.state.central, position: new THREE.Vector3() }]
 
     this.slots.forEach((s) => {
@@ -252,19 +271,32 @@ export class VseprScene {
       const bondScale = appear('bond')
       const loneScale = appear('lone')
 
+      const order = s.order
+      const rLig = this.radius(s.el)
+      // Each bond's length suits its two atoms (an H sits closer than an F).
+      const L = rCentral + rLig + 0.9
       const tip = s.dir.clone().multiplyScalar(L)
       s.atom.visible = bondScale > 0.01
       s.atom.position.copy(tip)
       s.atom.scale.setScalar(rLig * bondScale)
 
-      // Bond sticks: one for single, two side by side for double.
-      const side = perpendicular(s.dir).multiplyScalar(0.07)
-      const thick = order >= 2 ? 0.055 : 0.085
+      // Bond sticks: one for single, two side by side for double, three for triple.
+      const side = perpendicular(s.dir).multiplyScalar(order >= 3 ? 0.1 : 0.07)
+      const thick = order >= 3 ? 0.045 : order >= 2 ? 0.055 : 0.085
       s.bondA.visible = bondScale > 0.01
       s.bondB.visible = bondScale > 0.01 && order >= 2
+      s.bondC.visible = bondScale > 0.01 && order >= 3
       const end = s.dir.clone().multiplyScalar(L * bondScale)
-      placeCylinder(s.bondA, order >= 2 ? side : new THREE.Vector3(), order >= 2 ? end.clone().add(side) : end, thick)
-      if (order >= 2) placeCylinder(s.bondB, side.clone().negate(), end.clone().sub(side), thick)
+      if (order === 2) {
+        placeCylinder(s.bondA, side, end.clone().add(side), thick)
+        placeCylinder(s.bondB, side.clone().negate(), end.clone().sub(side), thick)
+      } else {
+        placeCylinder(s.bondA, new THREE.Vector3(), end, thick)
+        if (order >= 3) {
+          placeCylinder(s.bondB, side, end.clone().add(side), thick)
+          placeCylinder(s.bondC, side.clone().negate(), end.clone().sub(side), thick)
+        }
+      }
 
       // Lone pair cloud: a teardrop-ish ellipsoid pointing outward.
       s.lobe.visible = loneScale > 0.01
@@ -272,7 +304,7 @@ export class VseprScene {
       s.lobe.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), s.dir)
       s.lobe.scale.set(0.5 * loneScale, 0.85 * loneScale, 0.5 * loneScale)
 
-      if (s.kind === 'bond' && bondScale > 0.5) atomLabels.push({ text: ligand, position: tip.clone() })
+      if (s.kind === 'bond' && bondScale > 0.5) atomLabels.push({ text: s.el, position: tip.clone() })
     })
 
     this.layoutArcs(e)

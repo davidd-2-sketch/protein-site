@@ -1,0 +1,195 @@
+/* MoPage.css — the MO diagram beside the 3D orbital. */
+.mo-split {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+}
+
+.mo-pane {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+}
+
+.mo-pane-diagram > .mo-diagram {
+  position: absolute;
+  inset: 12px 20px 24px;
+  width: calc(100% - 40px);
+  height: calc(100% - 36px);
+}
+
+.mo-pane-3d {
+  border-left: 1px solid var(--line);
+}
+
+.mo-3d {
+  position: absolute;
+  inset: 0 0 48px 0;
+}
+
+.mo-3d-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 14px;
+  text-align: center;
+  color: var(--text);
+  font-size: var(--fs-small);
+  pointer-events: none;
+}
+
+.mo-3d-phase {
+  display: block;
+  color: var(--text-faint);
+  font-size: var(--fs-micro);
+}
+
+.topic-stage .mo-busy {
+  bottom: 60px;
+}
+
+/* ---------- electron counter (Explore) ---------- */
+.mo-page .topic-control > .mo-electrons {
+  gap: var(--space-3);
+  padding: 6px 10px;
+}
+
+.mo-electrons-value {
+  color: var(--text-dim);
+  font-size: var(--fs-small);
+  white-space: nowrap;
+}
+
+.mo-electrons-value strong {
+  color: var(--text);
+}
+
+.mo-page .stepper-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line-strong);
+  background: var(--bg-2);
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.mo-page .stepper-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* ---------- panel ---------- */
+.mo-title {
+  font-size: var(--fs-h1);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-heading);
+  line-height: var(--lh-tight);
+}
+
+.mo-facts {
+  margin: 0;
+  display: grid;
+  gap: 8px;
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.mo-facts > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: var(--fs-small);
+}
+
+.mo-facts dt {
+  color: var(--text-dim);
+}
+
+.mo-facts dd {
+  margin: 0;
+  text-align: right;
+}
+
+.mo-calc {
+  margin-left: 8px;
+  color: var(--text-faint);
+  font-size: var(--fs-micro);
+}
+
+.mo-note {
+  color: var(--text-dim);
+  font-size: var(--fs-small);
+  line-height: var(--lh-snug);
+}
+
+.mo-group {
+  display: grid;
+  gap: 6px;
+}
+
+.mo-group-name {
+  color: var(--text-faint);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-medium);
+}
+
+.mo-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.mo-link {
+  justify-self: start;
+  align-self: flex-start;
+}
+
+/* ---------- smaller screens ---------- */
+@media (max-width: 899px) {
+  /* One pane at a time (see .pane-switch). */
+  .mo-split {
+    grid-template-columns: 1fr;
+    top: 92px;
+  }
+  .mo-split.show-diagram .mo-pane-3d,
+  .mo-split.show-3d .mo-pane-diagram {
+    position: absolute;
+    visibility: hidden;
+  }
+  .mo-pane-3d {
+    border-left: 0;
+  }
+  .mo-pane-diagram > .mo-diagram {
+    inset: 2px 4px 4px;
+    width: calc(100% - 8px);
+    height: calc(100% - 6px);
+  }
+  .mo-3d {
+    bottom: 36px;
+  }
+  .mo-3d-caption {
+    bottom: 6px;
+  }
+  .mo-3d-phase {
+    display: inline;
+    margin-left: 6px;
+  }
+}
+
+@media (max-width: 899px) and (orientation: landscape) and (max-height: 520px) {
+  .mo-split {
+    grid-template-columns: 1.2fr 1fr;
+    top: 52px;
+  }
+  .mo-split.show-diagram .mo-pane-3d,
+  .mo-split.show-3d .mo-pane-diagram {
+    position: relative;
+    visibility: visible;
+  }
+  .mo-3d-phase {
+    display: none;
+  }
+}

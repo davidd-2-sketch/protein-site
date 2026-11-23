@@ -606,3 +606,34 @@
     display: none;
   }
 }
+
+/* Pages with two views side by side (e.g. a diagram and a 3D model) show one at a time on
+   phones, with this switch at the top of the model area. Hidden on wider screens. */
+.pane-switch {
+  display: none;
+}
+
+@media (max-width: 899px) {
+  .pane-switch {
+    position: absolute;
+    z-index: 6;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    padding: 3px;
+    border-radius: var(--radius);
+    background: var(--panel-bg);
+    border: 1px solid var(--line-strong);
+  }
+  .pane-switch .segmented-btn {
+    height: 30px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 899px) and (orientation: landscape) and (max-height: 520px) {
+  .pane-switch {
+    display: none;
+  }
+}

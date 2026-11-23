@@ -81,6 +81,21 @@ export const GLOSSARY: Record<string, string> = {
   'electron affinity': 'The energy released when an atom in the gas phase gains one electron.',
   'bond dipole': 'Uneven sharing of the electrons in a bond: the more electronegative atom ends up slightly negative (δ−) and the other slightly positive (δ+). Drawn as an arrow pointing toward the δ− end.',
   'dipole moment': 'A number for how polar a whole molecule is, measured in debye (D). Zero means the bond dipoles cancel.',
+  'Lewis structure': 'A drawing of a molecule’s valence electrons: lines for shared pairs (bonds) and dots for lone pairs.',
+  'octet rule': 'Atoms tend to bond until they have 8 valence electrons around them (hydrogen: 2). There are exceptions.',
+  'formal charge': 'Valence electrons minus (nonbonding electrons + bonds) for one atom in a Lewis structure. A bookkeeping tool for choosing the best structure, not the real charge.',
+  resonance: 'When one Lewis structure can’t describe a molecule, several are drawn; the real molecule is a blend (hybrid) of them, not switching between them.',
+  'resonance hybrid': 'The real structure behind a set of resonance structures: an average, with partial bonds and spread-out charge.',
+  radical: 'A molecule or atom with an unpaired electron, such as NO.',
+  'expanded octet': 'More than 8 electrons around an atom, possible for atoms from the third row down (P, S, Cl, Xe…).',
+  'molecular orbital': 'An orbital that spreads over a whole molecule, made by combining atomic orbitals. Each holds up to two electrons.',
+  'bonding orbital': 'A molecular orbital lower in energy than the atomic orbitals it came from, with electron density between the nuclei. Electrons here hold the atoms together.',
+  'antibonding orbital': 'A molecular orbital higher in energy than the atomic orbitals it came from, with a node between the nuclei. Electrons here weaken the bond. Marked with *.',
+  'nonbonding orbital': 'A molecular orbital that stays on one atom and neither helps nor hurts the bond, like a lone pair.',
+  'bond order': '(Bonding electrons − antibonding electrons) ÷ 2. 1 = single bond, 2 = double, 3 = triple; higher means shorter and stronger.',
+  paramagnetic: 'Attracted into a magnetic field, because the substance has unpaired electrons (O₂ is the classic example).',
+  diamagnetic: 'Weakly pushed out of a magnetic field, because every electron is paired.',
+  isoelectronic: 'Having the same number of electrons, like CO and N₂.',
   'X-ray crystallography': 'A method that finds where atoms are by shining X-rays through a crystal of the molecule.',
 }
 
@@ -89,4 +104,4 @@ export const GLOSSARY: Record<string, string> = {
   have an everyday meaning ("a group of atoms", "a period of time"). Writers can still
   mark them by hand with [[...]] where the chemistry meaning is intended.
 */
-export const AUTO_SKIP = ['group', 'period', 'phase', 'node', 'intermediate', 'mutation', 'backbone']
+export const AUTO_SKIP = ['group', 'period', 'phase', 'node', 'intermediate', 'mutation', 'backbone', 'resonance']

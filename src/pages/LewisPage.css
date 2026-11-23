@@ -1,0 +1,352 @@
+/* LewisPage.css — the 2D drawing beside the 3D shape, and the builder controls. */
+
+/* ---------- stage: drawing | 3D ---------- */
+.lewis-split {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+}
+
+.lewis-pane {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+}
+
+.lewis-pane-2d {
+  display: grid;
+  place-items: center;
+}
+
+.lewis-pane-2d > .lewis {
+  position: absolute;
+  inset: 24px 28px;
+  width: calc(100% - 56px);
+  height: calc(100% - 48px);
+  max-height: 420px;
+  margin: auto;
+}
+
+.lewis-pane-3d {
+  border-left: 1px solid var(--line);
+}
+
+.lewis-3d {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity var(--slow) var(--ease);
+}
+
+.lewis-pane-3d.is-on .lewis-3d {
+  opacity: 1;
+}
+
+.topic.lewis-page .lewis-split .lewis-pane-3d .overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.lewis-3d-empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--space-5);
+  color: var(--text-faint);
+  font-size: var(--fs-small);
+  text-align: center;
+}
+
+/* Resonance structures in a row, with ↔ between them. */
+.lewis-resonance {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.lewis-resonance-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.lewis-resonance-item .lewis {
+  width: 150px;
+  height: 130px;
+}
+
+.lewis-resonance-arrow {
+  color: var(--text-dim);
+  font-size: 24px;
+}
+
+/* ---------- builder controls ---------- */
+.lewis-page.is-building {
+  --control-space: 150px;
+}
+
+.lewis-page .topic-control {
+  width: min(640px, calc(100% - var(--gap) * 2));
+}
+
+.lewis-page .topic-control > .lewis-tools {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  width: 100%;
+  padding: 10px 14px;
+}
+
+.lewis-tools > .lewis-status {
+  grid-column: 1 / -1;
+}
+
+.lewis-count {
+  color: var(--text-dim);
+  font-size: var(--fs-small);
+  white-space: nowrap;
+}
+
+.lewis-count .mono {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.lewis-count.is-full .mono {
+  color: var(--signal-ok);
+}
+
+.lewis-count.is-over .mono {
+  color: var(--electron);
+}
+
+.lewis-edit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  min-width: 0;
+}
+
+.lewis-edit-name {
+  font-weight: 600;
+  font-size: var(--fs-body);
+}
+
+.lewis-edit-unit,
+.lewis-edit-info,
+.lewis-edit-hint {
+  color: var(--text-faint);
+  font-size: var(--fs-micro);
+}
+
+.lewis-page .stepper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.lewis-page .stepper-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line-strong);
+  background: var(--bg-2);
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.lewis-page .stepper-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.lewis-page .stepper-value {
+  min-width: 14px;
+  text-align: center;
+}
+
+.lewis-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.lewis-status {
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--electron);
+  background: rgba(255, 201, 92, 0.07);
+  font-size: var(--fs-small);
+  line-height: var(--lh-snug);
+  color: var(--text-dim);
+}
+
+.lewis-status.is-ok {
+  border-left-color: var(--signal-ok);
+  background: rgba(88, 224, 179, 0.07);
+}
+
+.lewis-status-label {
+  color: var(--text);
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+/* ---------- explore panel ---------- */
+.lewis-title {
+  font-size: var(--fs-h1);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-heading);
+  line-height: var(--lh-tight);
+}
+
+.lewis-title span {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-dim);
+  font-size: var(--fs-body);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.lewis-sub {
+  margin-top: var(--space-2);
+  color: var(--text-dim);
+  font-size: var(--fs-small);
+  line-height: var(--lh-snug);
+}
+
+.lewis-done {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: start;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius);
+  border: 1px solid rgba(88, 224, 179, 0.35);
+  background: rgba(88, 224, 179, 0.06);
+  color: var(--text-dim);
+  font-size: var(--fs-small);
+  line-height: var(--lh-snug);
+}
+
+.lewis-group {
+  display: grid;
+  gap: 6px;
+}
+
+.lewis-group-name {
+  color: var(--text-faint);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-medium);
+}
+
+.lewis-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.lewis-method {
+  color: var(--text-dim);
+  font-size: var(--fs-small);
+  line-height: var(--lh-snug);
+}
+
+.lewis-method summary {
+  cursor: pointer;
+  color: var(--text);
+  font-weight: var(--fw-medium);
+}
+
+.lewis-method ol {
+  margin: var(--space-2) 0 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 4px;
+}
+
+/* ---------- smaller screens ---------- */
+@media (max-width: 1179px) {
+  .lewis-page .topic-control > .lewis-tools {
+    grid-template-columns: 1fr auto;
+  }
+  .lewis-tools > .lewis-edit,
+  .lewis-tools > .lewis-edit-hint {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .lewis-page.is-building {
+    --control-space: 176px;
+  }
+}
+
+@media (max-width: 899px) {
+  /* One pane at a time (see .pane-switch, shown once there is a 3D shape). */
+  .lewis-split {
+    grid-template-columns: 1fr;
+  }
+  .lewis-split.show-3d {
+    top: 92px;
+  }
+  .lewis-split.show-2d .lewis-pane-3d,
+  .lewis-split.show-3d .lewis-pane-2d {
+    position: absolute;
+    visibility: hidden;
+  }
+  .lewis-pane-3d {
+    border-left: 0;
+  }
+  .lewis-pane-2d > .lewis {
+    inset: 8px 12px;
+    width: calc(100% - 24px);
+    height: calc(100% - 16px);
+  }
+  .lewis-page.is-building {
+    --control-space: 168px;
+  }
+  .lewis-page .topic-control > .lewis-tools {
+    padding: 8px 10px;
+    gap: 6px 10px;
+  }
+  .lewis-status {
+    font-size: 12.5px;
+    padding: 6px 10px;
+  }
+  .lewis-resonance {
+    row-gap: 0;
+  }
+  .lewis-resonance-item .lewis {
+    width: 38vw;
+    height: 30vw;
+    max-height: 150px;
+  }
+  .lewis-resonance-arrow {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 899px) and (orientation: landscape) and (max-height: 520px) {
+  .lewis-split {
+    grid-template-columns: 1fr 1fr;
+  }
+  .lewis-split.show-2d .lewis-pane-3d,
+  .lewis-split.show-3d .lewis-pane-2d {
+    position: relative;
+    visibility: visible;
+  }
+  .lewis-page.is-building .lewis-split {
+    grid-template-columns: 1fr;
+  }
+  .lewis-page.is-building .lewis-pane-3d {
+    display: none;
+  }
+}
