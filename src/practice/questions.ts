@@ -23,20 +23,22 @@ import { INHIBITION_INFO, type Inhibition } from '../enzymes/kinetics'
 import { CHYMO_SITE, type StructureId } from '../enzymes/structures'
 import type { ModuleKey } from '../lessons/place'
 import type { Quiz } from '../lessons/types'
+import { pick, shuffle, withChoices } from './util'
+import { MORE_SKILLS, moreFromId, type Skill } from './more'
 import { formalCharges, LEWIS, lewisById, valenceTotal, VALENCE, type LForm } from '../lewis/molecules'
 import { DIAGRAMS, diatomicById, fill, fmtOrder, ionFormula } from '../mo/diatomics'
 
 export type Topic = 'shapes' | 'orbitals' | 'trends' | 'reactions' | 'polarity' | 'enzymes' | 'lewis' | 'mo'
 
 export const TOPICS: { id: Topic; name: string; blurb: string }[] = [
-  { id: 'shapes', name: 'Shapes', blurb: 'Name 3D shapes, count hidden lone pairs, read bond angles.' },
-  { id: 'orbitals', name: 'Orbitals', blurb: 'Identify orbitals, count nodes, recognize hybrids and bonds.' },
-  { id: 'trends', name: 'Trends', blurb: 'Compare two elements on the table, then see the data rise.' },
-  { id: 'reactions', name: 'Reactions', blurb: 'Read frozen frames of the SN2 reaction.' },
-  { id: 'polarity', name: 'Polarity', blurb: 'Polar or nonpolar? Then watch the bond dipoles add up.' },
-  { id: 'enzymes', name: 'Enzymes', blurb: 'Read kinetics graphs, name inhibitors, and explore real active sites.' },
-  { id: 'lewis', name: 'Lewis structures', blurb: 'Count electrons, place lone pairs, and find formal charges and resonance.' },
-  { id: 'mo', name: 'MO theory', blurb: 'Read MO diagrams: bond order, unpaired electrons, and magnetism.' },
+  { id: 'shapes', name: 'Shapes', blurb: 'Shapes of real molecules, lone pairs, bond angles, and hybridization.' },
+  { id: 'orbitals', name: 'Orbitals', blurb: 'Quantum numbers, nodes, hybrids, and σ and π bonds.' },
+  { id: 'trends', name: 'Trends', blurb: 'Compare, rank, and pick elements on the 3D periodic table.' },
+  { id: 'reactions', name: 'Reactions', blurb: 'SN1 vs SN2: substrates, solvents, nucleophiles, and frozen frames.' },
+  { id: 'polarity', name: 'Polarity', blurb: 'Bond polarity, which end is δ−, and polar vs nonpolar shapes.' },
+  { id: 'enzymes', name: 'Enzymes', blurb: 'Kinetics graphs, inhibitors and Km/Vmax, and real active sites.' },
+  { id: 'lewis', name: 'Lewis structures', blurb: 'Draw structures yourself, find formal charges, resonance, and exceptions.' },
+  { id: 'mo', name: 'MO theory', blurb: 'Fill MO diagrams yourself; bond order, unpaired electrons, and magnetism.' },
 ]
 
 /** What to draw, before and after answering. */
@@ -44,7 +46,8 @@ export type Visual =
   | { kind: 'vsepr'; before: SceneState; after: SceneState; hullBefore?: boolean; hullAfter?: boolean; arcsAfter: boolean }
   | { kind: 'orbital'; before: OrbitalView & { axes?: boolean }; after?: OrbitalView & { axes?: boolean } }
   | { kind: 'trends'; before: { props: PropId[]; flat: boolean; focus: number[] }; after: { props: PropId[]; flat: boolean; focus: number[] } }
-  | { kind: 'sn2'; s: number }
+  /** A frozen frame of the SN2 (default) or SN1 reaction, at timeline position s (0–1). */
+  | { kind: 'sn2'; s: number; mech?: 'sn2' | 'sn1' }
   /** A polarity molecule: bond dipoles beside the bonds, summed tip-to-tail once answered. */
   | { kind: 'polarity'; id: string }
   /** Kinetics graph; `after` (if set) replaces it once answered. */
@@ -52,7 +55,7 @@ export type Visual =
   /** The catalyzed vs uncatalyzed energy diagram (hint labels hidden). */
   | { kind: 'energy' }
   /** A Lewis structure; `after` (if set) replaces it once answered. */
-  | { kind: 'lewis'; molecule: string; before: LewisCard; after?: LewisCard }
+  | { kind: 'lewis'; molecule: string; before: LewisCard; after?: LewisCard; build?: boolean; show3dAfter?: boolean }
   /** An MO diagram, empty or filled before answering, always filled after. */
   | { kind: 'mo'; molecule: string; electrons: number; filledBefore: boolean }
   /** A real enzyme structure; `after` replaces it once answered. Highlight = one residue. */
@@ -64,7 +67,17 @@ export interface Question extends Quiz {
   visual: Visual
   /** Where to review this idea. */
   review: { module: ModuleKey | 'reaction' | 'polarity'; lessonId?: string; label: string }
+  /** A card answered on the visual itself instead of by choosing (choices is then empty). */
+  interaction?: Interaction
 }
+
+/** Cards answered by clicking or building on the visual. */
+export type Interaction =
+  | { kind: 'click-level'; correct: string[] }
+  | { kind: 'click-atom'; correct: number[] }
+  | { kind: 'click-element'; correct: number[]; among: number[] }
+  | { kind: 'build-lewis' }
+  | { kind: 'fill-mo' }
 
 /** How to draw a Lewis structure on a practice card. */
 export interface LewisCard {
@@ -82,21 +95,6 @@ export interface KineticsVisual {
 }
 
 /* ---------- small helpers ---------- */
-
-const pick = <T>(list: T[]) => list[Math.floor(Math.random() * list.length)]
-const shuffle = <T>(list: T[]) => {
-  const a = [...list]
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[a[i], a[j]] = [a[j], a[i]]
-  }
-  return a
-}
-/** Shuffle choices; return them with the new index of the correct one. */
-function withChoices(correct: string, wrong: string[]) {
-  const choices = shuffle([correct, ...[...new Set(wrong)].filter((w) => w !== correct)])
-  return { choices, answer: choices.indexOf(correct) }
-}
 
 /* ======================================================================= SHAPES */
 
@@ -777,6 +775,8 @@ export function fromId(id: string): Question | null {
         return MO_CASES.some(([id, d]) => id === p[0] && d === Number(p[1])) ? moBondOrder(p[0], Number(p[1])) : null
       case 'momag':
         return MAG_MOLECULES.includes(p[0]) ? moMagnetism(p[0]) : null
+      default:
+        return moreFromId(kind, p)
     }
   } catch {
     /* an old or malformed ID: skip it */
@@ -784,61 +784,51 @@ export function fromId(id: string): Question | null {
   return null
 }
 
-/** A random question ID for a topic. */
-export function randomId(topic: Topic): string {
-  switch (topic) {
-    case 'shapes': {
-      const r = Math.random()
-      if (r < 0.45) {
-        const s = pick(SHAPES)
-        return `shape:${s.bonds}:${s.lone}`
-      }
-      if (r < 0.75) {
-        const s = pick(SHAPES.filter((x) => x.lone > 0))
-        return `lone:${s.bonds}:${s.lone}`
-      }
-      return `angle:${pick(ANGLE_MOLECULES)}`
-    }
-    case 'orbitals': {
-      const r = Math.random()
-      if (r < 0.35) return `orb:${pick([...P_IDS, ...D_IDS])}`
-      if (r < 0.6) return `nodes:${pick(NODE_IDS)}`
-      if (r < 0.8) return `hybrid:${pick(['sp', 'sp2', 'sp3'])}`
-      return `bond:${pick(Object.keys(BOND_KINDS))}`
-    }
-    case 'trends':
-      return randomCompareId()
-    case 'reactions':
-      return Math.random() < 0.55 ? `sn2stage:${pick(Object.keys(STAGE_FRAMES))}` : `sn2config:${pick(CONFIG_FRAMES)}`
-    case 'polarity':
-      return `polar:${pick(POLAR_MOLECULES).id}`
-    case 'lewis': {
-      const r = Math.random()
-      if (r < 0.2) return `lewisval:${pick(LEWIS).id}`
-      if (r < 0.4) return `lewislp:${pick(CENTERED)}`
-      if (r < 0.65) {
-        const id = pick(FC_MOLECULES)
-        return `lewisfc:${id}:${Math.floor(Math.random() * lewisById(id).atoms.length)}`
-      }
-      if (r < 0.82) return `lewisres:${pick(RES_MOLECULES)}`
-      return `lewisexc:${pick(EXC_MOLECULES)}`
-    }
-    case 'mo': {
-      if (Math.random() < 0.65) {
-        const [id, d] = pick(MO_CASES)
-        return `mobo:${id}:${d}`
-      }
-      return `momag:${pick(MAG_MOLECULES)}`
-    }
-    case 'enzymes': {
-      const r = Math.random()
-      if (r < 0.35) return `enzinh:${pick([...INH_TYPES])}:${pick(['mm', 'lb'])}`
-      if (r < 0.55) return `enzchange:${pick([...INH_TYPES])}`
-      if (r < 0.68) return `enzenergy:${pick(Object.keys(ENERGY_QS))}`
-      if (r < 0.86) return `enzres:${pick(Object.keys(JOBS))}`
-      return `enzfit:${pick(['gk', 'chymo'])}`
-    }
+/* ======================================================================= skills
+   A "skill" is one kind of card (the part of the ID before the first colon), e.g. 'lewisfc'
+   (formal charge) or 'mobo' (bond order). Practice tracks how a student does on each skill
+   (see adapt.ts) and leans future rounds toward the weak ones. */
+
+const BASE_SKILLS: Record<string, Skill> = {
+  shape: { topic: 'shapes', name: 'naming shapes', share: 1.2, random: () => { const s = pick(SHAPES); return `shape:${s.bonds}:${s.lone}` } },
+  lone: { topic: 'shapes', name: 'hidden lone pairs', share: 0.8, random: () => { const s = pick(SHAPES.filter((x) => x.lone > 0)); return `lone:${s.bonds}:${s.lone}` } },
+  angle: { topic: 'shapes', name: 'bond angles', share: 0.6, random: () => `angle:${pick(ANGLE_MOLECULES)}` },
+  orb: { topic: 'orbitals', name: 'recognizing orbitals', share: 0.9, random: () => `orb:${pick([...P_IDS, ...D_IDS])}` },
+  nodes: { topic: 'orbitals', name: 'counting nodes', share: 0.6, random: () => `nodes:${pick(NODE_IDS)}` },
+  hybrid: { topic: 'orbitals', name: 'hybrid orbitals', share: 0.6, random: () => `hybrid:${pick(['sp', 'sp2', 'sp3'])}` },
+  bond: { topic: 'orbitals', name: 'σ and π bonds', share: 0.6, random: () => `bond:${pick(Object.keys(BOND_KINDS))}` },
+  cmp: { topic: 'trends', name: 'periodic trends', share: 1.4, random: () => randomCompareId() },
+  sn2stage: { topic: 'reactions', name: 'the SN2 mechanism', share: 0.7, random: () => `sn2stage:${pick(Object.keys(STAGE_FRAMES))}` },
+  sn2config: { topic: 'reactions', name: 'R and S', share: 0.5, random: () => `sn2config:${pick(CONFIG_FRAMES)}` },
+  polar: { topic: 'polarity', name: 'polar or nonpolar', share: 1, random: () => `polar:${pick(POLAR_MOLECULES).id}` },
+  enzinh: { topic: 'enzymes', name: 'naming inhibitors', share: 1, random: () => `enzinh:${pick([...INH_TYPES])}:${pick(['mm', 'lb'])}` },
+  enzchange: { topic: 'enzymes', name: 'inhibitors and Km/Vmax', share: 0.6, random: () => `enzchange:${pick([...INH_TYPES])}` },
+  enzenergy: { topic: 'enzymes', name: 'how enzymes lower the barrier', share: 0.4, random: () => `enzenergy:${pick(Object.keys(ENERGY_QS))}` },
+  enzres: { topic: 'enzymes', name: 'active-site residues', share: 0.6, random: () => `enzres:${pick(Object.keys(JOBS))}` },
+  enzfit: { topic: 'enzymes', name: 'induced fit', share: 0.3, random: () => `enzfit:${pick(['gk', 'chymo'])}` },
+  lewisval: { topic: 'lewis', name: 'counting valence electrons', share: 0.7, random: () => `lewisval:${pick(LEWIS).id}` },
+  lewislp: { topic: 'lewis', name: 'lone pairs', share: 0.7, random: () => `lewislp:${pick(CENTERED)}` },
+  lewisfc: { topic: 'lewis', name: 'formal charge', share: 1, random: () => { const id = pick(FC_MOLECULES); return `lewisfc:${id}:${Math.floor(Math.random() * lewisById(id).atoms.length)}` } },
+  lewisres: { topic: 'lewis', name: 'resonance', share: 0.7, random: () => `lewisres:${pick(RES_MOLECULES)}` },
+  lewisexc: { topic: 'lewis', name: 'octet exceptions', share: 0.7, random: () => `lewisexc:${pick(EXC_MOLECULES)}` },
+  mobo: { topic: 'mo', name: 'bond order', share: 1, random: () => { const [id, d] = pick(MO_CASES); return `mobo:${id}:${d}` } },
+  momag: { topic: 'mo', name: 'paramagnetic or diamagnetic', share: 0.7, random: () => `momag:${pick(MAG_MOLECULES)}` },
+}
+
+export const SKILLS: Record<string, Skill> = { ...BASE_SKILLS, ...MORE_SKILLS }
+export const skillOf = (id: string) => id.split(':')[0]
+export const skillsFor = (topic: Topic) => Object.keys(SKILLS).filter((k) => SKILLS[k].topic === topic)
+
+/** A random question ID for a topic (each kind of card weighted by its share). */
+export function randomId(topic: Topic, weight: (skill: string) => number = () => 1): string {
+  const keys = skillsFor(topic)
+  const w = keys.map((k) => SKILLS[k].share * weight(k))
+  let r = Math.random() * w.reduce((a, b) => a + b, 0)
+  for (let i = 0; i < keys.length; i++) {
+    r -= w[i]
+    if (r <= 0) return SKILLS[keys[i]].random()
   }
+  return SKILLS[keys[keys.length - 1]].random()
 }
 
 /**

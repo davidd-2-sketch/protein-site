@@ -19,11 +19,14 @@ export interface MoView {
   filled?: boolean
   /** The level whose 3D shape is shown (and which is highlighted). */
   selected?: string
+  /** The student fills in the electrons themselves, then presses Check. */
+  build?: boolean
 }
 
-/** What the student did: clicked a level in the diagram. */
+/** What the student did: clicked a level, or pressed Check on their own filling. */
 export interface MoInput {
-  level: string
+  level?: string
+  filled?: boolean
 }
 
 export type MoStep = BaseStep<MoView, MoInput>
@@ -108,6 +111,21 @@ export const MO_LESSONS: Lesson<MoStep>[] = [
           hint: 'Use (bonding − antibonding) ÷ 2 with just one bonding electron.',
         },
       },
+      {
+        title: 'Your turn: He₂⁺',
+        text: {
+          simple: 'Fill the diagram for He₂⁺ yourself: it has 3 electrons. Click a line once for one electron (↑), again to pair it (↑↓). Then press Check.',
+          standard: 'Fill He₂⁺ (3 electrons): lowest level first, two per orbital. Then work out its bond order.',
+          deep: 'He₂⁺ is a real (if fleeting) ion with bond order ½, detected by spectroscopy, unlike neutral He₂.',
+        },
+        view: { molecule: 'he2', electrons: 3, build: true },
+        task: {
+          prompt: 'Fill He₂⁺ (3 electrons), then press Check.',
+          check: (i) => i.filled === true,
+          success: 'Two in σ_1s, one in σ*_1s: bond order (2 − 1) ÷ 2 = ½.',
+          hint: 'Fill σ_1s completely (2) before putting anything in σ*_1s.',
+        },
+      },
     ],
   },
 
@@ -184,6 +202,21 @@ export const MO_LESSONS: Lesson<MoStep>[] = [
           answer: 0,
           explain: '8 bonding − 8 antibonding = 0, ÷ 2 = 0. Neon doesn’t form Ne₂.',
           hint: 'When everything is full, bonding and antibonding electrons are equal.',
+        },
+      },
+      {
+        title: 'Your turn: C₂',
+        text: {
+          simple: 'Now fill C₂ (8 valence electrons). Watch the order: for carbon, the π level comes before σ_2p.',
+          standard: 'Fill C₂’s 8 valence electrons using the Li₂–N₂ order (π_2p below σ_2p). Put one electron in each π orbital before pairing.',
+          deep: 'C₂ ends with a filled π_2p and an empty σ_2p: bond order 2, made entirely of π bonding. It is a real molecule, seen in flames and comets.',
+        },
+        view: { molecule: 'c2', build: true },
+        task: {
+          prompt: 'Fill C₂ (8 electrons), then press Check.',
+          check: (i) => i.filled === true,
+          success: 'σ_2s², σ*_2s², π_2p⁴: bond order (6 − 2) ÷ 2 = 2, all electrons paired (diamagnetic).',
+          hint: 'After σ_2s and σ*_2s, the next level up for carbon is π_2p (two orbitals).',
         },
       },
     ],
@@ -266,6 +299,21 @@ export const MO_LESSONS: Lesson<MoStep>[] = [
           hint: 'σ_2p is a single orbital. Two electrons in one orbital must pair.',
         },
       },
+      {
+        title: 'Your turn: superoxide, O₂⁻',
+        text: {
+          simple: 'Fill O₂⁻: oxygen’s 12 electrons plus one more, 13 in all. Where does the extra one go?',
+          standard: 'Fill O₂⁻ (13 electrons) with the O₂ order. The extra electron pairs up in one of the π* orbitals.',
+          deep: 'Superoxide (O₂⁻) forms in cells as a by-product of using oxygen; enzymes called superoxide dismutases clean it up. Bond order 1.5, one unpaired electron.',
+        },
+        view: { molecule: 'o2', electrons: 13, build: true },
+        task: {
+          prompt: 'Fill O₂⁻ (13 electrons), then press Check.',
+          check: (i) => i.filled === true,
+          success: 'π* holds 3: bond order (8 − 5) ÷ 2 = 1.5, with one unpaired electron.',
+          hint: 'Fill everything up to π_2p, then put 3 electrons in π*: one in each orbital, then pair one.',
+        },
+      },
     ],
   },
 
@@ -343,6 +391,21 @@ export const MO_LESSONS: Lesson<MoStep>[] = [
           answer: 0,
           explain: 'Only the 2p orbital aimed at hydrogen overlaps with H 1s. The other three (2s and two 2p) are nonbonding: fluorine’s three lone pairs.',
           hint: 'Hydrogen only has one orbital to pair with.',
+        },
+      },
+      {
+        title: 'Your turn: NO',
+        text: {
+          simple: 'Fill nitric oxide’s 11 valence electrons. One will end up alone.',
+          standard: 'Fill NO (11 electrons). The last electron goes into π* by itself.',
+          deep: 'Check your answer against the bond order of 2.5 and the one unpaired electron from the earlier step.',
+        },
+        view: { molecule: 'no', build: true },
+        task: {
+          prompt: 'Fill NO (11 electrons), then press Check.',
+          check: (i) => i.filled === true,
+          success: 'One electron in π*: bond order 2.5, paramagnetic.',
+          hint: 'Fill all the bonding levels and σ*, then the 11th electron goes into π*.',
         },
       },
     ],

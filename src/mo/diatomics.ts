@@ -262,3 +262,42 @@ export function ionFormula(m: Diatomic, electrons: number) {
 
 /** "1", "2.5", "½" style bond order for display. */
 export const fmtOrder = (bo: number) => (bo === 0.5 ? '½' : Number.isInteger(bo) ? String(bo) : bo.toFixed(1))
+
+/* ------------------------------------------------------------------ checking a student's filling */
+
+/** Each orbital line holds 0, 1 (↑) or 2 (↑↓) electrons, by level id. */
+export type Arrows = Record<string, number[]>
+
+export const emptyArrows = (d: Diagram): Arrows => Object.fromEntries(d.levels.map((l) => [l.id, Array.from({ length: l.deg }, () => 0)]))
+export const arrowCount = (a: Arrows) => Object.values(a).reduce((s, x) => s + x.reduce((t, y) => t + y, 0), 0)
+const plain = (label: string) => label.replace('_', '')
+
+/**
+ * Check a filled diagram in the order students should think about it: the electron count,
+ * then lowest levels first (Aufbau), then one-per-orbital before pairing (Hund's rule).
+ * The Pauli principle (at most 2, opposite spins) is built in: a line can't hold more than 2.
+ */
+export function checkFill(d: Diagram, electrons: number, a: Arrows): { ok: boolean; message: string; level?: string } {
+  const n = arrowCount(a)
+  if (n !== electrons)
+    return { ok: false, message: n < electrons ? `You’ve placed ${n} of ${electrons} electrons. Place ${electrons - n} more.` : `You’ve placed ${n}, but there are only ${electrons}. Remove ${n - electrons}.` }
+  const levels = byEnergy(d)
+  const full = (id: string) => a[id].every((x) => x === 2)
+  for (let i = 0; i < levels.length; i++) {
+    if (full(levels[i].id)) continue
+    const higher = levels.slice(i + 1).find((l) => a[l.id].some((x) => x > 0))
+    if (higher)
+      return {
+        ok: false,
+        level: higher.id,
+        message: `${plain(higher.label)} has electrons, but ${plain(levels[i].label)} (lower in energy) isn’t full yet. Fill the lowest levels first.`,
+      }
+    break
+  }
+  for (const l of levels) {
+    const x = a[l.id]
+    if (l.deg > 1 && x.some((v) => v === 2) && x.some((v) => v === 0))
+      return { ok: false, level: l.id, message: `In ${plain(l.label)}, put one electron in each of the ${l.deg} equal-energy orbitals before pairing any (Hund’s rule).` }
+  }
+  return { ok: true, message: 'Correct! Lowest levels first, and one electron per orbital before pairing.' }
+}

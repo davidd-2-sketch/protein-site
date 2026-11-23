@@ -14,9 +14,11 @@ Vercel from the `main` branch of github.com/davidd-2-sketch/protein-site.
 ## Product rules (do not break)
 - The site is free, forever: no accounts, no paid tiers or subscriptions, ever.
 - There is no Progress page. The only saved state is the quiet kind that makes lessons
-  pleasant: check marks on finished lessons, "Continue where you left off", and which
-  practice cards to bring back. It lives only in the browser (`src/lessons/progress.ts`,
-  localStorage keys starting with `ps.`). Don't change how existing keys are stored, so
+  pleasant: check marks on finished lessons, "Continue where you left off", which
+  practice cards to bring back, and (for tailoring Practice) a per-skill estimate of how
+  each kind of card is going plus recently seen cards (`src/practice/adapt.ts`). Students
+  only ever see skill NAMES in a "this round leans toward…" line, never numbers. It lives
+  only in the browser (`src/lessons/progress.ts`, localStorage keys starting with `ps.`). Don't change how existing keys are stored, so
   students never lose their place. `/progress` redirects to the home page.
 - Do NOT add accounts, logins, sign-in, cloud sync, payments, AI chatbots or tutors,
   leaderboards, scores, streaks, points, badges, percentages, or other gamification.

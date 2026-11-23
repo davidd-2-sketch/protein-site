@@ -12,7 +12,6 @@
 */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import Icon from '../components/Icon'
 import ModeSwitch from '../components/ModeSwitch'
 import TopicLayout, { Legend, Toggle, ToolButton } from '../components/TopicLayout'
 import LessonPanel from '../lessons/LessonPanel'
@@ -21,7 +20,9 @@ import { useStoredState } from '../lessons/progress'
 import RichText from '../lessons/RichText'
 import type { Depth } from '../lessons/types'
 import { useLessons } from '../lessons/useLessons'
-import { byEnergy, capacity, DIAGRAMS, diatomicById, fill, fmtOrder, ionFormula, type Level } from '../mo/diatomics'
+import { arrowCount, byEnergy, capacity, checkFill, DIAGRAMS, diatomicById, emptyArrows, fill, fmtOrder, ionFormula, type Arrows, type Level } from '../mo/diatomics'
+import { play } from '../sound/sound'
+import Icon from '../components/Icon'
 import { MO_LESSONS, type MoView } from '../mo/lessons'
 import MoDiagram from '../mo/MoDiagram'
 import { OrbitalScene } from '../orbitals/OrbitalScene'
@@ -54,6 +55,8 @@ export default function MoPage() {
   const [electrons, setElectrons] = useState(() => diatomicById('o2').electrons)
   const [pick, setPick] = useState<{ key: string; level: string } | null>(null)
   const [spin, setSpin] = useState(false)
+  /** Explore: fill the diagram yourself instead of seeing it filled. */
+  const [fillOn, setFillOn] = useState(false)
   /** Phones show one pane at a time. */
   const [pane, setPane] = useState<'diagram' | '3d'>('diagram')
 
@@ -67,6 +70,26 @@ export default function MoPage() {
 
   // The student's own click only counts for this step or molecule.
   const stepKey = inLesson ? `${L.lesson?.id}:${L.stepIndex}:${L.revealed}` : `explore:${exploreId}:${electrons}`
+
+  /* ---------- fill it yourself ---------- */
+  const building = inLesson ? !!view?.build && L.taskStatus !== 'correct' : fillOn
+  // The student's electrons, reset for each step or molecule (keyed, so no effect is needed).
+  const [work, setWork] = useState<{ key: string; arrows: Arrows; result: ReturnType<typeof checkFill> | null }>(() => ({ key: stepKey, arrows: emptyArrows(DIAGRAMS[molecule.diagram]), result: null }))
+  const cur = work.key === `${stepKey}:${molecule.diagram}` ? work : { key: `${stepKey}:${molecule.diagram}`, arrows: emptyArrows(DIAGRAMS[molecule.diagram]), result: null }
+  if (cur !== work) setWork(cur)
+  // Functional update, so several quick clicks all count.
+  const toggleSlot = (level: string, i: number) =>
+    setWork((w) => {
+      const base = w.key === cur.key ? w : cur
+      return { ...base, result: null, arrows: { ...base.arrows, [level]: base.arrows[level].map((x, j) => (j === i ? (x + 1) % 3 : x)) } }
+    })
+  const checkWork = () => {
+    const r = checkFill(DIAGRAMS[molecule.diagram], n, cur.arrows)
+    setWork({ ...cur, result: r })
+    if (inLesson) L.report({ filled: r.ok })
+    else play(r.ok ? 'correct' : 'wrong')
+  }
+  const placed = arrowCount(cur.arrows)
   const picked = pick?.key === stepKey ? pick.level : null
 
   const selectedId = picked ?? view?.selected ?? homo(molecule.diagram, n)
@@ -206,7 +229,35 @@ export default function MoPage() {
       </section>
     )
 
-  const control = !inLesson ? (
+  const fillTools = building && (
+    <div className="mo-fill" role="group" aria-label="Fill the diagram">
+      {cur.result && (
+        <div className={`mo-status ${cur.result.ok ? 'is-ok' : 'is-wrong'}`} role="status" aria-live="polite">
+          <p className="mo-status-label">{cur.result.ok ? '✓ Correct' : 'Not yet'}</p>
+          <p>{cur.result.message}</p>
+        </div>
+      )}
+      <div className="mo-fill-row">
+        <span className={`mo-fill-count ${placed === n ? 'is-full' : placed > n ? 'is-over' : ''}`} aria-live="polite">
+          <span className="mono">
+            {placed}/{n}
+          </span>{' '}
+          electrons
+        </span>
+        <span className="mo-fill-hint">Click a line: ↑, then ↑↓, then empty.</span>
+        <button className="btn btn-sm btn-primary" onClick={checkWork}>
+          Check
+        </button>
+        <button className="btn btn-sm btn-quiet" onClick={() => setWork({ ...cur, arrows: emptyArrows(DIAGRAMS[molecule.diagram]), result: null })} aria-label="Clear the diagram">
+          <Icon name="reset" size={16} />
+        </button>
+      </div>
+    </div>
+  )
+
+  const control = building ? (
+    fillTools
+  ) : !inLesson ? (
     <div className="mo-electrons" role="group" aria-label="Valence electrons">
       <button className="stepper-btn" onClick={() => setElectrons(Math.max(0, n - 1))} disabled={n <= 0} aria-label="Remove an electron">
         −
@@ -227,11 +278,12 @@ export default function MoPage() {
 
   return (
     <TopicLayout
-      className="mo-page"
+      className={`mo-page ${building ? 'is-building' : ''}`}
       panel={panel}
       label={{ kind: 'illustrative', name: `${formula} MO diagram`, source: 'orbital surfaces from a simple model' }}
       options={
         <>
+          {!inLesson && <Toggle label="Fill it yourself" on={fillOn} onChange={setFillOn} />}
           <Toggle label="Spin" on={spin} onChange={setSpin} />
           <ToolButton onClick={() => scene?.stage.fit(3.4, true)}>Reset view</ToolButton>
         </>
@@ -258,7 +310,14 @@ export default function MoPage() {
       </div>
       <div className={`topic-canvas mo-split show-${pane}`}>
         <div className="mo-pane mo-pane-diagram">
-          <MoDiagram molecule={molecule} electrons={n} filled={filled} selected={selectedId} onSelect={onSelect} />
+          <MoDiagram
+            molecule={molecule}
+            electrons={n}
+            filled={filled}
+            selected={selectedId}
+            onSelect={onSelect}
+            build={building ? { arrows: cur.arrows, onToggle: toggleSlot, highlight: cur.result?.ok ? undefined : cur.result?.level } : undefined}
+          />
         </div>
         <div className="mo-pane mo-pane-3d">
           <div ref={hostRef} className="mo-3d" role="img" aria-label={`3D shape of the ${selected?.label.replace('_', ' ') ?? ''} orbital. Drag to rotate.`} />

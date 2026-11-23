@@ -1,6 +1,6 @@
 /* mo.test.ts — MO diagrams must give the textbook bond orders and magnetism. */
 import { describe, expect, it } from 'vitest'
-import { byEnergy, capacity, DIAGRAMS, DIATOMICS, diatomicById, fill } from '../src/mo/diatomics'
+import { byEnergy, capacity, checkFill, DIAGRAMS, DIATOMICS, diatomicById, emptyArrows, fill } from '../src/mo/diatomics'
 
 const of = (id: string, delta = 0) => {
   const m = diatomicById(id)
@@ -68,5 +68,26 @@ describe('MO diagrams', () => {
     const L = (id: string) => diatomicById(id).length!
     expect(L('n2')).toBeLessThan(L('o2'))
     expect(L('o2')).toBeLessThan(L('f2'))
+  })
+
+  it('checks a student\'s own filling (count, Aufbau, Hund)', () => {
+    const d = DIAGRAMS.unmixed
+    // The correct O₂ filling passes, in either arrangement of the two π* electrons.
+    const right = { ...emptyArrows(d), s2s: [2], 's2s*': [2], s2p: [2], p2p: [2, 2], 'p2p*': [1, 1] }
+    expect(checkFill(d, 12, right).ok).toBe(true)
+    // Pairing in π* while its partner is empty breaks Hund's rule.
+    const hund = { ...right, 'p2p*': [2, 0] }
+    expect(checkFill(d, 12, hund)).toMatchObject({ ok: false, level: 'p2p*' })
+    // Skipping σ2p to fill π* breaks Aufbau.
+    const aufbau = { ...right, s2p: [0], 'p2p*': [2, 2] }
+    expect(checkFill(d, 12, aufbau).ok).toBe(false)
+    expect(checkFill(d, 12, aufbau).message).toMatch(/isn’t full/)
+    // Wrong count.
+    expect(checkFill(d, 12, { ...right, 'p2p*': [1, 0] }).message).toMatch(/11 of 12/)
+    // The site's own filling always passes, for every molecule.
+    for (const m of DIATOMICS) {
+      const dg = DIAGRAMS[m.diagram]
+      expect(checkFill(dg, m.electrons, fill(dg, m.electrons).arrows).ok, m.id).toBe(true)
+    }
   })
 })

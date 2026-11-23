@@ -56,7 +56,8 @@ mockups/          The design mockups the redesign was built from
 
 The site is free and always will be: no accounts, no sign-in, no paid tiers. There is no
 Progress page either. The only things saved are small helpers: check marks on finished
-lessons, "Continue where you left off", and which practice cards to bring back. They are
+lessons, "Continue where you left off", which practice cards to bring back, and which kinds
+of practice cards a student finds hard (so later rounds can lean toward them). They are
 kept in your browser on your own computer (localStorage); nothing is uploaded. Clearing
 your browser data, or using a different browser or device, starts fresh. "Reset my saved
 data" is under the settings icon in the top bar.

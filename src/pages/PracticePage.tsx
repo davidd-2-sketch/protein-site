@@ -23,7 +23,9 @@ import { QuizBox } from '../lessons/LessonPanel'
 import { MODULES } from '../lessons/place'
 import { useStoredState } from '../lessons/progress'
 import PracticeStage from '../practice/PracticeStage'
-import { buildRound, TOPICS, type Question, type Topic, type Visual } from '../practice/questions'
+import { buildAdaptiveRound, focusSkills, RECENT_MAX, recordAnswer, type SkillStats } from '../practice/adapt'
+import RichText from '../lessons/RichText'
+import { TOPICS, type Question, type Topic, type Visual } from '../practice/questions'
 import { play } from '../sound/sound'
 import { idealState } from '../vsepr/states'
 import './PracticePage.css'
@@ -70,6 +72,10 @@ export default function PracticePage() {
   const [linked, setLinked] = useState<Topic[] | null>(linkedTopic ? [linkedTopic] : null)
   const topics = linked ?? savedTopics
   const [missed, setMissed] = useStoredState<Missed>('ps.practice.missed', {})
+  /** How each kind of card has been going (see practice/adapt.ts). Never shown as numbers. */
+  const [stats, setStats] = useStoredState<SkillStats>('ps.practice.skills', {})
+  /** Cards seen recently, so they don't come straight back. */
+  const [recent, setRecent] = useStoredState<string[]>('ps.practice.recent', [])
 
   const [round, setRound] = useState<Question[] | null>(null)
   const [index, setIndex] = useState(0)
@@ -81,9 +87,14 @@ export default function PracticePage() {
   const [roundNo, setRoundNo] = useState(0)
 
   const question = round?.[index] ?? null
+  /** Click and build cards: how many tries so far, and what to tell the student. */
+  const [attempt, setAttempt] = useState<{ tries: number; status: 'waiting' | 'wrong' | 'right' | 'shown'; message?: string }>({ tries: 0, status: 'waiting' })
 
   const start = () => {
-    setRound(buildRound(topics, missed))
+    const next = buildAdaptiveRound(topics, missed, stats, recent)
+    setRound(next)
+    setRecent([...recent, ...next.map((q) => q.id)].slice(-RECENT_MAX))
+    setAttempt({ tries: 0, status: 'waiting' })
     setRoundNo((n) => n + 1)
     setIndex(0)
     setResults([])
@@ -103,6 +114,27 @@ export default function PracticePage() {
       }
     } else next[q.id] = { topic: q.topic, misses: (next[q.id]?.misses ?? 0) + 1 }
     setMissed(next)
+    setStats(recordAnswer(stats, q.id, firstTry))
+  }
+
+  /** A click or build card reported an attempt. */
+  const onAttempt = (ok: boolean, message?: string) => {
+    if (!question || answered) return
+    if (ok) {
+      play('correct')
+      setAttempt({ tries: attempt.tries + 1, status: 'right', message })
+      setAnswered(true)
+      record(question, attempt.tries === 0)
+    } else {
+      play('wrong')
+      setAttempt({ tries: attempt.tries + 1, status: 'wrong', message })
+    }
+  }
+  const showAnswer = () => {
+    if (!question || answered) return
+    setAttempt({ ...attempt, status: 'shown' })
+    setAnswered(true)
+    record(question, false)
   }
 
   const nextQuestion = () => {
@@ -110,6 +142,7 @@ export default function PracticePage() {
     if (index + 1 < round.length) {
       setIndex(index + 1)
       setAnswered(false)
+      setAttempt({ tries: 0, status: 'waiting' })
     } else {
       setFinished(true)
       play('complete')
@@ -132,9 +165,9 @@ export default function PracticePage() {
       <StepTransition id={!round ? `setup-${roundNo}` : finished ? `results-${roundNo}` : `round-${roundNo}`} order={roundNo * 3 + (!round ? 0 : finished ? 2 : 1)}>
         <div className="panel-stack">
           {!round ? (
-            <Setup topics={topics} onToggle={toggleTopic} onStart={start} reviewCount={Object.values(missed).filter((m) => topics.includes(m.topic)).length} />
+            <Setup topics={topics} onToggle={toggleTopic} onStart={start} reviewCount={Object.values(missed).filter((m) => topics.includes(m.topic)).length} focus={focusSkills(stats, topics)} />
           ) : finished ? (
-            <Finish round={round} results={results} onAgain={start} onDone={() => setRound(null)} />
+            <Finish round={round} results={results} onAgain={start} onDone={() => setRound(null)} focus={focusSkills(stats, topics)} />
           ) : (
             question && (
               <>
@@ -157,6 +190,9 @@ export default function PracticePage() {
                 <StepTransition id={question.id + index} order={index}>
                   <div className="lesson-body">
                     <p className="lesson-kicker">{topicName}</p>
+                    {question.interaction ? (
+                      <ActionCard question={question} number={index + 1} total={round.length} attempt={attempt} onShow={showAnswer} />
+                    ) : (
                     <QuizBox
                       quiz={question}
                       number={index + 1}
@@ -174,6 +210,7 @@ export default function PracticePage() {
                       onDone={() => setAnswered(true)}
                       onResult={(firstTry) => record(question, firstTry)}
                     />
+                    )}
                   </div>
                 </StepTransition>
 
@@ -203,7 +240,11 @@ export default function PracticePage() {
     >
       <div className="topic-canvas practice-holder">
         {/* key: a fresh stage when the visual kind changes; same scene otherwise. */}
-        {inRound ? <PracticeStage key={visual.kind} visual={visual} revealed={answered} /> : <PracticeStage key="idle" visual={IDLE} revealed />}
+        {inRound ? (
+          <PracticeStage key={visual.kind} visual={visual} revealed={answered} interaction={question!.interaction} onAttempt={onAttempt} cardId={`${roundNo}:${index}`} />
+        ) : (
+          <PracticeStage key="idle" visual={IDLE} revealed />
+        )}
       </div>
     </TopicLayout>
   )
@@ -211,7 +252,7 @@ export default function PracticePage() {
 
 /* ---------- Setup screen ---------- */
 
-function Setup(props: { topics: Topic[]; onToggle: (t: Topic) => void; onStart: () => void; reviewCount: number }) {
+function Setup(props: { topics: Topic[]; onToggle: (t: Topic) => void; onStart: () => void; reviewCount: number; focus: string[] }) {
   const review = Math.min(3, props.reviewCount)
   return (
     <>
@@ -222,6 +263,8 @@ function Setup(props: { topics: Topic[]; onToggle: (t: Topic) => void; onStart: 
           a moment in a reaction. No scores. Cards you miss come back later.
         </p>
       </header>
+
+      <FocusLine focus={props.focus} />
 
       {GROUPS.map((g) => (
         <div key={g.name} className="practice-group" role="group" aria-label={`${g.name} topics`}>
@@ -263,7 +306,7 @@ function Setup(props: { topics: Topic[]; onToggle: (t: Topic) => void; onStart: 
 
 /* ---------- Finish screen ---------- */
 
-function Finish({ round, results, onAgain, onDone }: { round: Question[]; results: boolean[]; onAgain: () => void; onDone: () => void }) {
+function Finish({ round, results, onAgain, onDone, focus }: { round: Question[]; results: boolean[]; onAgain: () => void; onDone: () => void; focus: string[] }) {
   const misses = useMemo(() => round.filter((_, i) => !results[i]), [round, results])
   // One review link per lesson (several missed cards often share a lesson).
   const reviews = useMemo(() => {
@@ -308,6 +351,8 @@ function Finish({ round, results, onAgain, onDone }: { round: Question[]; result
         </div>
       )}
 
+      <FocusLine focus={focus} next />
+
       <nav className="practice-actions">
         <button className="btn btn-primary" onClick={onAgain}>
           Another round <Icon name="arrow" size={16} />
@@ -317,5 +362,75 @@ function Finish({ round, results, onAgain, onDone }: { round: Question[]; result
         </button>
       </nav>
     </>
+  )
+}
+
+/* ---------- What the next round leans toward (names only, never numbers) ---------- */
+
+function FocusLine({ focus, next }: { focus: string[]; next?: boolean }) {
+  if (!focus.length) return null
+  return (
+    <div className="practice-focus">
+      <p className="practice-focus-label">{next ? 'Your next round will lean toward' : 'This round leans toward'}</p>
+      <p className="practice-focus-skills">{focus.join(' · ')}</p>
+    </div>
+  )
+}
+
+/* ---------- A click or build card ---------- */
+
+function ActionCard(p: {
+  question: Question
+  number: number
+  total: number
+  attempt: { tries: number; status: 'waiting' | 'wrong' | 'right' | 'shown'; message?: string }
+  onShow: () => void
+}) {
+  const { question: q, attempt: a } = p
+  const kind = q.interaction!.kind
+  const label = kind === 'build-lewis' || kind === 'fill-mo' ? 'Build it' : 'Click the answer'
+  const state = a.status === 'right' ? 'right' : a.status === 'shown' ? 'shown' : a.status === 'wrong' ? 'wrong' : 'waiting'
+  return (
+    <div className={`quiz is-${state}`}>
+      <div className="quiz-top">
+        <span className="quiz-label">{label}</span>
+        <span className="quiz-count">
+          Card {p.number} of {p.total}
+        </span>
+      </div>
+      <p className="quiz-question">
+        <RichText text={q.question} />
+      </p>
+      <div role="status" aria-live="polite" className="quiz-status">
+        {a.status === 'waiting' && (
+          <p className="quiz-prompt">{kind === 'build-lewis' || kind === 'fill-mo' ? 'Work on the drawing, then press Check.' : 'Click your answer on the drawing.'}</p>
+        )}
+        {a.status === 'wrong' && (
+          <div className="quiz-feedback is-wrong" key={a.tries}>
+            <p className="quiz-feedback-title">Not quite. Try again.</p>
+            {a.message && <p>{a.message}</p>}
+            <p>
+              <RichText text={q.hint ?? ''} />
+            </p>
+            <button className="btn quiz-reveal" onClick={p.onShow}>
+              Show me the answer
+            </button>
+          </div>
+        )}
+        {(a.status === 'right' || a.status === 'shown') && (
+          <div className="quiz-feedback is-right">
+            <p className="quiz-feedback-title">{a.status === 'shown' ? 'Here’s the answer' : a.tries <= 1 ? '✓ Correct, first try!' : '✓ Correct!'}</p>
+            <p>
+              <RichText text={q.explain} auto />
+            </p>
+          </div>
+        )}
+        {a.status === 'waiting' && (
+          <button className="btn btn-sm btn-quiet quiz-reveal" onClick={p.onShow}>
+            Show me the answer
+          </button>
+        )}
+      </div>
+    </div>
   )
 }

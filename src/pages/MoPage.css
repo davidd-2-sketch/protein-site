@@ -23,14 +23,15 @@
 
 .mo-3d {
   position: absolute;
-  inset: 0 0 48px 0;
+  inset: 48px 0 0 0;
 }
 
+/* Caption at the top of the 3D view (the color key sits at the bottom right). */
 .mo-3d-caption {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 14px;
+  top: 12px;
   text-align: center;
   color: var(--text);
   font-size: var(--fs-small);
@@ -168,10 +169,10 @@
     height: calc(100% - 6px);
   }
   .mo-3d {
-    bottom: 36px;
+    top: 30px;
   }
   .mo-3d-caption {
-    bottom: 6px;
+    top: 4px;
   }
   .mo-3d-phase {
     display: inline;
@@ -190,6 +191,78 @@
     visibility: visible;
   }
   .mo-3d-phase {
+    display: none;
+  }
+}
+
+/* ---------- fill it yourself ---------- */
+.mo-page.is-building {
+  --control-space: 120px;
+}
+
+.mo-page .topic-control > .mo-fill {
+  display: grid;
+  gap: 8px;
+  width: min(560px, calc(100vw - 32px));
+  padding: 10px 14px;
+}
+
+.mo-fill-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.mo-fill-count {
+  color: var(--text-dim);
+  font-size: var(--fs-small);
+}
+
+.mo-fill-count .mono {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.mo-fill-count.is-full .mono {
+  color: var(--signal-ok);
+}
+
+.mo-fill-count.is-over .mono {
+  color: var(--electron);
+}
+
+.mo-fill-hint {
+  flex: 1;
+  color: var(--text-faint);
+  font-size: var(--fs-micro);
+}
+
+.mo-status {
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--electron);
+  background: rgba(255, 201, 92, 0.07);
+  color: var(--text-dim);
+  font-size: var(--fs-small);
+  line-height: var(--lh-snug);
+}
+
+.mo-status.is-ok {
+  border-left-color: var(--signal-ok);
+  background: rgba(88, 224, 179, 0.07);
+}
+
+.mo-status-label {
+  color: var(--text);
+  font-weight: 600;
+}
+
+@media (max-width: 899px) {
+  .mo-page.is-building {
+    --control-space: 132px;
+  }
+  .mo-fill-hint {
     display: none;
   }
 }

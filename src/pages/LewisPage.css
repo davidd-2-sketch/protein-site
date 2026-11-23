@@ -152,72 +152,16 @@
   grid-column: 1 / -1;
 }
 
-.lewis-count {
-  color: var(--text-dim);
-  font-size: var(--fs-small);
-  white-space: nowrap;
-}
 
-.lewis-count .mono {
-  color: var(--text);
-  font-weight: 600;
-}
 
-.lewis-count.is-full .mono {
-  color: var(--signal-ok);
-}
 
-.lewis-count.is-over .mono {
-  color: var(--electron);
-}
 
-.lewis-edit {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2) var(--space-3);
-  min-width: 0;
-}
 
-.lewis-edit-name {
-  font-weight: 600;
-  font-size: var(--fs-body);
-}
 
-.lewis-edit-unit,
-.lewis-edit-info,
-.lewis-edit-hint {
-  color: var(--text-faint);
-  font-size: var(--fs-micro);
-}
 
-.lewis-page .stepper {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
 
-.lewis-page .stepper-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--line-strong);
-  background: var(--bg-2);
-  color: var(--text);
-  font-size: 18px;
-  line-height: 1;
-  cursor: pointer;
-}
 
-.lewis-page .stepper-btn:disabled {
-  opacity: 0.35;
-  cursor: default;
-}
 
-.lewis-page .stepper-value {
-  min-width: 14px;
-  text-align: center;
-}
 
 .lewis-actions {
   display: flex;

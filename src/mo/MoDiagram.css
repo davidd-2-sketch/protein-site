@@ -131,3 +131,26 @@
     transform: translateY(-6px);
   }
 }
+
+/* Fill-it-yourself mode */
+.mo-slot {
+  cursor: pointer;
+}
+
+.mo-slot:hover .mo-hit {
+  fill: rgba(172, 178, 255, 0.08);
+}
+
+.mo-slot:focus {
+  outline: none;
+}
+
+.mo-slot:focus-visible .mo-hit {
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
+.mo-level.is-flagged .mo-hit {
+  stroke: var(--electron);
+  stroke-dasharray: 4 3;
+}

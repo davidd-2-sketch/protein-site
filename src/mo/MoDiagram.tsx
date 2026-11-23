@@ -7,7 +7,7 @@
   its 3D shape. Energies are schematic, so the diagram carries a "Schematic" tag.
 */
 import type { KeyboardEvent } from 'react'
-import { DIAGRAMS, fill, type Diatomic, type Level } from './diatomics'
+import { DIAGRAMS, fill, ionFormula, type Arrows as ArrowState, type Diatomic, type Level } from './diatomics'
 import './MoDiagram.css'
 
 const W = 520
@@ -75,9 +75,14 @@ interface Props {
   onSelect?: (level: Level) => void
   /** Smaller text and no atom arrows (for practice cards). */
   compact?: boolean
+  /**
+   * "Fill it yourself": each orbital line is a button. A click cycles it empty → ↑ → ↑↓ → empty.
+   * The diagram then shows the student's electrons instead of the correct filling.
+   */
+  build?: { arrows: ArrowState; onToggle: (level: string, orbital: number) => void; highlight?: string }
 }
 
-export default function MoDiagram({ molecule, electrons, filled = true, selected, onSelect, compact }: Props) {
+export default function MoDiagram({ molecule, electrons, filled = true, selected, onSelect, compact, build }: Props) {
   const d = DIAGRAMS[molecule.diagram]
   const f = fill(d, electrons)
   const all = [...d.aos.map((a) => a.e), ...d.levels.map((l) => l.e)]
@@ -102,7 +107,7 @@ export default function MoDiagram({ molecule, electrons, filled = true, selected
       className={`mo-diagram ${compact ? 'is-compact' : ''}`}
       viewBox={`0 0 ${W} ${H}`}
       role="group"
-      aria-label={`Molecular orbital diagram for ${molecule.formula}${filled ? `, ${electrons} valence electrons` : ', not yet filled'}`}
+      aria-label={`Molecular orbital diagram for ${ionFormula(molecule, electrons)}${filled ? `, ${electrons} valence electrons` : ', not yet filled'}`}
     >
       {/* Energy axis */}
       <g className="mo-axis" aria-hidden="true">
@@ -118,7 +123,7 @@ export default function MoDiagram({ molecule, electrons, filled = true, selected
           {elL} atom
         </text>
         <text x={X.M} y="20" textAnchor="middle">
-          {molecule.formula}
+          {ionFormula(molecule, electrons)}
         </text>
         <text x={X.R} y="20" textAnchor="middle">
           {elR} atom
@@ -153,8 +158,47 @@ export default function MoDiagram({ molecule, electrons, filled = true, selected
         )
       })}
 
+      {/* Fill-it-yourself mode: every orbital line is its own button. */}
+      {build &&
+        d.levels.map((lv) => {
+          const xs = lines(X.M, lv.deg)
+          return (
+            <g key={lv.id} className={`mo-level is-${lv.kind} is-building ${build.highlight === lv.id ? 'is-flagged' : ''}`}>
+              {xs.map((lx, i) => {
+                const n = build.arrows[lv.id]?.[i] ?? 0
+                const toggle = () => build.onToggle(lv.id, i)
+                return (
+                  <g
+                    key={i}
+                    className="mo-slot"
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`${lv.label.replace('_', ' ')}${lv.deg > 1 ? `, orbital ${i + 1}` : ''}: ${n} electron${n === 1 ? '' : 's'}. Press to add an electron.`}
+                    onClick={toggle}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        toggle()
+                      }
+                    }}
+                  >
+                    <rect x={lx - LINE / 2 - 4} y={y(lv.e) - 20} width={LINE + 8} height={30} rx={6} className="mo-hit" />
+                    <line className="mo-line" x1={lx - LINE / 2} x2={lx + LINE / 2} y1={y(lv.e)} y2={y(lv.e)} />
+                    <Arrows x={lx} y={y(lv.e) - 2} n={n} />
+                  </g>
+                )
+              })}
+              {lv.kind === 'nonbonding' ? (
+                <Label text={lv.label} x={X.M - (lv.deg * (LINE + GAP)) / 2 - 6} y={y(lv.e) + 5} anchor="end" />
+              ) : (
+                <Label text={lv.label} x={X.M + (lv.deg * (LINE + GAP)) / 2 + 6} y={y(lv.e) + 5} />
+              )}
+            </g>
+          )
+        })}
+
       {/* Molecular orbitals: each level is a button */}
-      {d.levels.map((lv) => {
+      {!build && d.levels.map((lv) => {
         const n = filled ? f.count[lv.id] : 0
         const xs = lines(X.M, lv.deg)
         const w = lv.deg * (LINE + GAP) + 16

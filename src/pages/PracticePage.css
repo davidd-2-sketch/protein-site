@@ -362,3 +362,111 @@
     height: 30vw;
   }
 }
+
+/* What the round leans toward: names only. */
+.practice-focus {
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line-accent);
+  background: var(--accent-wash);
+}
+
+.practice-focus-label {
+  color: var(--text-faint);
+  font-size: var(--fs-micro);
+}
+
+.practice-focus-skills {
+  margin-top: 2px;
+  color: var(--text);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-medium);
+}
+
+/* Build cards: controls along the bottom of the visual. */
+.practice-flat.has-tools > svg {
+  bottom: 96px;
+  height: calc(100% - 120px);
+}
+
+.builder-tools {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 14px;
+  width: min(620px, calc(100% - 24px));
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  background: var(--panel-bg);
+  border: 1px solid var(--line-strong);
+}
+
+.builder-actions {
+  display: flex;
+  gap: 6px;
+}
+
+/* A Lewis structure beside its 3D shape (after a shapes card is answered). */
+.practice-split {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.practice-split-2d {
+  position: relative;
+}
+
+.practice-split-2d > svg {
+  position: absolute;
+  inset: 24px;
+  width: calc(100% - 48px);
+  height: calc(100% - 48px);
+}
+
+.practice-split-3d {
+  position: relative;
+  border-left: 1px solid var(--line);
+}
+
+.practice-split-3d .overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+@media (max-width: 899px) {
+  .practice-flat.has-tools > svg {
+    bottom: 120px;
+    height: calc(100% - 130px);
+  }
+  /* MO fill cards: one slim row of controls, so the diagram (and its tap targets) stay big. */
+  .practice-flat.is-slim > svg {
+    inset: 0 0 58px;
+    width: 100%;
+    height: calc(100% - 58px);
+  }
+  .practice-flat.is-slim .mo-fill-tip {
+    display: none;
+  }
+  .builder-tools {
+    gap: 6px 10px;
+    padding: 8px 10px;
+    bottom: 6px;
+  }
+  .practice-split {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+  .practice-split-3d {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+}
