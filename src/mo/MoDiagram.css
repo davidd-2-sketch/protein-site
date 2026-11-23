@@ -16,24 +16,33 @@
 .mo-axis-label,
 .mo-heads text {
   fill: var(--text-faint);
-  font-size: 13px;
+  font-size: 14px;
 }
 
-.mo-heads text:nth-child(2) {
+.mo-heads .mo-head-main {
   fill: var(--text);
   font-weight: 600;
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .mo-links line {
-  stroke: rgba(172, 178, 255, 0.28);
-  stroke-width: 1;
-  stroke-dasharray: 4 4;
+  stroke: rgba(172, 178, 255, 0.34);
+  stroke-width: 1.2;
+  stroke-dasharray: 3 4;
+  stroke-linecap: round;
+}
+
+/* Mask copies of the labels: black (hidden) with a wide edge, so dashed lines stop short. */
+.mo-label.mo-label-mask {
+  fill: #000;
+  stroke: #000;
+  stroke-width: 12px;
+  stroke-linejoin: round;
 }
 
 .mo-ao line {
   stroke: var(--text-dim);
-  stroke-width: 2.5;
+  stroke-width: 3;
   stroke-linecap: round;
 }
 
@@ -45,14 +54,14 @@
 .mo-arrows path {
   fill: none;
   stroke: var(--electron);
-  stroke-width: 2;
+  stroke-width: 2.2;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
 /* Molecular orbital levels: color by kind (and the kind is in the label and its name). */
 .mo-line {
-  stroke-width: 3;
+  stroke-width: 3.5;
   stroke-linecap: round;
 }
 
@@ -111,7 +120,7 @@
 }
 
 .mo-diagram.is-compact .mo-label {
-  font-size: 16px;
+  font-size: 17px;
 }
 
 /* Electrons drop into place as they are added; selection glides. (Off with reduced motion.) */
