@@ -60,6 +60,50 @@
   text-align: center;
 }
 
+/* Several central atoms: the shape around each one. */
+.lewis-locals {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  align-content: center;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  font-size: var(--fs-small);
+  color: var(--text-dim);
+}
+
+.lewis-locals-title {
+  color: var(--text);
+  font-weight: var(--fw-semibold);
+}
+
+.lewis-locals ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.lewis-locals li {
+  display: flex;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--bg-1);
+}
+
+.lewis-locals li strong {
+  min-width: 2.6em;
+  color: var(--text);
+}
+
+.lewis-locals-note {
+  color: var(--text-faint);
+  font-size: var(--fs-micro);
+}
+
 /* Resonance structures in a row, with ↔ between them. */
 .lewis-resonance {
   display: flex;
@@ -348,5 +392,18 @@
   }
   .lewis-page.is-building .lewis-pane-3d {
     display: none;
+  }
+}
+
+.lewis-locals,
+.lewis-done,
+.lewis-status {
+  animation: lewis-panel-in 260ms var(--ease) both;
+}
+
+@keyframes lewis-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
   }
 }

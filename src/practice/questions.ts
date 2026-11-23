@@ -553,9 +553,9 @@ const lewisReview = (lessonId: string, label: string) => ({ module: 'lewis' as c
 /** Molecules with a central atom (for lone-pair questions). */
 const CENTERED = LEWIS.filter((m) => m.center !== undefined).map((m) => m.id)
 /** Atoms whose formal charge is worth asking about: every atom of these molecules. */
-const FC_MOLECULES = ['co', 'nh4', 'o3', 'no3', 'co3', 'co2', 'hcn', 'bf3', 'no']
-const RES_MOLECULES = ['o3', 'co3', 'no3', 'co2', 'ch2o', 'hcn', 'n2']
-const EXC_MOLECULES = ['bf3', 'no', 'pcl5', 'sf6', 'xef4', 'co2', 'nh3', 'h2o', 'hcn']
+const FC_MOLECULES = ['co', 'nh4', 'o3', 'no3', 'co3', 'co2', 'hcn', 'bf3', 'no', 'ocn', 'h3o', 'no2', 'no2m', 'i3', 'hno3']
+const RES_MOLECULES = ['o3', 'co3', 'no3', 'co2', 'ch2o', 'hcn', 'n2', 'no2m', 'hno3', 'no2', 'c2h4']
+const EXC_MOLECULES = ['bf3', 'no', 'pcl5', 'sf6', 'xef4', 'co2', 'nh3', 'h2o', 'hcn', 'becl2', 'no2', 'sf4', 'clf3', 'xef2', 'i3', 'c2h4', 'ch3oh', 'h3o']
 const fmtFc = (c: number) => (c > 0 ? `+${c}` : c < 0 ? `−${-c}` : '0')
 
 function lewisValence(id: string): Question {
@@ -636,8 +636,8 @@ function lewisResonance(id: string): Question {
     answer,
     explain:
       n === 1
-        ? `Just 1: there is only one place for each multiple bond${m.id === 'co2' ? ' (both oxygens already have a double bond)' : ''}.`
-        : `${n}: the double bond can be drawn to ${n === 2 ? 'either outer oxygen' : 'any of the three oxygens'}. The real structure is a blend of all ${n}.`,
+        ? `Just 1: there is only one place for each multiple bond${m.id === 'co2' ? ' (both oxygens already have a double bond)' : m.id === 'c2h4' ? ' (the C=C bond)' : ''}.`
+        : `${n}: the double bond can be drawn in ${n} equally good places${m.id === 'hno3' ? ' (either oxygen without the H)' : ''}. The real structure is a blend of all ${n}.`,
     hint: 'Count how many equally good places the double bond could go.',
     review: lewisReview('resonance', 'Lewis structures: Resonance'),
   }
@@ -663,7 +663,7 @@ function lewisException(id: string): Question {
           ? 'The central atom has only 6 electrons around it.'
           : key === 'odd'
             ? `${valenceTotal(m)} valence electrons is an odd number, so one electron must be unpaired.`
-            : `The central ${m.atoms[m.center!].el} has more than 8 electrons around it, which third-row and heavier atoms can do.`,
+            : `The central ${m.atoms[m.center!].el} has more than 8 electrons around it, which atoms from the third row down can do.`,
     hint: 'Count the electrons around the central atom, and check whether the total number of electrons is odd.',
     review: lewisReview('exceptions', 'Lewis structures: Exceptions'),
   }

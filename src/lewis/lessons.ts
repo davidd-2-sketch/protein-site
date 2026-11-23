@@ -384,4 +384,123 @@ export const LEWIS_LESSONS: Lesson<LewisStep>[] = [
       },
     ],
   },
+  /* =========================================================== 5 */
+  {
+    id: 'harder',
+    title: 'Harder structures',
+    summary: 'Several central atoms, where charges go, odd electrons with resonance, and a debated case.',
+    minutes: 8,
+    steps: [
+      {
+        title: 'More than one center',
+        text: {
+          simple:
+            'Bigger molecules have several “central” atoms joined in a chain. A handy pattern: in neutral molecules, H makes 1 bond, O makes 2, N makes 3, and C makes 4. Use it to connect the skeleton, then fill in as usual.',
+          standard:
+            'For molecules like C₂H₄, connect the heavy atoms first (C–C), then hang the H’s on. The bond counts for neutral atoms are a great check: H 1, O 2 (with 2 lone pairs), N 3 (with 1 lone pair), C 4 (no lone pairs). In C₂H₄, each carbon has only 3 single bonds, so the C–C bond must be double.',
+          deep:
+            'Those counts are just “formal charge = 0” for each atom. When an atom breaks the pattern (N with 4 bonds, O with 3 or 1), it carries a formal charge, as in NH₄⁺, H₃O⁺, or OH⁻. Each central atom gets its own VSEPR shape.',
+        },
+        view: { molecule: 'c2h4', show: 'build' },
+        task: {
+          prompt: 'Build C₂H₄ (12 valence electrons), then press Check.',
+          check: built('c2h4'),
+          success: 'H₂C=CH₂. Each carbon has 4 bonds (counting the double bond as 2) and three electron groups, so each is trigonal planar.',
+          hint: 'Count bonds on each carbon. It needs 4; the C–H bonds give only 3.',
+        },
+      },
+      {
+        title: 'Your turn: an amino acid',
+        text: {
+          simple: 'Glycine is the simplest of the 20 amino acids that build every protein. Use the bond counts: N makes 3 bonds, each C makes 4, each O makes 2.',
+          standard:
+            'Build glycine, H₂N–CH₂–COOH (30 valence electrons). The skeleton is drawn. Give N and the oxygens their lone pairs, then find the one carbon that needs a double bond.',
+          deep:
+            'Glycine contains the backbone pattern of every protein: an amino group, an α-carbon, and a carboxyl group. On the Proteins page you will see these same atoms link into chains through peptide bonds.',
+        },
+        view: { molecule: 'glycine', show: 'build' },
+        task: {
+          prompt: 'Build glycine, then press Check.',
+          check: built('glycine'),
+          success: 'The carboxyl carbon has a C=O double bond; nitrogen has one lone pair; each oxygen has two. Every atom follows the bond-count pattern.',
+          hint: 'Which carbon has only 3 bonds? Make one of its bonds to oxygen a double bond.',
+        },
+      },
+      {
+        title: 'Where should the negative charge go?',
+        text: {
+          simple:
+            'In cyanate (OCN⁻), two drawings both have formal charges of just −1 somewhere. The tie-breaker: put the negative charge on the atom that pulls electrons hardest (the most electronegative one).',
+          standard:
+            'O=C=N⁻ and ⁻O–C≡N both have one −1 charge. When formal charges are equally small, the better structure puts negative charge on the more electronegative atom: here, oxygen (3.44) over nitrogen (3.04).',
+          deep:
+            'Both are real resonance contributors; the rule tells you which contributes more. Structures that put a positive formal charge on a very electronegative atom, or charges of ±2, are poor contributors.',
+        },
+        view: { molecule: 'ocn', show: 'alt', alt: 0, formal: true },
+        revealView: { molecule: 'ocn', show: 'form', formal: true },
+        quiz: {
+          question: 'Which is the better structure for OCN⁻?',
+          choices: ['⁻O–C≡N (−1 on oxygen)', 'O=C=N⁻ (−1 on nitrogen, shown)'],
+          answer: 0,
+          explain: 'Oxygen is more electronegative than nitrogen, so the structure with −1 on oxygen is better. Its formal charges: O −1, C 0, N 0.',
+          hint: 'Both have the same total charge. Which atom holds a negative charge more comfortably?',
+        },
+      },
+      {
+        title: 'Odd electrons and resonance together',
+        text: {
+          simple:
+            'Nitrogen dioxide (NO₂) has 17 valence electrons, so one is unpaired. And the double bond could go to either oxygen. So it needs two resonance structures, each with a lone electron.',
+          standard:
+            'NO₂: 5 + 6 + 6 = 17 electrons. Put the unpaired electron on nitrogen (giving N +1, one O −1, the other O 0). The double bond can be on either side: two resonance structures, so both N–O bonds are identical.',
+          deep:
+            'Radicals pair up when they can: two NO₂ molecules join through their unpaired electrons to make N₂O₄. That is why brown NO₂ gas turns colorless when cooled.',
+        },
+        view: { molecule: 'no2', show: 'resonance', formal: true },
+        quiz: {
+          question: 'In NO₂’s best structures, where is the unpaired electron?',
+          choices: ['On nitrogen', 'On one oxygen', 'Shared in a bond', 'NO₂ has no unpaired electron'],
+          answer: 0,
+          explain: 'On nitrogen. That gives the smallest formal charges (N +1, O −1, O 0); putting it on an oxygen makes the charges bigger.',
+          hint: '17 is odd. Try each atom and compare formal charges.',
+        },
+      },
+      {
+        title: 'Big atoms, more than 8',
+        text: {
+          simple: 'Triiodide (I₃⁻) has 22 electrons. After the bonds and the outer iodines, 6 are left over, and they go on the middle iodine. It ends up with 10 electrons, which big atoms like iodine can hold.',
+          standard:
+            'I₃⁻: 3 × 7 + 1 = 22. Two bonds (4) + the outer atoms’ lone pairs (12) = 16, leaving 6 for the center: 3 lone pairs, 10 electrons around it, formal charge −1. Rule: leftover electrons always go on the central atom, even past 8, if it is from the third row or below.',
+          deep: 'Five electron groups (2 bonds + 3 lone pairs) around the central iodine; the lone pairs take the roomy equatorial spots, so the ion is linear, like XeF₂.',
+        },
+        view: { molecule: 'i3', show: 'form', formal: true, show3d: true },
+        quiz: {
+          question: 'How many lone pairs are on the central iodine of I₃⁻?',
+          choices: ['3', '2', '1', '0'],
+          answer: 0,
+          explain: '22 − 4 (bonds) − 12 (outer lone pairs) = 6 electrons = 3 lone pairs on the center.',
+          hint: 'Place the bonds and the outer atoms’ lone pairs first, then count what’s left.',
+        },
+      },
+      {
+        title: 'A case textbooks disagree on: sulfate',
+        text: {
+          simple:
+            'Sulfate (SO₄²⁻) can be drawn two ways, and different textbooks prefer different ones. With four single bonds, sulfur has 8 electrons but a +2 formal charge. With two double bonds, the formal charges shrink, but sulfur has 12 electrons. Learn the one your class uses; Check accepts both.',
+          standard:
+            'Octet version: four S–O single bonds, S +2, each O −1. Formal-charge version: two S=O and two S–O, S 0, two O −1 (an expanded octet, with six resonance structures). Many Gen Chem books teach the second; modern calculations favor the first, with the bonds strengthened by the attraction between the charged atoms.',
+          deep:
+            'Experimentally, all four S–O bonds are the same length and the ion is a perfect tetrahedron. Neither single drawing shows that on its own; both need resonance or charge to explain it. The same debate applies to SO₂, SO₃, PO₄³⁻, and ClO₄⁻.',
+        },
+        view: { molecule: 'so4', show: 'form', formal: true },
+        quiz: {
+          question: 'In the all-single-bond (octet) structure of sulfate, what is sulfur’s formal charge?',
+          choices: ['+2', '0', '−2', '+6'],
+          answer: 0,
+          explain: 'Sulfur brings 6, has no lone pairs, and 4 bonds: 6 − (0 + 4) = +2. With each oxygen at −1, the total is +2 − 4 = −2, the ion’s charge.',
+          hint: 'Formal charge = valence electrons − (dots + bonds).',
+        },
+      },
+    ],
+  },
 ]

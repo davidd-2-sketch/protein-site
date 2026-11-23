@@ -39,14 +39,40 @@ import { sceneFor } from '../lewis/shape3d'
 import { play } from '../sound/sound'
 import SceneLabelsOverlay from '../vsepr/SceneLabels'
 import { VseprScene } from '../vsepr/VseprScene'
+import { isValid, shapeFor } from '../vsepr/shapes'
 import './LewisPage.css'
 
 const GROUPS: { name: string; ids: string[] }[] = [
   { name: 'Start here', ids: ['h2o', 'nh3', 'ch4', 'co2', 'hcn', 'ch2o', 'n2', 'nh4'] },
-  { name: 'Formal charge', ids: ['co'] },
-  { name: 'Resonance', ids: ['o3', 'co3', 'no3'] },
-  { name: 'Octet exceptions', ids: ['bf3', 'no', 'pcl5', 'sf6', 'xef4'] },
+  { name: 'Several central atoms', ids: ['c2h4', 'c2h2', 'ch3oh', 'h2o2', 'n2h4', 'hno3', 'glycine'] },
+  { name: 'Formal charge', ids: ['co', 'ocn', 'h3o'] },
+  { name: 'Resonance', ids: ['o3', 'co3', 'no3', 'no2m'] },
+  { name: 'Fewer than 8', ids: ['bf3', 'becl2'] },
+  { name: 'Odd electrons', ids: ['no', 'no2'] },
+  { name: 'More than 8', ids: ['pcl5', 'sf4', 'clf3', 'xef2', 'i3', 'xef4', 'sf6'] },
+  { name: 'Textbooks differ', ids: ['so2', 'so4'] },
 ]
+
+/**
+ * For molecules with several central atoms (one 3D model can't show them here): the shape
+ * around each one, from its electron groups. An unpaired electron counts as a group.
+ */
+function localShapes(m: LewisMolecule, f: LForm) {
+  const neighbors = m.atoms.map(() => 0)
+  m.links.forEach(([a, b]) => {
+    neighbors[a]++
+    neighbors[b]++
+  })
+  const centers = m.atoms.map((a, i) => ({ el: a.el, i })).filter(({ i }) => neighbors[i] >= 2)
+  return centers.map(({ el, i }) => {
+    const bonded = neighbors[i]
+    const lone = f.lone[i] + (f.single?.[i] ?? 0)
+    const same = centers.filter((c) => c.el === el)
+    const name = same.length > 1 ? `${el} ${same.findIndex((c) => c.i === i) + 1}` : el
+    const shape = isValid(bonded, lone) ? shapeFor(bonded, lone) : null
+    return { i, name, bonded, lone, shape }
+  })
+}
 
 /** Everything that starts fresh on a new molecule or lesson step. */
 interface Work {
@@ -179,7 +205,7 @@ export default function LewisPage() {
     mode === 'lessons' ? (
       <LessonPanel
         listTitle="Learn Lewis structures"
-        listBlurb="Four short lessons: drawing structures, formal charge, resonance, and the exceptions to the octet rule."
+        listBlurb="Five short lessons: drawing structures, formal charge, resonance, exceptions to the octet rule, and harder structures with several central atoms."
         lessons={L.lessons}
         lesson={L.lesson}
         stepIndex={L.stepIndex}
@@ -349,7 +375,9 @@ export default function LewisPage() {
     />
   )
 
-  const no3dReason = molecule.center === undefined ? 'Two atoms always make a straight line.' : building ? 'Finish the structure to see its 3D shape.' : null
+  const multi = molecule.center === undefined && molecule.atoms.length > 2
+  const no3dReason = building ? 'Finish the structure to see its 3D shape.' : molecule.atoms.length === 2 ? 'Two atoms always make a straight line.' : null
+  const locals = multi && !building && finishedForm ? localShapes(molecule, finishedForm) : null
 
   return (
     <TopicLayout
@@ -366,21 +394,39 @@ export default function LewisPage() {
       control={control}
       peek={lessonPeek(mode === 'lessons' ? L : { lesson: null, step: null, stepIndex: 0 }, 'Lewis structures', L.goTo)}
     >
-      {scene3d && (
+      {(scene3d || locals) && (
         <div className="pane-switch segmented" role="radiogroup" aria-label="Show">
           {(['2d', '3d'] as const).map((k) => (
             <button key={k} role="radio" aria-checked={pane === k} className={`segmented-btn ${pane === k ? 'is-active' : ''}`} onClick={() => setPane(k)}>
-              {k === '2d' ? 'Drawing' : '3D shape'}
+              {k === '2d' ? 'Drawing' : locals ? 'Shapes' : '3D shape'}
             </button>
           ))}
         </div>
       )}
-      <div className={`topic-canvas lewis-split show-${scene3d ? pane : '2d'}`}>
+      <div className={`topic-canvas lewis-split show-${scene3d || locals ? pane : '2d'}`}>
         <div className="lewis-pane lewis-pane-2d">{drawing}</div>
         <div className={`lewis-pane lewis-pane-3d ${scene3d ? 'is-on' : ''}`}>
           <div ref={hostRef} className="lewis-3d" role="img" aria-label={scene3d ? `3D shape of ${molecule.formula}. Drag to rotate.` : 'No 3D shape yet'} />
           {scene && scene3d && <SceneLabelsOverlay scene={scene} />}
-          {!scene3d && <p className="lewis-3d-empty">{no3dReason ?? (inLesson ? 'The 3D shape appears on some steps.' : '')}</p>}
+          {locals ? (
+            <div className="lewis-locals">
+              <p className="lewis-locals-title">Shape around each central atom</p>
+              <ul>
+                {locals.map((c) => (
+                  <li key={c.i}>
+                    <strong>{c.name}</strong>
+                    <span>
+                      {c.bonded} atom{c.bonded === 1 ? '' : 's'}
+                      {c.lone ? ` + ${c.lone} lone pair${c.lone === 1 ? '' : 's'}` : ''} → {c.shape ? `${c.shape.name.toLowerCase()}, ${c.shape.idealAngles}` : '—'}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <p className="lewis-locals-note">Ideal angles from VSEPR; real ones differ by a few degrees. Each central atom gets its own shape.</p>
+            </div>
+          ) : (
+            !scene3d && <p className="lewis-3d-empty">{no3dReason ?? (inLesson ? 'The 3D shape appears on some steps.' : '')}</p>
+          )}
         </div>
       </div>
     </TopicLayout>

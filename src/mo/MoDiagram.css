@@ -113,3 +113,21 @@
 .mo-diagram.is-compact .mo-label {
   font-size: 16px;
 }
+
+/* Electrons drop into place as they are added; selection glides. (Off with reduced motion.) */
+.mo-arrows path {
+  animation: mo-arrow-in 240ms var(--ease) both;
+}
+
+.mo-hit {
+  transition:
+    fill var(--fast) var(--ease),
+    stroke var(--fast) var(--ease);
+}
+
+@keyframes mo-arrow-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}

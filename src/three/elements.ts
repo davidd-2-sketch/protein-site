@@ -27,6 +27,7 @@ export const ELEMENTS: Record<string, ElementStyle> = {
   Br: { name: 'Bromine', color: '#a0522d', covalentRadius: 1.2 },
   Cl: { name: 'Chlorine', color: '#3ee07a', covalentRadius: 1.02 },
   Fe: { name: 'Iron', color: '#e0703a', covalentRadius: 1.32 },
+  Be: { name: 'Beryllium', color: '#c2ff00', covalentRadius: 0.96 },
   B: { name: 'Boron', color: '#ffb5b5', covalentRadius: 0.84 },
   F: { name: 'Fluorine', color: '#8fe35a', covalentRadius: 0.57 },
   Xe: { name: 'Xenon', color: '#4fb3c9', covalentRadius: 1.4 },

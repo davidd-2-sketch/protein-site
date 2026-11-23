@@ -111,3 +111,36 @@
 .lewis.is-small .lewis-symbol {
   font-size: 30px;
 }
+
+/* Gentle feedback while building: new electrons and bond lines fade in where they appear.
+   (Turned off by the site-wide reduced-motion rule in global.css.) */
+.lewis-pair,
+.lewis-single {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: lewis-dot-in 220ms var(--ease) both;
+}
+
+.lewis-bond line:not(.lewis-hit),
+.lewis-charge {
+  animation: lewis-fade-in 220ms var(--ease) both;
+}
+
+.lewis-ring {
+  transition:
+    fill var(--fast) var(--ease),
+    stroke var(--fast) var(--ease);
+}
+
+@keyframes lewis-dot-in {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+}
+
+@keyframes lewis-fade-in {
+  from {
+    opacity: 0;
+  }
+}

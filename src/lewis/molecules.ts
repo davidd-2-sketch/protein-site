@@ -40,10 +40,18 @@ export interface LewisMolecule {
   forms: LForm[]
   /** Octet-valid structures that are NOT the best, with why. */
   alternatives?: { form: LForm; why: string }[]
+  /**
+   * Other structures that are also accepted (for molecules where textbooks disagree, like
+   * sulfate), with what Check should say about them.
+   */
+  accepted?: { forms: LForm[]; why: string }
+  /** What Check says when a student matches one of `forms` (default: a standard message). */
+  okMessage?: string
   /** The central atom (for the 3D shape). None for two-atom molecules. */
   center?: number
-  /** A rule-breaker, and how. */
+  /** A rule-breaker, and how. 'debated' = textbooks draw it in different ways. */
   exception?: 'incomplete' | 'odd' | 'expanded'
+  debated?: boolean
   /** One line shown with the finished structure. */
   note?: string
   /** Formula as written on the Shapes page, if that page has measured angles for it. */
@@ -51,7 +59,7 @@ export interface LewisMolecule {
 }
 
 /** Valence electrons: the main-group group number (last digit). */
-export const VALENCE: Record<string, number> = { H: 1, B: 3, C: 4, N: 5, O: 6, F: 7, P: 5, S: 6, Cl: 7, Xe: 8 }
+export const VALENCE: Record<string, number> = { H: 1, Be: 2, B: 3, C: 4, N: 5, O: 6, F: 7, P: 5, S: 6, Cl: 7, I: 7, Xe: 8 }
 
 /** Second-row atoms (and H, B) can't go past an octet; third-row and below can. */
 const ROW2 = new Set(['B', 'C', 'N', 'O', 'F'])
@@ -293,6 +301,269 @@ export const LEWIS: LewisMolecule[] = [
   },
 ]
 
+/* ---------------------------------------------------------------- harder structures
+   Several central atoms (the skeletons organic chemistry and proteins are built from),
+   charge placement, odd electrons with resonance, and big expanded octets. */
+const at = (el: string, x: number, y: number): LAtom => ({ el, x, y })
+
+/** Every way to place `k` double bonds among the bonds to atoms `outer` (for sulfate). */
+function doubleBondForms(n: number, k: number, lone: (dbl: boolean[]) => number[]): LForm[] {
+  const out: LForm[] = []
+  for (let mask = 0; mask < 1 << n; mask++) {
+    const dbl = Array.from({ length: n }, (_, i) => !!(mask & (1 << i)))
+    if (dbl.filter(Boolean).length !== k) continue
+    out.push({ bonds: dbl.map((d) => (d ? 2 : 1)), lone: lone(dbl) })
+  }
+  return out
+}
+
+const HARDER: LewisMolecule[] = [
+  {
+    id: 'c2h4',
+    formula: 'C₂H₄',
+    name: 'Ethene (ethylene)',
+    charge: 0,
+    atoms: [at('C', -0.5, 0), at('C', 0.5, 0), at('H', -1.2, -0.7), at('H', -1.2, 0.7), at('H', 1.2, -0.7), at('H', 1.2, 0.7)],
+    links: [[0, 1], [0, 2], [0, 3], [1, 4], [1, 5]],
+    forms: [{ bonds: [2, 1, 1, 1, 1], lone: [0, 0, 0, 0, 0, 0] }],
+    note: 'Each carbon has three electron groups (the double bond counts as one), so each is trigonal planar and the whole molecule is flat.',
+  },
+  {
+    id: 'c2h2',
+    formula: 'C₂H₂',
+    name: 'Ethyne (acetylene)',
+    charge: 0,
+    atoms: [at('H', -1.5, 0), at('C', -0.5, 0), at('C', 0.5, 0), at('H', 1.5, 0)],
+    links: [[0, 1], [1, 2], [2, 3]],
+    forms: [{ bonds: [1, 3, 1], lone: [0, 0, 0, 0] }],
+    note: 'With only 10 valence electrons, the carbons need a triple bond. Each carbon has two electron groups, so the molecule is a straight line.',
+  },
+  {
+    id: 'ch3oh',
+    formula: 'CH₃OH',
+    name: 'Methanol',
+    charge: 0,
+    atoms: [at('C', 0, 0), at('O', 1, 0), at('H', -1, 0), at('H', 0, -1), at('H', 0, 1), at('H', 1.7, 0.7)],
+    links: [[0, 1], [0, 2], [0, 3], [0, 4], [1, 5]],
+    forms: [{ bonds: [1, 1, 1, 1, 1], lone: [0, 2, 0, 0, 0, 0] }],
+    note: 'Read the formula as a skeleton: CH₃ is a carbon with three H’s, and OH is an oxygen with one H.',
+  },
+  {
+    id: 'h2o2',
+    formula: 'H₂O₂',
+    name: 'Hydrogen peroxide',
+    charge: 0,
+    atoms: [at('O', -0.5, 0), at('O', 0.5, 0), at('H', -1.2, 0.7), at('H', 1.2, -0.7)],
+    links: [[0, 1], [0, 2], [1, 3]],
+    forms: [{ bonds: [1, 1, 1], lone: [2, 2, 0, 0] }],
+    note: 'An O–O single bond (147.5 pm). The O–O bond is weak, which is why peroxide breaks down easily.',
+  },
+  {
+    id: 'n2h4',
+    formula: 'N₂H₄',
+    name: 'Hydrazine',
+    charge: 0,
+    atoms: [at('N', -0.5, 0), at('N', 0.5, 0), at('H', -1.2, -0.7), at('H', -1.2, 0.7), at('H', 1.2, -0.7), at('H', 1.2, 0.7)],
+    links: [[0, 1], [0, 2], [0, 3], [1, 4], [1, 5]],
+    forms: [{ bonds: [1, 1, 1, 1, 1], lone: [1, 1, 0, 0, 0, 0] }],
+  },
+  {
+    id: 'hno3',
+    formula: 'HNO₃',
+    name: 'Nitric acid',
+    charge: 0,
+    atoms: [at('N', 0, 0), at('O', 0, -1), at('O', -0.87, 0.5), at('O', 0.87, 0.5), at('H', 1.57, 1.2)],
+    links: [[0, 1], [0, 2], [0, 3], [3, 4]],
+    forms: [
+      { bonds: [2, 1, 1, 1], lone: [0, 2, 3, 2, 0] },
+      { bonds: [1, 2, 1, 1], lone: [0, 3, 2, 2, 0] },
+    ],
+    note: 'In oxyacids the H is attached to an oxygen, not to the central atom. The double bond can go to either oxygen without an H, so there are two resonance structures.',
+  },
+  {
+    id: 'glycine',
+    formula: 'H₂NCH₂COOH',
+    name: 'Glycine (an amino acid)',
+    charge: 0,
+    atoms: [
+      at('N', -1.5, 0), at('C', -0.5, 0), at('C', 0.5, 0), at('O', 0.5, -1), at('O', 1.5, 0),
+      at('H', 2.2, 0.7), at('H', -2.2, -0.7), at('H', -2.2, 0.7), at('H', -0.5, -1), at('H', -0.5, 1),
+    ],
+    links: [[0, 1], [1, 2], [2, 3], [2, 4], [4, 5], [0, 6], [0, 7], [1, 8], [1, 9]],
+    forms: [{ bonds: [1, 1, 2, 1, 1, 1, 1, 1, 1], lone: [1, 0, 0, 2, 2, 0, 0, 0, 0, 0] }],
+    note: 'The simplest amino acid: an amino group (–NH₂), a central carbon, and a carboxylic acid (–COOH). In water at body pH it is mostly a zwitterion, H₃N⁺–CH₂–COO⁻.',
+  },
+  {
+    id: 'ocn',
+    formula: 'OCN⁻',
+    name: 'Cyanate ion',
+    charge: -1,
+    atoms: [at('O', -1, 0), at('C', 0, 0), at('N', 1, 0)],
+    links: [[0, 1], [1, 2]],
+    forms: [{ bonds: [1, 3], lone: [3, 0, 1] }],
+    alternatives: [
+      {
+        form: { bonds: [2, 2], lone: [2, 0, 2] },
+        why: 'A valid resonance structure, and it does contribute, but it puts the −1 on nitrogen. The best single structure puts the negative charge on the MORE electronegative atom: oxygen.',
+      },
+      {
+        form: { bonds: [3, 1], lone: [1, 0, 3] },
+        why: 'Every atom has an octet, but this puts +1 on oxygen and −2 on nitrogen: much bigger formal charges than needed.',
+      },
+    ],
+    center: 1,
+  },
+  {
+    id: 'h3o',
+    formula: 'H₃O⁺',
+    name: 'Hydronium ion',
+    charge: 1,
+    atoms: [at('O', 0, 0), at('H', -1, 0), at('H', 1, 0), at('H', 0, 1)],
+    links: [[0, 1], [0, 2], [0, 3]],
+    forms: [{ bonds: [1, 1, 1], lone: [1, 0, 0, 0] }],
+    center: 0,
+    note: 'Like ammonia, with one lone pair, so it is trigonal pyramidal. Oxygen carries the +1 formal charge. This is the ion that makes a solution acidic.',
+  },
+  {
+    id: 'no2m',
+    formula: 'NO₂⁻',
+    name: 'Nitrite ion',
+    charge: -1,
+    atoms: [at('O', -0.9, 0.45), at('N', 0, 0), at('O', 0.9, 0.45)],
+    links: [[0, 1], [1, 2]],
+    forms: [
+      { bonds: [2, 1], lone: [2, 1, 3] },
+      { bonds: [1, 2], lone: [3, 1, 2] },
+    ],
+    center: 1,
+  },
+  {
+    id: 'no2',
+    formula: 'NO₂',
+    name: 'Nitrogen dioxide',
+    charge: 0,
+    atoms: [at('O', -0.9, 0.45), at('N', 0, 0), at('O', 0.9, 0.45)],
+    links: [[0, 1], [1, 2]],
+    forms: [
+      { bonds: [2, 1], lone: [2, 0, 3], single: [0, 1, 0] },
+      { bonds: [1, 2], lone: [3, 0, 2], single: [0, 1, 0] },
+    ],
+    center: 1,
+    exception: 'odd',
+    note: 'Odd electrons AND resonance: 17 valence electrons, so one is unpaired (on nitrogen), and the double bond can be on either side. In 3D the gold cloud is that single electron: it pushes less than a lone pair, so the measured O–N–O angle is 134°, wider than 120°. Two NO₂ radicals readily pair up to form N₂O₄.',
+  },
+  {
+    id: 'becl2',
+    formula: 'BeCl₂',
+    name: 'Beryllium chloride',
+    charge: 0,
+    atoms: [at('Cl', -1, 0), at('Be', 0, 0), at('Cl', 1, 0)],
+    links: [[0, 1], [1, 2]],
+    forms: [{ bonds: [1, 1], lone: [3, 0, 3] }],
+    alternatives: [
+      {
+        form: { bonds: [2, 2], lone: [2, 0, 2] },
+        why: 'This gives beryllium an octet, but puts +1 on each chlorine and −2 on beryllium. The usual structure leaves beryllium with just 4 electrons and every formal charge at 0.',
+      },
+    ],
+    center: 1,
+    exception: 'incomplete',
+    note: 'Beryllium has only 4 electrons around it. (This is the single molecule found in hot BeCl₂ vapor; solid BeCl₂ forms chains in which Be shares more electrons.)',
+  },
+  {
+    id: 'sf4',
+    formula: 'SF₄',
+    name: 'Sulfur tetrafluoride',
+    charge: 0,
+    atoms: [at('S', 0, 0), at('F', -1, 0), at('F', 1, 0), at('F', 0, -1), at('F', 0, 1)],
+    links: [[0, 1], [0, 2], [0, 3], [0, 4]],
+    forms: [{ bonds: [1, 1, 1, 1], lone: [1, 3, 3, 3, 3] }],
+    center: 0,
+    exception: 'expanded',
+    vsepr: 'SF₄',
+    note: 'Four bonds plus one lone pair on sulfur: 10 electrons and five electron groups, which makes a seesaw shape.',
+  },
+  {
+    id: 'clf3',
+    formula: 'ClF₃',
+    name: 'Chlorine trifluoride',
+    charge: 0,
+    atoms: [at('Cl', 0, 0), at('F', 0, -1), at('F', -1, 0), at('F', 1, 0)],
+    links: [[0, 1], [0, 2], [0, 3]],
+    forms: [{ bonds: [1, 1, 1], lone: [2, 3, 3, 3] }],
+    center: 0,
+    exception: 'expanded',
+    vsepr: 'ClF₃',
+    note: 'Three bonds and two lone pairs on chlorine: T-shaped.',
+  },
+  {
+    id: 'xef2',
+    formula: 'XeF₂',
+    name: 'Xenon difluoride',
+    charge: 0,
+    atoms: [at('F', -1, 0), at('Xe', 0, 0), at('F', 1, 0)],
+    links: [[0, 1], [1, 2]],
+    forms: [{ bonds: [1, 1], lone: [3, 3, 3] }],
+    center: 1,
+    exception: 'expanded',
+    vsepr: 'XeF₂',
+    note: 'Three lone pairs on xenon sit around its middle, leaving the two F atoms in a straight line.',
+  },
+  {
+    id: 'i3',
+    formula: 'I₃⁻',
+    name: 'Triiodide ion',
+    charge: -1,
+    atoms: [at('I', -1, 0), at('I', 0, 0), at('I', 1, 0)],
+    links: [[0, 1], [1, 2]],
+    forms: [{ bonds: [1, 1], lone: [3, 3, 3] }],
+    center: 1,
+    exception: 'expanded',
+    note: 'The central iodine holds 10 electrons and the −1 formal charge. Like XeF₂: three lone pairs around the middle, so it is linear.',
+  },
+  {
+    id: 'so2',
+    formula: 'SO₂',
+    name: 'Sulfur dioxide',
+    charge: 0,
+    atoms: [at('O', -0.9, 0.45), at('S', 0, 0), at('O', 0.9, 0.45)],
+    links: [[0, 1], [1, 2]],
+    forms: [
+      { bonds: [2, 1], lone: [2, 1, 3] },
+      { bonds: [1, 2], lone: [3, 1, 2] },
+    ],
+    accepted: {
+      forms: [{ bonds: [2, 2], lone: [2, 1, 2] }],
+      why: 'Accepted. Many textbooks draw O=S=O (an expanded octet, all formal charges 0). Others keep sulfur at an octet with two resonance structures (S +1, one O −1). Modern calculations favor the octet picture, but both are taught; check what your class uses.',
+    },
+    okMessage:
+      'Correct, by the octet rule: one of two resonance structures (S +1, one O −1). Some textbooks instead draw O=S=O with an expanded octet and no formal charges; Check accepts that too.',
+    center: 1,
+    debated: true,
+    vsepr: 'SO₂',
+  },
+  {
+    id: 'so4',
+    formula: 'SO₄²⁻',
+    name: 'Sulfate ion',
+    charge: -2,
+    atoms: [at('S', 0, 0), at('O', -1, 0), at('O', 1, 0), at('O', 0, -1), at('O', 0, 1)],
+    links: [[0, 1], [0, 2], [0, 3], [0, 4]],
+    forms: [{ bonds: [1, 1, 1, 1], lone: [0, 3, 3, 3, 3] }],
+    accepted: {
+      forms: doubleBondForms(4, 2, (dbl) => [0, ...dbl.map((d) => (d ? 2 : 3))]),
+      why: 'Accepted. This is the “expanded octet” structure many textbooks teach: two S=O bonds bring sulfur’s formal charge to 0. Others draw four single bonds (S +2, each O −1) so sulfur keeps an octet; modern calculations favor that picture. Check what your class uses.',
+    },
+    okMessage:
+      'Correct, by the octet rule: S +2 and each O −1. Many textbooks instead draw two S=O double bonds (an expanded octet) to bring the formal charges down; Check accepts that too.',
+    center: 0,
+    debated: true,
+    note: 'Textbooks disagree on how to draw sulfate. The octet structure has bigger formal charges; the expanded-octet one has smaller formal charges but gives sulfur 12 electrons. Either way, all four S–O bonds are measured to be the same length, and the shape is tetrahedral.',
+  },
+]
+
+LEWIS.push(...HARDER)
+
 export const lewisById = (id: string) => {
   const m = LEWIS.find((x) => x.id === id)
   if (!m) throw new Error(`Unknown Lewis molecule ${id}`)
@@ -332,6 +603,7 @@ export function formalCharges(m: LewisMolecule, f: LForm) {
 export function allowedAround(m: LewisMolecule, i: number): { min: number; max: number } {
   const el = m.atoms[i].el
   if (el === 'H') return { min: 2, max: 2 }
+  if (el === 'Be') return { min: 4, max: 8 }
   if (el === 'B') return { min: 6, max: 8 }
   if (ROW2.has(el)) return { min: m.exception === 'odd' ? 7 : 8, max: 8 }
   return { min: 8, max: 12 } // third row and below: expanded octets allowed
@@ -388,10 +660,12 @@ export function checkStructure(m: LewisMolecule, f: LForm): CheckResult {
       return {
         ok: false,
         atom: i,
-        message: `This ${el} has only ${around[i]} electrons around it. Try turning a neighbor’s lone pair into a shared double (or triple) bond to give it ${el === 'B' ? 'at least 6' : 'an octet'}.`,
+        message: `This ${el} has only ${around[i]} electrons around it. ${el === 'Be' || el === 'B' ? `${el} needs at least ${min}.` : 'Try turning a neighbor’s lone pair into a shared double (or triple) bond to give it an octet.'}`,
       }
   }
   const match = m.forms.findIndex((g) => sameForm(g, f))
+  if (match >= 0 && m.okMessage) return { ok: true, form: match, message: m.okMessage }
+  if (m.accepted?.forms.some((g) => sameForm(g, f))) return { ok: true, form: 0, message: m.accepted.why }
   if (match >= 0)
     return {
       ok: true,
@@ -400,6 +674,11 @@ export function checkStructure(m: LewisMolecule, f: LForm): CheckResult {
     }
   const alt = m.alternatives?.find((a) => sameForm(a.form, f))
   if (alt) return { ok: false, message: alt.why }
+  if (m.debated)
+    return {
+      ok: false,
+      message: `Every atom is satisfied, but this isn’t one of the structures used for ${m.formula}. Textbooks use either the octet structure (single bonds to give the central atom 8) or the one with formal charges as small as possible.`,
+    }
   if (chargeSize(m, f) > chargeSize(m, m.forms[0])) {
     const fc = formalCharges(m, f)
     const worst = fc.findIndex((c) => c !== 0)
@@ -438,5 +717,6 @@ export function shapeOf(m: LewisMolecule, f: LForm) {
     if (a === c) neighbors.push({ el: m.atoms[b].el, order: f.bonds[k] })
     else if (b === c) neighbors.push({ el: m.atoms[a].el, order: f.bonds[k] })
   })
-  return { central: m.atoms[c].el, neighbors, lone: f.lone[c] }
+  // An unpaired electron also takes up a direction (NO₂ is bent), so it counts as a group.
+  return { central: m.atoms[c].el, neighbors, lone: f.lone[c] + (f.single?.[c] ?? 0) }
 }

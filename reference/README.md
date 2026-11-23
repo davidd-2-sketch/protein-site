@@ -56,6 +56,14 @@ Measured values quoted in the lessons:
 - CO₂: both C–O bonds 116 pm (116.3 pm).
 - CO: dipole moment 0.11 D, negative end on carbon.
 - Carbonate and nitrate: all three bonds equal in length (stated qualitatively; no number shown).
+- NO₂: O–N–O angle 134° (wider than 120° because a single electron repels less than a lone pair).
+- Electronegativities used in the cyanate step (Pauling): O 3.44, N 3.04.
+- Sulfate and SO₂: textbooks differ (expanded-octet structures that minimize formal charge vs.
+  octet structures with charge separation). Both are accepted by the checker and the lessons say so;
+  modern calculations favor little d-orbital involvement (e.g. Reed & Weinhold, JACS 1986; Gilheany,
+  Chem. Rev. 1994). All four S–O bonds in sulfate are equal and the ion is tetrahedral.
+- BeCl₂: the two-coordinate molecule is the gas-phase monomer; the solid is a chain polymer.
+- Glycine: mostly the zwitterion H₃N⁺–CH₂–COO⁻ in water near pH 7.
 
 ## MO theory (`src/mo/diatomics.ts`)
 

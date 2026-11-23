@@ -43,27 +43,43 @@ const diff = (a: number, b: number) => {
   return d > Math.PI ? 2 * Math.PI - d : d
 }
 
-/** Pick `n` directions around an atom that stay farthest from its bonds and from each other. */
+/**
+ * Pick `n` directions around an atom (for its lone pairs, unpaired electrons, and charge)
+ * that stay as far as possible from its bonds and from each other. Every combination of 24
+ * candidate directions (every 15°) is tried (n is at most 4 here, so this is quick), so crowded atoms
+ * like the middle of I₃⁻ get evenly spread dots instead of a bunched-up corner.
+ */
 function freeDirections(taken: number[], n: number) {
-  const candidates = Array.from({ length: 16 }, (_, k) => (k * Math.PI) / 8)
-  const chosen: number[] = []
-  for (let j = 0; j < n; j++) {
-    let best = candidates[0]
-    let bestScore = -Infinity
-    for (const c of candidates) {
-      const others = [...taken, ...chosen]
-      const minD = others.length ? Math.min(...others.map((o) => diff(c, o))) : Math.PI
-      // Small preference for straight up/down/left/right, so drawings look tidy.
-      const tidy = Math.abs(Math.sin(2 * c)) < 1e-6 ? 0.05 : 0
-      const score = minD + tidy
+  const C = Array.from({ length: 24 }, (_, k) => (k * Math.PI) / 12)
+  // Straight up/down/left/right look tidiest: a small bonus breaks ties toward them.
+  const tidy = (c: number) => (Math.abs(Math.sin(2 * c)) < 1e-6 ? 0.02 : 0)
+  let best: number[] = []
+  let bestScore = -Infinity
+  const pick: number[] = []
+  const search = (start: number) => {
+    if (pick.length === n) {
+      const dirs = pick.map((k) => C[k])
+      let minD = Math.PI
+      for (let i = 0; i < dirs.length; i++) {
+        for (const t of taken) minD = Math.min(minD, diff(dirs[i], t))
+        for (let j = i + 1; j < dirs.length; j++) minD = Math.min(minD, diff(dirs[i], dirs[j]))
+      }
+      const score = minD + dirs.reduce((s, d) => s + tidy(d), 0)
       if (score > bestScore + 1e-9) {
         bestScore = score
-        best = c
+        best = dirs
       }
+      return
     }
-    chosen.push(best)
+    for (let k = start; k < C.length; k++) {
+      pick.push(k)
+      search(k + 1)
+      pick.pop()
+    }
   }
-  return chosen
+  if (n > 0) search(0)
+  // Put the most "natural" directions first (the charge uses the last one).
+  return best.sort((x, y) => tidy(y) - tidy(x))
 }
 
 /** Width of an element symbol, roughly, for shortening bond lines. */
@@ -159,10 +175,14 @@ export default function LewisDrawing({ molecule: m, form, formal, editable, sele
         const p = P(i)
         const pairs = hybrid ? 0 : form.lone[i]
         const singles = hybrid ? 0 : (form.single?.[i] ?? 0)
-        const dirs = freeDirections(bondDirs[i], pairs + singles + 1)
+        // Dots first; then the formal charge goes in the most open spot that's left.
+        const dots = freeDirections(bondDirs[i], pairs + singles)
+        const dirs = [...dots, ...freeDirections([...bondDirs[i], ...dots], 1)]
         const isSel = selected?.kind === 'atom' && selected.i === i
         const fc = charges[i]
-        const r = halfWidth(atom.el) + 9
+        // Crowded atoms (5+ things around them, like the middle of I₃⁻) get their dots set wider apart.
+        const crowded = pairs + singles + bondDirs[i].length >= 5
+        const r = halfWidth(atom.el) + (crowded ? 12 : 9)
         const chargeDir = dirs[pairs + singles]
         const showCharge = (formal || hybrid) && Math.abs(fc) > 0.01
         return (

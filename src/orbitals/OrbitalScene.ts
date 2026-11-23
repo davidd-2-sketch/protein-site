@@ -58,6 +58,8 @@ export class OrbitalScene {
   private gen: MarchingCubes
   private cache = new Map<string, THREE.BufferGeometry>()
   private isoCache = new Map<string, number>()
+  /** The most recent grid of samples, reused for the other phase of the same orbital. */
+  private lastSamples: { key: string; values: Float32Array } | null = null
   private group = new THREE.Group()
   private nuclei = new THREE.Group()
   private axes: THREE.Group
@@ -201,9 +203,16 @@ export class OrbitalScene {
     const key = this.geoKey(p)
     let geo = this.cache.get(key)
     if (geo) return geo
-    // Sample once; reuse the same samples for the 90% threshold (computed once per function,
-    // shared by both phases) and for building the surface.
-    const values = sampleGrid(p.fn, this.n, p.extent)
+    // Sample once per function: the + and − surfaces (built one after the other) share the
+    // same samples, and so does the 90% threshold.
+    const sampleKey = `${p.key}@${this.n}`
+    let values: Float32Array
+    if (this.lastSamples?.key === sampleKey) {
+      values = this.lastSamples.values.slice()
+    } else {
+      values = sampleGrid(p.fn, this.n, p.extent)
+      this.lastSamples = { key: sampleKey, values: values.slice() }
+    }
     let iso = this.isoCache.get(p.isoKey)
     if (iso === undefined) {
       iso = isoForFraction(values, 0.9)

@@ -25,6 +25,7 @@ import { byEnergy, capacity, DIAGRAMS, diatomicById, fill, fmtOrder, ionFormula,
 import { MO_LESSONS, type MoView } from '../mo/lessons'
 import MoDiagram from '../mo/MoDiagram'
 import { OrbitalScene } from '../orbitals/OrbitalScene'
+import { afterFirstPaint } from '../perf/afterPaint'
 import './MoPage.css'
 
 const GROUPS: { name: string; ids: string[] }[] = [
@@ -92,10 +93,14 @@ export default function MoPage() {
       setScene(null)
     }
   }, [])
+  // The first surface is computed just after the page appears, so the diagram and text
+  // show right away (computing a surface is the heaviest work on this page).
+  const [painted, setPainted] = useState(false)
+  useEffect(() => afterFirstPaint(() => setPainted(true)), [])
   const shape = useMemo(() => selected?.shape, [selected])
   useEffect(() => {
-    if (scene && shape) void scene.setView({ ...shape, fit: 3.4 })
-  }, [scene, shape])
+    if (scene && shape && painted) void scene.setView({ ...shape, fit: 3.4 })
+  }, [scene, shape, painted])
   useEffect(() => scene?.setAxes(false), [scene])
   useEffect(() => scene?.stage.setAutoRotate(spin), [scene, spin])
 
