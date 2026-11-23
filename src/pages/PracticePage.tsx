@@ -13,10 +13,11 @@
 
   A link like /practice?topic=polarity opens with just that topic chosen.
 */
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import Icon from '../components/Icon'
 import { StepTransition } from '../components/motion'
+import { revealInPanel } from '../components/revealInPanel'
 import TopicLayout, { type ModelLabel } from '../components/TopicLayout'
 import { STRUCTURES } from '../enzymes/structures'
 import { QuizBox } from '../lessons/LessonPanel'
@@ -390,6 +391,13 @@ function ActionCard(p: {
   const kind = q.interaction!.kind
   const label = kind === 'build-lewis' || kind === 'fill-mo' ? 'Build it' : 'Click the answer'
   const state = a.status === 'right' ? 'right' : a.status === 'shown' ? 'shown' : a.status === 'wrong' ? 'wrong' : 'waiting'
+  // After each attempt, scroll the panel so the feedback and explanation are in view.
+  const statusRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (a.status === 'waiting') return
+    const t = window.setTimeout(() => revealInPanel(statusRef.current), 340)
+    return () => window.clearTimeout(t)
+  }, [a.status, a.tries])
   return (
     <div className={`quiz is-${state}`}>
       <div className="quiz-top">
@@ -401,7 +409,7 @@ function ActionCard(p: {
       <p className="quiz-question">
         <RichText text={q.question} />
       </p>
-      <div role="status" aria-live="polite" className="quiz-status">
+      <div role="status" aria-live="polite" className="quiz-status" ref={statusRef}>
         {a.status === 'waiting' && (
           <p className="quiz-prompt">{kind === 'build-lewis' || kind === 'fill-mo' ? 'Work on the drawing, then press Check.' : 'Click your answer on the drawing.'}</p>
         )}

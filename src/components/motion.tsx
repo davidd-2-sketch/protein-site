@@ -32,6 +32,7 @@ export function SmoothHeight({
   const [height, setHeight] = useState<number | null>(null)
   // Clip only while the height is changing, so glows and focus rings aren't cut off at rest.
   const [moving, setMoving] = useState(false)
+  const unclip = useRef(0)
   const activeRef = useRef(active)
   useLayoutEffect(() => {
     activeRef.current = active
@@ -41,14 +42,23 @@ export function SmoothHeight({
     const el = inner.current!
     const measure = () => {
       const h = el.offsetHeight
-      if (activeRef.current && last.current !== null && Math.abs(last.current - h) > 1) setMoving(true)
+      if (activeRef.current && last.current !== null && Math.abs(last.current - h) > 1) {
+        setMoving(true)
+        // Safety net: if the browser never reports the end of the height animation (tab in the
+        // background, animation interrupted), stop clipping anyway, so nothing stays cut off.
+        window.clearTimeout(unclip.current)
+        unclip.current = window.setTimeout(() => setMoving(false), 450)
+      }
       last.current = h
       setHeight(h)
     }
     measure()
     const ro = new ResizeObserver(measure)
     ro.observe(el)
-    return () => ro.disconnect()
+    return () => {
+      ro.disconnect()
+      window.clearTimeout(unclip.current)
+    }
   }, [])
 
   return (

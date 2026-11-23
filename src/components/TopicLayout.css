@@ -83,6 +83,13 @@
   flex-direction: column;
 }
 
+/* The panel's sections keep their full height and the panel scrolls instead. (Without this,
+   some browsers, Safari especially, squeeze sections to fit and cut off their bottom.) */
+.topic-panel .lesson > *,
+.topic-panel .panel-stack > * {
+  flex-shrink: 0;
+}
+
 /* Whatever panel a page provides (lesson panel or its own) fills the slot and scrolls inside it. */
 .topic-panel .lesson {
   position: static;
