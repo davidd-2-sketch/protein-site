@@ -43,6 +43,13 @@ export interface PolarMolecule {
   why: string
   /** Camera direction for the default view (3D shapes look best from above). */
   view?: Vec
+  /**
+   * false = never slide the arrows tip to tail (one-bond molecules, or two separate bonds
+   * shown side by side for comparison). The view then frames just the molecule.
+   */
+  sum?: boolean
+  /** Text for the net-dipole label, when there is no measured dipole to quote. Empty = no label. */
+  netText?: string
 }
 
 export interface Pair {
@@ -222,9 +229,9 @@ export const netDipole = (m: PolarMolecule, arrowScale = ARROW_SCALE): Vec => bo
  */
 export const SHARED_SCALE = new Set(['HF', 'HCl'])
 export function displayScale(m: PolarMolecule) {
-  const ids = SHARED_SCALE.has(m.id) ? [...SHARED_SCALE] : [m.id]
-  const maxDelta = Math.max(...ids.flatMap((id) => bondDipoles(byId(id), 1).map((b) => b.delta)))
-  return 1.4 / maxDelta
+  const ms = SHARED_SCALE.has(m.id) ? [...SHARED_SCALE].map(byId) : [m]
+  const maxDelta = Math.max(...ms.flatMap((x) => bondDipoles(x, 1).map((b) => b.delta)))
+  return maxDelta > 0 ? 1.4 / maxDelta : 1
 }
 
 /** δ+ / δ− for each atom: sum of (neighbor EN − own EN) over its bonds. Positive → δ+. */

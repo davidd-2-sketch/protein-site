@@ -21,7 +21,7 @@ import { apparent, DEMO, type Inhibition } from '../enzymes/kinetics'
 import { electronsAround, formalCharges, LEWIS, lewisById, allowedAround } from '../lewis/molecules'
 import { shapeOf } from '../lewis/molecules'
 import { HYBRID_FOOTNOTE, isValid, shapeFor } from '../vsepr/shapes'
-import { sceneFor } from '../lewis/shape3d'
+import { SHAPE_POLARITY } from './polarModels'
 import { byEnergy, DIAGRAMS, diatomicById, fill, fmtOrder, ionFormula } from '../mo/diatomics'
 
 /* ======================================================================= REACTIONS */
@@ -228,11 +228,10 @@ function bondPolarity(a: string, b: string): Question {
   const more = dEN(a) > dEN(b) ? a : b
   const less = more === a ? b : a
   const { choices, answer } = withChoices(bondName(more), [bondName(less)])
-  const els = [...new Set([...a.split('-'), ...b.split('-')])].map((s) => sym(s).z)
   return {
     id: `bondpol:${a}:${b}`,
     topic: 'polarity',
-    visual: { kind: 'trends', before: { props: [], flat: true, focus: els }, after: { props: ['en'], flat: false, focus: els } },
+    visual: { kind: 'polarity', id: `bonds:${a}:${b}`, arrowsAfter: true },
     question: `Which bond is more polar: ${bondName(a)} or ${bondName(b)}?`,
     choices,
     answer,
@@ -251,7 +250,7 @@ function bondNegative(b: string): Question {
   return {
     id: `bondneg:${b}`,
     topic: 'polarity',
-    visual: { kind: 'trends', before: { props: [], flat: true, focus: [sym(x).z, sym(y).z] }, after: { props: ['en'], flat: false, focus: [sym(x).z, sym(y).z] } },
+    visual: { kind: 'polarity', id: `bond:${b}`, arrowsAfter: true },
     question: `In a ${bondName(b)} bond, which atom carries the partial negative charge (δ−)?`,
     choices,
     answer,
@@ -261,35 +260,15 @@ function bondNegative(b: string): Question {
   }
 }
 
-/** Polar or not, from the 3D shape of molecules on the Lewis page (measured dipoles are 0 or not). */
-const SHAPE_POLARITY: Record<string, { polar: boolean; why: string }> = {
-  h2o: { polar: true, why: 'Bent: the two O–H dipoles point partly the same way and don’t cancel.' },
-  nh3: { polar: true, why: 'Trigonal pyramidal: the three N–H dipoles all tilt the same way.' },
-  ch4: { polar: false, why: 'Tetrahedral and symmetric: the four C–H dipoles cancel (and are small anyway).' },
-  co2: { polar: false, why: 'Linear: the two C=O dipoles point in opposite directions and cancel.' },
-  hcn: { polar: true, why: 'Linear, but the two ends are different (H vs N), so the dipoles add up instead of cancelling.' },
-  ch2o: { polar: true, why: 'The C=O dipole isn’t balanced by the small C–H dipoles.' },
-  bf3: { polar: false, why: 'Trigonal planar and symmetric: the three B–F dipoles cancel.' },
-  pcl5: { polar: false, why: 'Trigonal bipyramidal and symmetric: the dipoles cancel.' },
-  sf6: { polar: false, why: 'Octahedral: every S–F dipole has an opposite partner.' },
-  xef4: { polar: false, why: 'Square planar: opposite Xe–F dipoles cancel (the two lone pairs are opposite each other too).' },
-  sf4: { polar: true, why: 'Seesaw: the lone pair makes the shape lopsided, so the S–F dipoles don’t cancel.' },
-  clf3: { polar: true, why: 'T-shaped: the dipoles don’t cancel.' },
-  xef2: { polar: false, why: 'Linear: the two Xe–F dipoles are opposite and cancel.' },
-  so2: { polar: true, why: 'Bent (a lone pair on S): the S–O dipoles don’t cancel.' },
-  o3: { polar: true, why: 'Bent, and the central O is electron-poor compared with the outer ones (formal charge +1), so there is a small dipole (0.53 D), even though every atom is oxygen.' },
-  becl2: { polar: false, why: 'Linear: the two Be–Cl dipoles cancel.' },
-}
 function polarShape(id: string): Question {
   const m = lewisById(id)
   const p = SHAPE_POLARITY[id]
   const correct = p.polar ? 'Polar' : 'Nonpolar'
   const { choices, answer } = withChoices(correct, ['Polar', 'Nonpolar'])
-  const state = sceneFor(m, m.forms[0])!
   return {
     id: `polarshape:${id}`,
     topic: 'polarity',
-    visual: { kind: 'vsepr', before: { ...state, arcs: [] }, after: state, arcsAfter: false },
+    visual: { kind: 'polarity', id: `shape:${id}`, arrowsAfter: true },
     question: `${m.formula} (${m.name}) has this 3D shape. Is it polar or nonpolar?`,
     choices,
     answer,

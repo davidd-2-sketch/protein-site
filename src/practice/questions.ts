@@ -48,8 +48,12 @@ export type Visual =
   | { kind: 'trends'; before: { props: PropId[]; flat: boolean; focus: number[] }; after: { props: PropId[]; flat: boolean; focus: number[] } }
   /** A frozen frame of the SN2 (default) or SN1 reaction, at timeline position s (0–1). */
   | { kind: 'sn2'; s: number; mech?: 'sn2' | 'sn1' }
-  /** A polarity molecule: bond dipoles beside the bonds, summed tip-to-tail once answered. */
-  | { kind: 'polarity'; id: string }
+  /**
+   * The bond-dipole model (see practice/polarModels.ts for the ID forms): arrows beside the
+   * bonds, summed tip-to-tail once answered. arrowsAfter = arrows and δ+/δ− appear only
+   * after the student answers (so they don't give the answer away).
+   */
+  | { kind: 'polarity'; id: string; arrowsAfter?: boolean }
   /** Kinetics graph; `after` (if set) replaces it once answered. */
   | { kind: 'kinetics'; before: KineticsVisual; after?: KineticsVisual }
   /** The catalyzed vs uncatalyzed energy diagram (hint labels hidden). */

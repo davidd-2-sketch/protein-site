@@ -3,7 +3,7 @@
   as the lessons. Each kind of visual keeps its scene while consecutive questions use it,
   and swaps scenes only when the kind changes.
 */
-import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import EnergyChart from '../enzymes/EnergyChart'
 import KineticsChart from '../enzymes/KineticsChart'
 import '../pages/EnzymesPage.css'
@@ -14,7 +14,7 @@ import AxisLabels from '../orbitals/AxisLabels'
 import { OrbitalScene } from '../orbitals/OrbitalScene'
 import ReactionLabels from '../reactions/ReactionLabels'
 import { ReactionScene } from '../reactions/ReactionScene'
-import { byId as polarById } from '../polarity/molecules'
+import { polarModel } from './polarModels'
 import PolarityLabels from '../polarity/PolarityLabels'
 import { PolarityScene } from '../polarity/PolarityScene'
 import SymbolLabels from '../trends/SymbolLabels'
@@ -185,17 +185,27 @@ function Sn2Stage({ visual }: { visual: Extract<Visual, { kind: 'sn2' }> }) {
 
 function PolarityStage({ visual, revealed }: { visual: Extract<Visual, { kind: 'polarity' }>; revealed: boolean }) {
   const [host, scene] = useScene((el) => new PolarityScene(el))
-  const molecule = polarById(visual.id)
+  const molecule = useMemo(() => polarModel(visual.id), [visual.id])
+  const arrows = !visual.arrowsAfter || revealed
   useEffect(() => {
     if (!scene) return
     scene.setMolecule(molecule)
     scene.setSum(false, true)
-  }, [scene, molecule])
-  // Answering slides the arrows tip to tail, showing whether they cancel.
-  useEffect(() => scene?.setSum(revealed), [scene, revealed])
+    scene.setArrows(!visual.arrowsAfter, true)
+  }, [scene, molecule, visual.arrowsAfter])
+  // Answering shows the arrows (if hidden), then slides them tip to tail to show whether they cancel.
+  useEffect(() => {
+    if (!scene) return
+    scene.setArrows(arrows)
+    if (molecule.sum === false) return
+    if (!revealed) return scene.setSum(false)
+    // When the arrows were hidden, let them appear beside the bonds first.
+    const t = window.setTimeout(() => scene.setSum(true), visual.arrowsAfter ? 700 : 0)
+    return () => window.clearTimeout(t)
+  }, [scene, revealed, arrows, molecule, visual.arrowsAfter])
   return (
     <div className="practice-canvas" ref={host}>
-      {scene && <PolarityLabels scene={scene} molecule={molecule} charges />}
+      {scene && <PolarityLabels scene={scene} molecule={molecule} charges={arrows} />}
     </div>
   )
 }
@@ -345,7 +355,7 @@ function MoStage({ visual, revealed, interaction, onAttempt }: { visual: Extract
             </span>{' '}
             electrons
           </p>
-          <p className="lewis-edit-hint mo-fill-tip">Click a line: ↑, then ↑↓, then empty.</p>
+          <p className="lewis-edit-hint mo-fill-tip">Click a line: ↿, then ↿⇂, then empty.</p>
           <div className="builder-actions">
             <button className="btn btn-sm btn-primary" onClick={check}>
               Check

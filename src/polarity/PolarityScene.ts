@@ -29,6 +29,9 @@ export interface PolarityLabel {
   kind: 'atom' | 'charge' | 'net'
 }
 
+/** Drawn radius of an atom's ball (smallish, so arrows beside the bonds stay visible). */
+const atomRadius = (el: string) => 0.16 + 0.17 * elementStyle(el).covalentRadius
+
 /** A direction perpendicular to `dir`, preferring "up" (then "toward the viewer"). */
 function perpendicular(dir: THREE.Vector3) {
   const side = new THREE.Vector3(0, 1, 0.25)
@@ -44,6 +47,14 @@ function perpendicular(dir: THREE.Vector3) {
  */
 export function sumLayout(m: PolarMolecule) {
   const k = displayScale(m)
+  if (m.sum === false) {
+    // No summing: frame just the molecule (and the arrows beside its bonds).
+    const pts = m.atoms.map((a) => V(a.pos))
+    const center = new THREE.Box3().setFromPoints(pts).getCenter(new THREE.Vector3())
+    const radius = Math.max(...pts.map((q) => q.distanceTo(center))) + 1.1
+    const vecs = bondDipoles(m, k).map((b) => V(b.vector))
+    return { origin: center.clone(), starts: vecs.map(() => center.clone()), vecs, net: new THREE.Vector3(), netShift: new THREE.Vector3(), chainBottom: center.y - radius + 0.6, center, radius }
+  }
   const vecs = bondDipoles(m, k).map((b) => V(b.vector))
   // Chain order: the arrow most aligned with the net dipole goes last, so the net arrow
   // cuts across an open path instead of lying on top of an arrow.
@@ -68,26 +79,36 @@ export function sumLayout(m: PolarMolecule) {
   const all = new THREE.Box3().setFromPoints([...m.atoms.map((a) => V(a.pos)), ...chainPts.map((q) => q.clone().add(origin))])
   const center = all.getCenter(new THREE.Vector3())
   const radius = Math.max(...[...m.atoms.map((a) => V(a.pos)), ...chainPts.map((q) => q.clone().add(origin))].map((q) => q.distanceTo(center))) + 0.8
-  return { origin, starts, vecs, net: net0, chainBottom: box.min.y + origin.y, center, radius }
+  // If the net arrow would lie along one of the bond arrows (e.g. formaldehyde's C=O), draw it
+  // a little to the side so both stay visible.
+  const nd = net0.clone().normalize()
+  const parallel = net0.length() > 1e-6 && vecs.some((v) => v.length() > 1e-6 && v.clone().normalize().dot(nd) > 0.96)
+  const netShift = parallel ? perpendicular(nd).multiplyScalar(-0.26) : new THREE.Vector3()
+  return { origin, starts, vecs, net: net0, netShift, chainBottom: box.min.y + origin.y, center, radius }
 }
 
 /** Labels for the HTML overlay (positions in molecule coordinates): symbols, δ+/δ−, net dipole. */
 export function polarityLabels(m: PolarMolecule): PolarityLabel[] {
   const charges = partialCharges(m)
   const labels: PolarityLabel[] = []
-  const c = V(m.atoms[m.center].pos)
   m.atoms.forEach((a, i) => {
     labels.push({ text: a.el, pos: V(a.pos), kind: 'atom' })
     const q = charges[i]
     if (!q) return
-    // Just outside the atom, away from the centre (or below, for the central atom).
-    const out = V(a.pos).sub(c)
-    const dir = out.lengthSq() > 1e-6 ? out.normalize() : new THREE.Vector3(0, -1, 0)
-    labels.push({ text: `δ${q}`, pos: V(a.pos).addScaledVector(dir, 0.42).add(new THREE.Vector3(0, 0.22, 0)), kind: 'charge' })
+    // Just outside the atom, away from the atoms it is bonded to (or below, when they
+    // surround it evenly, as for a central atom).
+    const nbrs = m.bonds.flatMap(([p, r]) => (p === i ? [r] : r === i ? [p] : []))
+    const out = nbrs.reduce((s, k) => s.add(V(a.pos).sub(V(m.atoms[k].pos)).normalize()), new THREE.Vector3())
+    const surrounded = out.lengthSq() <= 0.05
+    const dir = surrounded ? new THREE.Vector3(0, -1, 0) : out.normalize()
+    // A surrounded (central) atom gets its label just below it, clear of its own symbol.
+    const pos = surrounded ? V(a.pos).addScaledVector(dir, 0.52) : V(a.pos).addScaledVector(dir, 0.42).add(new THREE.Vector3(0, 0.22, 0))
+    labels.push({ text: `δ${q}`, pos, kind: 'charge' })
   })
   const L = sumLayout(m)
+  if (m.netText === '' || m.sum === false) return labels
   labels.push({
-    text: m.dipole === 0 ? 'Sum = 0: nonpolar' : `Net dipole: ${m.dipole.toFixed(2)} D (measured)`,
+    text: m.netText ?? (m.dipole === 0 ? 'Sum = 0: nonpolar' : `Net dipole: ${m.dipole.toFixed(2)} D (measured)`),
     // Below the summed arrows, so it never covers them.
     pos: new THREE.Vector3(L.origin.x + L.net.x / 2, L.chainBottom - 0.45, 0),
     kind: 'net',
@@ -150,6 +171,9 @@ export class PolarityScene {
   private target = 0
   private bondMat: THREE.MeshStandardMaterial
   private netMat: THREE.MeshStandardMaterial
+  /** Bond-dipole arrows fade in and out (Practice hides them until the student answers). */
+  private fade = 1
+  private fadeTarget = 1
 
   constructor(container: HTMLElement) {
     this.stage = new Stage3D(container, 'polarity')
@@ -162,6 +186,14 @@ export class PolarityScene {
 
     // Animate t toward the target (about 1.4 s for the full slide).
     this.stage.onBeforeRender((dt) => {
+      if (this.fade !== this.fadeTarget) {
+        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        const step = reduced ? 1 : dt / 0.35
+        this.fade = this.fadeTarget > this.fade ? Math.min(this.fadeTarget, this.fade + step) : Math.max(this.fadeTarget, this.fade - step)
+        this.bondMat.opacity = 0.95 * this.fade
+        this.arrows.forEach((a) => (a.arrow.group.visible = this.fade > 0.01))
+        if (this.t === this.target) return true
+      }
       if (this.t === this.target) return false
       const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
       const step = reduced ? 1 : dt / 1.4
@@ -182,7 +214,7 @@ export class PolarityScene {
       const mat = glossy({ color: elementStyle(a.el).color, roughness: 0.32, clearcoat: 0.55, clearcoatRoughness: 0.18 })
       this.materials.push(mat)
       const mesh = new THREE.Mesh(sphere, mat)
-      mesh.scale.setScalar(0.16 + 0.17 * elementStyle(a.el).covalentRadius)
+      mesh.scale.setScalar(atomRadius(a.el))
       mesh.position.copy(V(a.pos))
       this.root.add(mesh)
     }
@@ -240,7 +272,9 @@ export class PolarityScene {
         side.addScaledVector(dir, -side.dot(dir))
       }
       side.normalize()
-      const besideStart = mid.clone().addScaledVector(side, 0.34).addScaledVector(dir, -vec.length() / 2)
+      // Far enough beside the bond to clear both atoms' balls.
+      const r = Math.max(...[b.from, b.to].map((k) => atomRadius(m.atoms[k].el)))
+      const besideStart = mid.clone().addScaledVector(side, Math.max(0.34, r + 0.12)).addScaledVector(dir, -vec.length() / 2)
       const arrow = new Arrow(this.bondMat, 0.035, true)
       this.root.add(arrow.group)
       this.arrows.push({ arrow, vec, besideStart, side })
@@ -269,6 +303,17 @@ export class PolarityScene {
     this.stage.requestRender()
   }
 
+  /** Show or hide the bond-dipole arrows (fades; instant = jump straight there). */
+  setArrows(on: boolean, instant = false) {
+    this.fadeTarget = on ? 1 : 0
+    if (instant) {
+      this.fade = this.fadeTarget
+      this.bondMat.opacity = 0.95 * this.fade
+      this.arrows.forEach((a) => (a.arrow.group.visible = on))
+    }
+    this.stage.requestRender()
+  }
+
   setOptions(o: { lonePairs?: boolean }) {
     if (o.lonePairs !== undefined) this.lonePairs.visible = this.showLonePairs = o.lonePairs
     this.stage.requestRender()
@@ -278,11 +323,14 @@ export class PolarityScene {
     const L = this.layout
     if (!L) return
     const t = ease(this.t)
-    this.arrows.forEach((a, k) => a.arrow.set(a.besideStart.clone().lerp(L.starts[k], t), a.vec, a.side))
+    this.arrows.forEach((a, k) => {
+      a.arrow.set(a.besideStart.clone().lerp(L.starts[k], t), a.vec, a.side)
+      if (this.fade <= 0.01) a.arrow.group.visible = false
+    })
     // The net arrow fades in once the chain is complete (polar molecules only).
     const show = L.net.length() > 1e-6 ? Math.max(0, (this.t - 0.85) / 0.15) : 0
     this.netMat.opacity = show
-    this.net?.set(L.origin, L.net, perpendicular(L.net.clone().normalize()), show)
+    this.net?.set(L.origin.clone().add(L.netShift), L.net, perpendicular(L.net.clone().normalize()), show)
     this.stage.requestRender()
   }
 
