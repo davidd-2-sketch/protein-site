@@ -114,7 +114,7 @@ export const MO_LESSONS: Lesson<MoStep>[] = [
       {
         title: 'Your turn: He₂⁺',
         text: {
-          simple: 'Fill the diagram for He₂⁺ yourself: it has 3 electrons. Click a line once for one electron (↑), again to pair it (↑↓). Then press Check.',
+          simple: 'Fill the diagram for He₂⁺ yourself: it has 3 electrons. Click a line once for one electron (↿), again to pair it (↿⇂). Then press Check.',
           standard: 'Fill He₂⁺ (3 electrons): lowest level first, two per orbital. Then work out its bond order.',
           deep: 'He₂⁺ is a real (if fleeting) ion with bond order ½, detected by spectroscopy, unlike neutral He₂.',
         },

@@ -70,15 +70,18 @@ function Label({ text, x, y, anchor, className = 'mo-label' }: LabelSpec & { cla
   )
 }
 
-/** Arrows for an orbital holding 0, 1 or 2 electrons, centered on the line at (x, y). */
+/**
+ * Electrons as textbook half-arrows: ↿ (spin up, barb on the left) and ⇂ (spin down, barb on
+ * the right), centered on the orbital line at (x, y).
+ */
 function Arrows({ x, y, n }: { x: number; y: number; n: number }) {
   if (n === 0) return null
-  const ux = n === 2 ? x - 6 : x
-  const dx = x + 6
+  const ux = n === 2 ? x - 5 : x
+  const dx = x + 5
   return (
     <g className="mo-arrows" aria-hidden="true">
-      <path d={`M${ux} ${y + 10} V${y - 12} M${ux - 4.5} ${y - 7} L${ux} ${y - 12} L${ux + 4.5} ${y - 7}`} />
-      {n === 2 && <path d={`M${dx} ${y - 12} V${y + 10} M${dx - 4.5} ${y + 5} L${dx} ${y + 10} L${dx + 4.5} ${y + 5}`} />}
+      <path d={`M${ux} ${y + 11} V${y - 12} L${ux - 5} ${y - 5}`} />
+      {n === 2 && <path d={`M${dx} ${y - 12} V${y + 11} L${dx + 5} ${y + 4}`} />}
     </g>
   )
 }

@@ -244,7 +244,7 @@ export default function MoPage() {
           </span>{' '}
           electrons
         </span>
-        <span className="mo-fill-hint">Click a line: ↑, then ↑↓, then empty.</span>
+        <span className="mo-fill-hint">Click a line: ↿, then ↿⇂, then empty.</span>
         <button className="btn btn-sm btn-primary" onClick={checkWork}>
           Check
         </button>
@@ -295,7 +295,7 @@ export default function MoPage() {
             { label: 'Bonding', color: '#6fe3ff' },
             { label: 'Antibonding', color: '#a993ff' },
             ...(d.levels.some((l) => l.kind === 'nonbonding') ? [{ label: 'Nonbonding', color: '#b4b8d8' }] : []),
-            { label: 'Electron (↑ or ↓ spin)', color: '#ffc94d' },
+            { label: 'Electron (↿ or ⇂ spin)', color: '#eef0ff' },
           ]}
         />
       }

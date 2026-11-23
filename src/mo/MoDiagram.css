@@ -53,8 +53,8 @@
 
 .mo-arrows path {
   fill: none;
-  stroke: var(--electron);
-  stroke-width: 2.2;
+  stroke: #eef0ff; /* soft white, like pencil arrows in a textbook diagram */
+  stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
