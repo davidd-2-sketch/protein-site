@@ -23,8 +23,10 @@ import { INHIBITION_INFO, type Inhibition } from '../enzymes/kinetics'
 import { CHYMO_SITE, type StructureId } from '../enzymes/structures'
 import type { ModuleKey } from '../lessons/place'
 import type { Quiz } from '../lessons/types'
+import { formalCharges, LEWIS, lewisById, valenceTotal, VALENCE, type LForm } from '../lewis/molecules'
+import { DIAGRAMS, diatomicById, fill, fmtOrder, ionFormula } from '../mo/diatomics'
 
-export type Topic = 'shapes' | 'orbitals' | 'trends' | 'reactions' | 'polarity' | 'enzymes'
+export type Topic = 'shapes' | 'orbitals' | 'trends' | 'reactions' | 'polarity' | 'enzymes' | 'lewis' | 'mo'
 
 export const TOPICS: { id: Topic; name: string; blurb: string }[] = [
   { id: 'shapes', name: 'Shapes', blurb: 'Name 3D shapes, count hidden lone pairs, read bond angles.' },
@@ -33,6 +35,8 @@ export const TOPICS: { id: Topic; name: string; blurb: string }[] = [
   { id: 'reactions', name: 'Reactions', blurb: 'Read frozen frames of the SN2 reaction.' },
   { id: 'polarity', name: 'Polarity', blurb: 'Polar or nonpolar? Then watch the bond dipoles add up.' },
   { id: 'enzymes', name: 'Enzymes', blurb: 'Read kinetics graphs, name inhibitors, and explore real active sites.' },
+  { id: 'lewis', name: 'Lewis structures', blurb: 'Count electrons, place lone pairs, and find formal charges and resonance.' },
+  { id: 'mo', name: 'MO theory', blurb: 'Read MO diagrams: bond order, unpaired electrons, and magnetism.' },
 ]
 
 /** What to draw, before and after answering. */
@@ -47,6 +51,10 @@ export type Visual =
   | { kind: 'kinetics'; before: KineticsVisual; after?: KineticsVisual }
   /** The catalyzed vs uncatalyzed energy diagram (hint labels hidden). */
   | { kind: 'energy' }
+  /** A Lewis structure; `after` (if set) replaces it once answered. */
+  | { kind: 'lewis'; molecule: string; before: LewisCard; after?: LewisCard }
+  /** An MO diagram, empty or filled before answering, always filled after. */
+  | { kind: 'mo'; molecule: string; electrons: number; filledBefore: boolean }
   /** A real enzyme structure; `after` replaces it once answered. Highlight = one residue. */
   | { kind: 'enzyme3d'; structure: StructureId; after?: StructureId; highlight?: { chain: string; seq: number; label: string } }
 
@@ -56,6 +64,14 @@ export interface Question extends Quiz {
   visual: Visual
   /** Where to review this idea. */
   review: { module: ModuleKey | 'reaction' | 'polarity'; lessonId?: string; label: string }
+}
+
+/** How to draw a Lewis structure on a practice card. */
+export interface LewisCard {
+  show: 'form' | 'skeleton' | 'custom' | 'resonance'
+  custom?: LForm
+  formal?: boolean
+  highlight?: number[]
 }
 
 export interface KineticsVisual {
@@ -530,6 +546,184 @@ function enzFit(key: 'gk' | 'chymo'): Question {
   }
 }
 
+
+/* ======================================================================= LEWIS STRUCTURES */
+
+const lewisReview = (lessonId: string, label: string) => ({ module: 'lewis' as const, lessonId, label })
+/** Molecules with a central atom (for lone-pair questions). */
+const CENTERED = LEWIS.filter((m) => m.center !== undefined).map((m) => m.id)
+/** Atoms whose formal charge is worth asking about: every atom of these molecules. */
+const FC_MOLECULES = ['co', 'nh4', 'o3', 'no3', 'co3', 'co2', 'hcn', 'bf3', 'no']
+const RES_MOLECULES = ['o3', 'co3', 'no3', 'co2', 'ch2o', 'hcn', 'n2']
+const EXC_MOLECULES = ['bf3', 'no', 'pcl5', 'sf6', 'xef4', 'co2', 'nh3', 'h2o', 'hcn']
+const fmtFc = (c: number) => (c > 0 ? `+${c}` : c < 0 ? `−${-c}` : '0')
+
+function lewisValence(id: string): Question {
+  const m = lewisById(id)
+  const total = valenceTotal(m)
+  const sum = m.atoms.reduce((s, a) => s + VALENCE[a.el], 0)
+  // Wrong answers: forgetting the charge, ±2 (one pair) off.
+  const wrong = [m.charge ? sum : total + 2, total - 2, total + 4].filter((x) => x > 0 && x !== total)
+  const { choices, answer } = withChoices(String(total), wrong.map(String))
+  const parts = [...new Set(m.atoms.map((a) => a.el))].map((el) => {
+    const n = m.atoms.filter((a) => a.el === el).length
+    return `${n > 1 ? `${n} × ` : ''}${VALENCE[el]} (${el})`
+  })
+  return {
+    id: `lewisval:${id}`,
+    topic: 'lewis',
+    visual: { kind: 'lewis', molecule: id, before: { show: 'skeleton' }, after: { show: 'form' } },
+    question: `How many valence electrons does ${m.formula} have?`,
+    choices,
+    answer,
+    explain: `${parts.join(' + ')}${m.charge ? ` ${m.charge < 0 ? '+' : '−'} ${Math.abs(m.charge)} for the ${m.charge < 0 ? '−' : '+'}${Math.abs(m.charge) > 1 ? Math.abs(m.charge) : ''} charge` : ''} = ${total}.`,
+    hint: 'Add each atom’s valence electrons (its group number’s last digit). For an ion, adjust for the charge.',
+    review: lewisReview('drawing', 'Lewis structures: Drawing'),
+  }
+}
+
+function lewisLonePairs(id: string): Question {
+  const m = lewisById(id)
+  const c = m.center!
+  const f = m.forms[0]
+  const lone = f.lone[c]
+  const hidden: LForm = { ...f, lone: f.lone.map((x, i) => (i === c ? 0 : x)) }
+  const { choices, answer } = withChoices(String(lone), ['0', '1', '2', '3'])
+  return {
+    id: `lewislp:${id}`,
+    topic: 'lewis',
+    visual: { kind: 'lewis', molecule: id, before: { show: 'custom', custom: hidden, highlight: [c] }, after: { show: 'form', highlight: [c] } },
+    question: `${m.formula} has ${valenceTotal(m)} valence electrons. The central ${m.atoms[c].el}’s lone pairs are hidden. How many does it have?`,
+    choices,
+    answer,
+    explain: `${lone}. The drawing shows ${valenceTotal(m) - 2 * lone} electrons; the remaining ${2 * lone} go on the central atom as ${lone} lone pair${lone === 1 ? '' : 's'}.`,
+    hint: 'Count the electrons already drawn (2 per bond, 2 per lone pair) and subtract from the total.',
+    review: lewisReview('drawing', 'Lewis structures: Drawing'),
+  }
+}
+
+function lewisFormal(id: string, atom: number): Question {
+  const m = lewisById(id)
+  const f = m.forms[0]
+  const fc = formalCharges(m, f)[atom]
+  const el = m.atoms[atom].el
+  const { choices, answer } = withChoices(fmtFc(fc), ['−1', '0', '+1', '+2', '−2'].filter((x) => x !== fmtFc(fc)).slice(0, 3))
+  const nonbond = 2 * f.lone[atom] + (f.single?.[atom] ?? 0)
+  const bonds = m.links.reduce((s, [a, b], k) => s + (a === atom || b === atom ? f.bonds[k] : 0), 0)
+  return {
+    id: `lewisfc:${id}:${atom}`,
+    topic: 'lewis',
+    visual: { kind: 'lewis', molecule: id, before: { show: 'form', highlight: [atom] }, after: { show: 'form', highlight: [atom], formal: true } },
+    question: `What is the formal charge on the highlighted ${el} in ${m.formula}?`,
+    choices,
+    answer,
+    explain: `${VALENCE[el]} valence − (${nonbond} nonbonding + ${bonds} bond${bonds === 1 ? '' : 's'}) = ${fmtFc(fc)}.`,
+    hint: 'Formal charge = valence electrons − (dots + bonds).',
+    review: lewisReview('formal-charge', 'Lewis structures: Formal charge'),
+  }
+}
+
+function lewisResonance(id: string): Question {
+  const m = lewisById(id)
+  const n = m.forms.length
+  const { choices, answer } = withChoices(String(n), ['1', '2', '3', '4'])
+  return {
+    id: `lewisres:${id}`,
+    topic: 'lewis',
+    visual: { kind: 'lewis', molecule: id, before: { show: 'form' }, after: { show: 'resonance' } },
+    question: `How many equivalent resonance structures does ${m.formula} have?`,
+    choices,
+    answer,
+    explain:
+      n === 1
+        ? `Just 1: there is only one place for each multiple bond${m.id === 'co2' ? ' (both oxygens already have a double bond)' : ''}.`
+        : `${n}: the double bond can be drawn to ${n === 2 ? 'either outer oxygen' : 'any of the three oxygens'}. The real structure is a blend of all ${n}.`,
+    hint: 'Count how many equally good places the double bond could go.',
+    review: lewisReview('resonance', 'Lewis structures: Resonance'),
+  }
+}
+
+const EXC_NAMES = { incomplete: 'Incomplete octet (fewer than 8)', odd: 'Odd number of electrons', expanded: 'Expanded octet (more than 8)', none: 'None: it follows the octet rule' } as const
+function lewisException(id: string): Question {
+  const m = lewisById(id)
+  const key = m.exception ?? 'none'
+  const correct = EXC_NAMES[key]
+  const { choices, answer } = withChoices(correct, Object.values(EXC_NAMES))
+  return {
+    id: `lewisexc:${id}`,
+    topic: 'lewis',
+    visual: { kind: 'lewis', molecule: id, before: { show: 'form' } },
+    question: `Which exception to the octet rule (if any) does ${m.formula} show?`,
+    choices,
+    answer,
+    explain:
+      key === 'none'
+        ? 'Every atom has an octet (hydrogen, a duet), so it follows the rule.'
+        : key === 'incomplete'
+          ? 'The central atom has only 6 electrons around it.'
+          : key === 'odd'
+            ? `${valenceTotal(m)} valence electrons is an odd number, so one electron must be unpaired.`
+            : `The central ${m.atoms[m.center!].el} has more than 8 electrons around it, which third-row and heavier atoms can do.`,
+    hint: 'Count the electrons around the central atom, and check whether the total number of electrons is odd.',
+    review: lewisReview('exceptions', 'Lewis structures: Exceptions'),
+  }
+}
+
+/* ======================================================================= MO THEORY */
+
+const moReview = (lessonId: string, label: string) => ({ module: 'mo' as const, lessonId, label })
+/** Molecules and ions to ask about: [molecule, electron change]. */
+const MO_CASES: [string, number][] = [
+  ['h2', 0], ['h2', -1], ['he2', 0], ['he2', -1], ['li2', 0], ['be2', 0], ['b2', 0], ['c2', 0], ['n2', 0], ['n2', -1],
+  ['o2', 0], ['o2', -1], ['o2', 1], ['o2', 2], ['f2', 0], ['ne2', 0], ['co', 0], ['no', 0], ['no', -1], ['hf', 0],
+]
+const BO_CHOICES = ['0', '½', '1', '1.5', '2', '2.5', '3']
+
+function moBondOrder(id: string, delta: number): Question {
+  const m = diatomicById(id)
+  const n = m.electrons + delta
+  const f = fill(DIAGRAMS[m.diagram], n)
+  const correct = fmtOrder(f.bondOrder)
+  const i = BO_CHOICES.indexOf(correct)
+  const near = BO_CHOICES.filter((_, j) => j !== i && Math.abs(j - i) <= 3)
+  const { choices, answer } = withChoices(correct, shuffle(near).slice(0, 3))
+  const ion = ionFormula(m, n)
+  return {
+    id: `mobo:${id}:${delta}`,
+    topic: 'mo',
+    visual: { kind: 'mo', molecule: id, electrons: n, filledBefore: true },
+    question: `What is the bond order of ${ion}?`,
+    choices,
+    answer,
+    explain: `(${f.bonding} bonding − ${f.antibonding} antibonding) ÷ 2 = ${correct}.${f.nonbonding ? ' Nonbonding electrons don’t count.' : ''}`,
+    hint: 'Bond order = (bonding electrons − antibonding electrons) ÷ 2. Antibonding levels have a *.',
+    review: moReview(delta ? 'oxygen' : m.diagram === '1s' ? 'basics' : ['co', 'no', 'hf'].includes(id) ? 'unequal' : 'second-row', 'MO theory lessons'),
+  }
+}
+
+function moMagnetism(id: string): Question {
+  const m = diatomicById(id)
+  const f = fill(DIAGRAMS[m.diagram], m.electrons)
+  const para = f.unpaired > 0
+  const correct = para ? 'Paramagnetic (has unpaired electrons)' : 'Diamagnetic (all electrons paired)'
+  const { choices, answer } = withChoices(correct, ['Paramagnetic (has unpaired electrons)', 'Diamagnetic (all electrons paired)'])
+  return {
+    id: `momag:${id}`,
+    topic: 'mo',
+    visual: { kind: 'mo', molecule: id, electrons: m.electrons, filledBefore: false },
+    question: `Fill in ${m.formula}’s ${m.electrons} valence electrons in your head. Is it paramagnetic or diamagnetic?`,
+    choices,
+    answer,
+    explain: para
+      ? `${f.unpaired} unpaired electron${f.unpaired === 1 ? '' : 's'}${id === 'o2' || id === 'b2' ? ', one in each of two equal-energy π orbitals (Hund’s rule)' : ''}: paramagnetic.`
+      : 'Every electron is paired: diamagnetic.',
+    hint: 'Fill lowest first. In a pair of equal-energy orbitals (π), put one electron in each before pairing.',
+    review: moReview(id === 'o2' || id === 'b2' ? 'oxygen' : 'second-row', 'MO theory lessons'),
+  }
+}
+
+const MAG_MOLECULES = ['h2', 'b2', 'c2', 'n2', 'o2', 'f2', 'co', 'no', 'hf']
+
 /* ======================================================================= building rounds */
 
 /** Rebuild a question from its ID (used for review of missed questions). */
@@ -569,6 +763,20 @@ export function fromId(id: string): Question | null {
         return p[0] === 'gk' || p[0] === 'chymo' ? enzFit(p[0]) : null
       case 'polar':
         return POLAR_MOLECULES.some((m) => m.id === p[0]) ? polarOrNot(p[0]) : null
+      case 'lewisval':
+        return LEWIS.some((m) => m.id === p[0]) ? lewisValence(p[0]) : null
+      case 'lewislp':
+        return CENTERED.includes(p[0]) ? lewisLonePairs(p[0]) : null
+      case 'lewisfc':
+        return FC_MOLECULES.includes(p[0]) && lewisById(p[0]).atoms[Number(p[1])] ? lewisFormal(p[0], Number(p[1])) : null
+      case 'lewisres':
+        return RES_MOLECULES.includes(p[0]) ? lewisResonance(p[0]) : null
+      case 'lewisexc':
+        return EXC_MOLECULES.includes(p[0]) ? lewisException(p[0]) : null
+      case 'mobo':
+        return MO_CASES.some(([id, d]) => id === p[0] && d === Number(p[1])) ? moBondOrder(p[0], Number(p[1])) : null
+      case 'momag':
+        return MAG_MOLECULES.includes(p[0]) ? moMagnetism(p[0]) : null
     }
   } catch {
     /* an old or malformed ID: skip it */
@@ -604,6 +812,24 @@ export function randomId(topic: Topic): string {
       return Math.random() < 0.55 ? `sn2stage:${pick(Object.keys(STAGE_FRAMES))}` : `sn2config:${pick(CONFIG_FRAMES)}`
     case 'polarity':
       return `polar:${pick(POLAR_MOLECULES).id}`
+    case 'lewis': {
+      const r = Math.random()
+      if (r < 0.2) return `lewisval:${pick(LEWIS).id}`
+      if (r < 0.4) return `lewislp:${pick(CENTERED)}`
+      if (r < 0.65) {
+        const id = pick(FC_MOLECULES)
+        return `lewisfc:${id}:${Math.floor(Math.random() * lewisById(id).atoms.length)}`
+      }
+      if (r < 0.82) return `lewisres:${pick(RES_MOLECULES)}`
+      return `lewisexc:${pick(EXC_MOLECULES)}`
+    }
+    case 'mo': {
+      if (Math.random() < 0.65) {
+        const [id, d] = pick(MO_CASES)
+        return `mobo:${id}:${d}`
+      }
+      return `momag:${pick(MAG_MOLECULES)}`
+    }
     case 'enzymes': {
       const r = Math.random()
       if (r < 0.35) return `enzinh:${pick([...INH_TYPES])}:${pick(['mm', 'lb'])}`

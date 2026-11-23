@@ -65,6 +65,25 @@ describe('Generated questions', () => {
     expect(name('lone:2:2')).toBe('2')
   })
 
+  it('Lewis and MO cards match the checked data', () => {
+    expect(correct('lewisval:co3')).toBe('24')
+    expect(correct('lewisval:nh4')).toBe('8')
+    expect(correct('lewislp:xef4')).toBe('2')
+    expect(correct('lewisfc:co:0')).toBe('−1')
+    expect(correct('lewisfc:nh4:0')).toBe('+1')
+    expect(correct('lewisres:no3')).toBe('3')
+    expect(correct('lewisres:co2')).toBe('1')
+    expect(correct('lewisexc:bf3')).toMatch(/Incomplete/)
+    expect(correct('lewisexc:no')).toMatch(/Odd/)
+    expect(correct('mobo:o2:0')).toBe('2')
+    expect(correct('mobo:o2:-1')).toBe('2.5')
+    expect(correct('mobo:h2:-1')).toBe('½')
+    expect(correct('mobo:no:0')).toBe('2.5')
+    expect(correct('momag:o2')).toMatch(/^Paramagnetic/)
+    expect(correct('momag:n2')).toMatch(/^Diamagnetic/)
+    expect(correct('momag:b2')).toMatch(/^Paramagnetic/)
+  })
+
   it('rejects malformed IDs instead of crashing', () => {
     expect(fromId('nonsense')).toBeNull()
     expect(fromId('orb:9zz')).toBeNull()

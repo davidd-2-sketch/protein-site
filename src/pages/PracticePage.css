@@ -309,3 +309,56 @@
 .practice-start {
   flex: 1;
 }
+
+/* Flat (2D) practice visuals: Lewis structures and MO diagrams. */
+.practice-flat {
+  display: grid;
+  place-items: center;
+  padding: 24px 32px;
+}
+
+.practice-flat > svg {
+  position: absolute;
+  inset: 24px 32px;
+  width: calc(100% - 64px);
+  height: calc(100% - 48px);
+  max-width: 560px;
+  max-height: 460px;
+  margin: auto;
+}
+
+.practice-resonance {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.practice-resonance-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-dim);
+  font-size: 22px;
+}
+
+.practice-resonance-item .lewis {
+  width: 160px;
+  height: 140px;
+}
+
+@media (max-width: 899px) {
+  .practice-flat {
+    padding: 6px 10px;
+  }
+  .practice-flat > svg {
+    inset: 6px 8px;
+    width: calc(100% - 16px);
+    height: calc(100% - 12px);
+  }
+  .practice-resonance-item .lewis {
+    width: 38vw;
+    height: 30vw;
+  }
+}

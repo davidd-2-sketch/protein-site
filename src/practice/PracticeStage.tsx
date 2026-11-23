@@ -21,7 +21,11 @@ import SymbolLabels from '../trends/SymbolLabels'
 import { TrendsScene } from '../trends/TrendsScene'
 import SceneLabelsOverlay from '../vsepr/SceneLabels'
 import { VseprScene } from '../vsepr/VseprScene'
-import type { Visual } from './questions'
+import LewisDrawing from '../lewis/LewisDrawing'
+import { lewisById, skeleton } from '../lewis/molecules'
+import { diatomicById } from '../mo/diatomics'
+import MoDiagram from '../mo/MoDiagram'
+import type { LewisCard, Visual } from './questions'
 
 export default function PracticeStage({ visual, revealed }: { visual: Visual; revealed: boolean }) {
   switch (visual.kind) {
@@ -33,6 +37,14 @@ export default function PracticeStage({ visual, revealed }: { visual: Visual; re
       return <TrendsStage visual={visual} revealed={revealed} />
     case 'sn2':
       return <Sn2Stage visual={visual} />
+    case 'lewis':
+      return <LewisStage visual={visual} revealed={revealed} />
+    case 'mo':
+      return (
+        <div className="practice-canvas practice-flat">
+          <MoDiagram molecule={diatomicById(visual.molecule)} electrons={visual.electrons} filled={revealed || visual.filledBefore} compact />
+        </div>
+      )
     case 'polarity':
       return <PolarityStage visual={visual} revealed={revealed} />
     case 'kinetics': {
@@ -144,6 +156,29 @@ function PolarityStage({ visual, revealed }: { visual: Extract<Visual, { kind: '
   return (
     <div className="practice-canvas" ref={host}>
       {scene && <PolarityLabels scene={scene} molecule={molecule} charges />}
+    </div>
+  )
+}
+
+/** A Lewis structure card: one structure, or all resonance structures in a row. */
+function LewisStage({ visual, revealed }: { visual: Extract<Visual, { kind: 'lewis' }>; revealed: boolean }) {
+  const m = lewisById(visual.molecule)
+  const card: LewisCard = revealed && visual.after ? visual.after : visual.before
+  if (card.show === 'resonance')
+    return (
+      <div className="practice-canvas practice-flat practice-resonance" role="img" aria-label={`The resonance structures of ${m.formula}`}>
+        {m.forms.map((f, k) => (
+          <div key={k} className="practice-resonance-item">
+            {k > 0 && <span aria-hidden="true">↔</span>}
+            <LewisDrawing molecule={m} form={f} formal={card.formal} size="small" />
+          </div>
+        ))}
+      </div>
+    )
+  const form = card.show === 'skeleton' ? skeleton(m) : card.show === 'custom' && card.custom ? card.custom : m.forms[0]
+  return (
+    <div className="practice-canvas practice-flat">
+      <LewisDrawing molecule={m} form={form} formal={card.formal} highlight={card.highlight} />
     </div>
   )
 }

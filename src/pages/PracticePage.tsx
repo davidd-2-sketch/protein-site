@@ -35,7 +35,7 @@ const IDLE = { kind: 'vsepr' as const, before: idealState(4, 0), after: idealSta
 
 /** Topics in the same course groups as the top bar. */
 const GROUPS: { name: string; topics: Topic[] }[] = [
-  { name: 'General Chem', topics: ['shapes', 'orbitals', 'polarity', 'trends'] },
+  { name: 'General Chem', topics: ['lewis', 'shapes', 'orbitals', 'mo', 'polarity', 'trends'] },
   { name: 'Organic', topics: ['reactions'] },
   { name: 'Biochem', topics: ['enzymes'] },
 ]
@@ -53,6 +53,8 @@ function labelFor(visual: Visual, revealed: boolean): ModelLabel | null {
       return { kind: 'illustrative', name: 'A moment in a reaction' }
     case 'polarity':
       return { kind: 'illustrative', name: 'Bond dipoles' }
+    case 'lewis':
+      return { kind: 'illustrative', name: 'Lewis structure' }
     case 'enzyme3d':
       return { kind: 'experimental', name: 'Enzyme', source: <span className="mono">PDB {STRUCTURES[revealed && visual.after ? visual.after : visual.structure].pdb}</span> }
     default:
@@ -63,7 +65,7 @@ function labelFor(visual: Visual, revealed: boolean): ModelLabel | null {
 export default function PracticePage() {
   const [params] = useSearchParams()
   const linkedTopic = TOPICS.find((t) => t.id === params.get('topic'))?.id
-  const [savedTopics, setSavedTopics] = useStoredState<Topic[]>('ps.practice.topics', ['shapes', 'orbitals', 'trends', 'reactions', 'polarity', 'enzymes'])
+  const [savedTopics, setSavedTopics] = useStoredState<Topic[]>('ps.practice.topics', ['lewis', 'shapes', 'orbitals', 'mo', 'trends', 'reactions', 'polarity', 'enzymes'])
   /** Arriving from a "Practice this topic" link: just that topic, until the student changes it. */
   const [linked, setLinked] = useState<Topic[] | null>(linkedTopic ? [linkedTopic] : null)
   const topics = linked ?? savedTopics
@@ -162,7 +164,13 @@ export default function PracticePage() {
                       countWord="Card"
                       reveals={false}
                       label="Look, then answer"
-                      prompt={question.visual.kind === 'kinetics' || question.visual.kind === 'energy' ? 'Read the graph, then pick an answer.' : 'Drag the model to look around, then pick an answer.'}
+                      prompt={
+                        question.visual.kind === 'kinetics' || question.visual.kind === 'energy' || question.visual.kind === 'mo'
+                          ? 'Read the diagram, then pick an answer.'
+                          : question.visual.kind === 'lewis'
+                            ? 'Look at the drawing, then pick an answer.'
+                            : 'Drag the model to look around, then pick an answer.'
+                      }
                       onDone={() => setAnswered(true)}
                       onResult={(firstTry) => record(question, firstTry)}
                     />
