@@ -27,7 +27,7 @@ const TILE_HEIGHT = 0.08
 export interface TrendsView {
   props: PropId[]
   flat: boolean
-  /** Atomic numbers to emphasize. Everything else is dimmed and flattened. Empty = all. */
+  /** Atomic numbers to emphasize. Everything else is dimmed to a plain tile. Empty = all. */
   focus: number[]
   selected: number | null
 }
@@ -135,14 +135,15 @@ export class TrendsScene {
         const id = props[s]
         const value = id ? e.values[id] : null
         const index = i * SLOTS + s
-        if (!id || value === null || !slots[s]) {
+        // Dimmed elements show just their dark tile (no colored bar), so the focus stands out.
+        if (!id || value === null || !slots[s] || dim) {
           this.target[index] = 0
           continue
         }
         const t = value / propInfo(id).max // 0 → 1
-        this.target[index] = flat || dim ? FLAT_HEIGHT : Math.max(FLAT_HEIGHT, t * MAX_HEIGHT)
+        this.target[index] = flat ? FLAT_HEIGHT : Math.max(FLAT_HEIGHT, t * MAX_HEIGHT)
         // Brightness also follows the value, so flat mode still shows the trend.
-        this.color.set(propInfo(id).color).multiplyScalar(dim ? 0.16 : 0.22 + 0.78 * t)
+        this.color.set(propInfo(id).color).multiplyScalar(0.22 + 0.78 * t)
         this.bars.setColorAt(index, this.color)
       }
     })
