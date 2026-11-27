@@ -11,6 +11,7 @@ const PATHS = {
   protein: <path d="M3 13c2-6 4-6 5.5-1.5S12 16 14 9s2.6-5 3-4" />,
   enzymes: <><path d="M16.2 6.2A7 7 0 1 0 16.2 13.8L10.5 10z" /><circle cx="15.6" cy="10" r="1.2" /></>,
   lewis: <><path d="M4.5 10h3.5M12 10h3.5" /><circle cx="10" cy="6.3" r=".9" fill="currentColor" stroke="none" /><circle cx="10" cy="13.7" r=".9" fill="currentColor" stroke="none" /><circle cx="10" cy="10" r="1.6" /></>,
+  stereo: <><path d="M10 3v14" strokeDasharray="1.6 2" /><path d="M6.5 10 3.5 6.5M6.5 10 3.5 13.5M6.5 10H8M13.5 10l3-3.5M13.5 10l3 3.5M13.5 10H12" /><circle cx="6.5" cy="10" r="1.2" /><circle cx="13.5" cy="10" r="1.2" /></>,
   mo: <path d="M3.5 15.5h4M12.5 15.5h4M7.5 6h5M7.5 12h5M7.5 12 5.5 15.5M12.5 12l2 3.5M7.5 6 5.5 15.5M12.5 6l2 9.5" />,
   practice: <><rect x="3.5" y="5.5" width="11" height="9" rx="2" /><path d="M6.5 3.5h8a2 2 0 0 1 2 2v6.5" /></>,
   sound: <><path d="M3.5 7.8h2.6L10 4.6v10.8L6.1 12.2H3.5z" /><path d="M13 7.6a3.4 3.4 0 0 1 0 4.8" /></>,

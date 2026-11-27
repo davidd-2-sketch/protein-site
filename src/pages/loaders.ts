@@ -19,6 +19,7 @@ export const loadEnzymesPage = () => import('./EnzymesPage')
 export const loadPracticePage = () => import('./PracticePage')
 export const loadLewisPage = () => import('./LewisPage')
 export const loadMoPage = () => import('./MoPage')
+export const loadStereoPage = () => import('./StereoPage')
 export const loadAboutPage = () => import('./AboutPage')
 
 type NetworkInfo = { saveData?: boolean; effectiveType?: string }
@@ -47,6 +48,7 @@ export function prefetchWhenIdle() {
     void loadPracticePage()
     void loadLewisPage()
     void loadMoPage()
+    void loadStereoPage()
   }
   // Well after the page has appeared, so this never slows down what the student came to see.
   return afterFirstPaint(run, 2500)
@@ -66,6 +68,7 @@ const BY_PATH: Record<string, () => Promise<unknown>> = {
   '/about': loadAboutPage,
   '/lewis': loadLewisPage,
   '/mo': loadMoPage,
+  '/stereo': loadStereoPage,
 }
 
 /**

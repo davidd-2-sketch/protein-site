@@ -39,7 +39,8 @@ interface Props {
   onOpen: (lessonId: string) => void
   onStep: (index: number) => void
   onExit: () => void
-  onClose: () => void
+  /** Switch to Explore. Leave out on pages that have only lessons (no Lessons | Explore switch). */
+  onClose?: () => void
 }
 
 export default function LessonPanel(p: Props) {
@@ -62,7 +63,7 @@ export default function LessonPanel(p: Props) {
 
   return (
     <section className="lesson panel in-step" aria-label={`Lesson: ${lesson.title}`}>
-      <ModeSwitch mode="lessons" onChange={p.onClose} />
+      {p.onClose && <ModeSwitch mode="lessons" onChange={p.onClose} />}
       <header className="lesson-head">
         <button className="lesson-back" onClick={p.onExit}>
           ← All lessons
@@ -175,7 +176,7 @@ export default function LessonPanel(p: Props) {
 function LessonList(p: Props) {
   return (
     <section className="lesson panel" aria-label="Lessons">
-      <ModeSwitch mode="lessons" onChange={p.onClose} />
+      {p.onClose && <ModeSwitch mode="lessons" onChange={p.onClose} />}
       <header className="lesson-list-head">
         <div>
           <h2>{p.listTitle ?? 'Lessons'}</h2>

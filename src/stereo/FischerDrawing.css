@@ -1,0 +1,70 @@
+/* FischerDrawing.css — the Fischer projection card. */
+.fischer {
+  margin: 0;
+  padding: var(--space-3) var(--space-4) var(--space-3);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line-strong);
+  background: var(--panel);
+  box-shadow: var(--shadow-panel);
+}
+
+.fischer svg {
+  display: block;
+  width: 190px;
+  height: auto;
+  margin: 0 auto;
+}
+
+.fischer-title {
+  color: var(--text-faint);
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.fis-group {
+  fill: var(--text);
+  font: 500 15px var(--font-sans);
+}
+
+.fis-bond {
+  stroke-linecap: round;
+}
+
+/* Toward you: brighter and thicker. Away: thinner and dimmer. */
+.fis-bond.is-front {
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+
+.fis-bond.is-back {
+  stroke: var(--text-faint);
+  stroke-width: 2;
+}
+
+.fis-center {
+  fill: var(--text);
+}
+
+.fischer-key {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--text-faint);
+  font-size: var(--fs-micro);
+}
+
+.fis-key {
+  display: inline-block;
+  width: 16px;
+  height: 0;
+  border-top: 3px solid var(--accent);
+  border-radius: 2px;
+}
+
+.fis-key.is-back {
+  margin-left: 8px;
+  border-top: 2px solid var(--text-faint);
+}

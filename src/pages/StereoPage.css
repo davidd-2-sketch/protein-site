@@ -1,0 +1,89 @@
+/* StereoPage.css — labels on the stereochemistry model and the Fischer card. */
+.stereo-canvas.is-picking canvas {
+  cursor: pointer;
+}
+
+.st-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  white-space: nowrap;
+  will-change: transform;
+  pointer-events: none;
+}
+
+/* Element symbols on heteroatoms (O, N, halogens). */
+.st-label.is-element {
+  color: #fff;
+  font: 700 13px/1 var(--font-sans);
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.9), 0 0 1px #000;
+}
+
+/* Priority numbers: small round badges, brightest for 1, dimmest for 4. */
+.st-label.is-priority {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(13, 14, 39, 0.92);
+  border: 1.5px solid var(--accent);
+  color: var(--text);
+  font: 700 12.5px/1 var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  animation: st-pop 220ms var(--ease) both;
+}
+
+.st-label.is-p4 {
+  border-color: var(--text-faint);
+  color: var(--text-dim);
+}
+
+/* R or S on a stereocenter. */
+.st-label.is-rs {
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(13, 14, 39, 0.92);
+  border: 1px solid rgba(255, 210, 122, 0.6);
+  color: #ffd27a;
+  font: 700 14px/1.1 var(--font-sans);
+  animation: st-pop 260ms var(--ease) both;
+}
+
+/* Groups that don't line up when the mirror image is laid on top. */
+.st-label.is-mismatch {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 201, 77, 0.95);
+  color: var(--accent-ink);
+  font: 800 13px/1 var(--font-sans);
+  animation: st-pop 260ms var(--ease) both;
+}
+
+/* Fade only: the position (transform) is set from script every frame. */
+@keyframes st-pop {
+  from {
+    opacity: 0;
+  }
+}
+
+/* The Fischer card sits at the right of the model. */
+.stereo-fischer {
+  position: absolute;
+  z-index: 4;
+  right: 16px;
+  top: 64px;
+  animation: fade-up 260ms var(--ease) both;
+}
+
+@media (max-width: 899px) {
+  .stereo-fischer {
+    top: 52px;
+    right: 8px;
+    transform: scale(0.78);
+    transform-origin: top right;
+  }
+}

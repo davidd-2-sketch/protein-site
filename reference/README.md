@@ -99,3 +99,20 @@ energy, and bond lengths of the ions (O₂⁺, O₂⁻, O₂²⁻, NO⁺); the l
 
 3D molecular orbital surfaces are an illustrative LCAO model (Slater effective nuclear charges;
 CO geometry for the "polar" shapes; HF coefficients 0.45 H : 0.89 F), not computed orbitals.
+
+## Stereochemistry (`src/stereo/molecules.ts`)
+
+- **Structures:** isomeric SMILES and IUPAC names from PubChem (retrieved 2026-11-26), by CID:
+  57518771 (R)-CHBrClF · 84682 (R)-2-butanol · 444683 (S)-2-butanol · 3776 2-propanol ·
+  12236140 (S)-2-bromobutane · 5950 L-alanine · 71080 D-alanine · 107689 L-lactic acid ·
+  79014 D-glyceraldehyde · 6288 L-threonine · 99289 L-allothreonine · 444305 L-tartaric acid ·
+  439655 D-tartaric acid · 447315 meso-tartaric acid.
+- **3D models:** built from the SMILES with ideal geometry (109.5°/120°, typical bond lengths,
+  anti zigzag chains), so they are labeled Illustrative. The handedness comes from the SMILES
+  @/@@ marks.
+- **Checks (tests/stereo.test.ts):** R/S worked out from each 3D model with the CIP rules
+  (src/stereo/cip.ts) must match PubChem's IUPAC name for every stereocenter; the Fischer
+  projections must match textbook facts (D-glyceraldehyde OH right, L-alanine NH₂ left,
+  L-threonine NH₂ left / OH right, meso-tartaric OH groups on one side).
+- **Signs of optical rotation** quoted in the lessons come from PubChem compound titles:
+  (−)-2-butanol is R (CID 84682); (+)-glyceraldehyde is R (CID 79014).

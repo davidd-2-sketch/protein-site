@@ -14,6 +14,7 @@ export const MODULES = {
   enzymes: { path: '/enzymes', name: 'Enzymes' },
   lewis: { path: '/lewis', name: 'Lewis structures' },
   mo: { path: '/mo', name: 'MO theory' },
+  stereo: { path: '/stereo', name: 'Stereochemistry' },
 } as const
 export type ModuleKey = keyof typeof MODULES
 

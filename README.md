@@ -39,7 +39,7 @@ src/
   three/          Shared 3D helpers (quality3d.ts applies the "faster graphics" setting)
   perf/           Graphics quality choice, and "wait until the page has appeared"
   protein/        Mol* protein viewer
-  reactions/, vsepr/, orbitals/, trends/, polarity/, enzymes/, lewis/, mo/
+  reactions/, vsepr/, orbitals/, trends/, polarity/, enzymes/, lewis/, mo/, stereo/
                   The 3D scene (or 2D drawing) and checked data for each topic
   data/           Structure files and science notes with sources
 scripts/          make-contours.mjs draws the home page's background lines (public/contours.svg)

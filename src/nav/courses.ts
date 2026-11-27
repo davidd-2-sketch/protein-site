@@ -44,6 +44,7 @@ export const COURSES: Course[] = [
     name: 'Organic',
     blurb: 'How reactions actually happen.',
     topics: [
+      { to: '/stereo', icon: 'stereo', title: 'Stereochemistry', desc: 'Chirality, R and S, enantiomers, meso compounds, and Fischer projections, in 3D.' },
       { to: '/reaction', icon: 'reaction', title: 'Reactions', desc: 'Watch bonds break and form, step by step (SN1 and SN2).', practice: 'reactions' },
       // Same Orbitals page, opened at the lesson organic chemistry leans on.
       { to: '/orbitals?lesson=hybridization&step=0', icon: 'orbitals', title: 'Hybridization and bonds', desc: 'sp, sp², sp³, and how single and double bonds form.', practice: 'orbitals' },
