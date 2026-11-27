@@ -84,16 +84,21 @@
   --signal-model: #bba9ff; /* "illustrative" label */
   --pink: #ff7ad9; /* net dipoles */
 
-  /* The signature gradient: cyan → periwinkle → violet. Use sparingly. */
-  --accent-grad: linear-gradient(110deg, #6fe3ff 0%, #93b4ff 50%, #b594ff 100%);
-  --accent-grad-soft: linear-gradient(110deg, rgba(111, 227, 255, 0.14), rgba(181, 148, 255, 0.14));
-  --accent-glow: 0 0 12px rgba(111, 227, 255, 0.6);
+  /* Accent fills. These used to be cyan → violet gradients with glows; the site now uses
+     flat colors for a calmer, cleaner look. (The names stay so older styles keep working.) */
+  --accent-grad: var(--accent); /* "you are here", the current step, progress */
+  --accent-grad-soft: rgba(111, 227, 255, 0.08); /* quiet highlighted surfaces */
+  --accent-glow: none;
+  /* The main action button: a solid light fill with dark text. */
+  --primary-bg: #eef0fb;
+  --primary-bg-hover: #ffffff;
 
   /* ---------- Typography ---------- */
   --font-sans: 'Inter', 'Inter Fallback', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  /* For IDs and numbers that should line up (PDB codes, measurements): the device's own
-     monospace font, so no extra font file is downloaded. */
-  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  /* Formerly a monospace font for IDs and measurements. Code-style lettering made chemistry
+     look like a terminal, so it is now the main font; numbers that must line up use
+     font-variant-numeric: tabular-nums. */
+  --font-mono: var(--font-sans);
 
   /* The type scale: every text size on the site comes from this list. */
   --fs-hero: clamp(42px, 5.4vw, 76px); /* home headline */

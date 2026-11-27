@@ -23,6 +23,7 @@
   position: absolute;
   inset: 0;
   background: url('/contours.svg') center / cover no-repeat;
+  opacity: 0.4; /* a faint texture, not a pattern that competes with the content */
   mask-image: linear-gradient(#000 45%, transparent 95%);
   -webkit-mask-image: linear-gradient(#000 45%, transparent 95%);
 }

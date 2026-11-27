@@ -381,23 +381,16 @@
   margin-top: var(--space-5);
   padding: var(--space-4);
   border-radius: var(--radius-lg);
-  border: 1px solid rgba(167, 139, 250, 0.45);
-  background: rgba(167, 139, 250, 0.07);
+  border: 1px solid var(--line-strong);
+  background: rgba(255, 255, 255, 0.02);
   transition:
-    border-color 400ms var(--ease),
-    background 400ms var(--ease),
-    box-shadow 500ms var(--ease);
+    border-color 300ms var(--ease),
+    background 300ms var(--ease);
 }
 
 .quiz.is-right,
 .quiz.is-shown {
-  border-color: rgba(79, 227, 176, 0.5);
-  background: rgba(79, 227, 176, 0.06);
-}
-
-/* A solved question glows softly green. */
-.quiz.is-right {
-  box-shadow: 0 0 0 1px rgba(79, 227, 176, 0.12), 0 16px 40px -22px rgba(79, 227, 176, 0.6);
+  border-color: rgba(79, 227, 176, 0.35);
 }
 
 .quiz-top {
@@ -408,13 +401,12 @@
   margin-bottom: var(--space-3);
 }
 
+/* A small plain caption ("Check yourself"), not a badge. */
 .quiz-label {
-  padding: 4px 9px;
-  border-radius: 999px;
-  background: linear-gradient(120deg, rgba(167, 139, 250, 0.26), rgba(255, 122, 217, 0.2));
-  box-shadow: inset 0 0 0 1px rgba(200, 170, 255, 0.22);
-  color: #e3d8ff;
-  font: 600 12px/1 var(--font-sans);
+  color: var(--text-faint);
+  font: 600 11.5px/1 var(--font-sans);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .quiz-count {
@@ -456,14 +448,12 @@
     color var(--medium) var(--ease),
     box-shadow var(--medium) var(--ease),
     opacity 320ms var(--ease),
-    transform 260ms var(--spring);
+    transform var(--fast) var(--ease);
 }
 
 .quiz-choice:hover:not(:disabled) {
   background: var(--bg-2);
-  border-color: var(--accent);
-  transform: translateX(3px);
-  box-shadow: 0 8px 22px -14px rgba(94, 228, 255, 0.6);
+  border-color: rgba(111, 227, 255, 0.55);
 }
 
 .quiz-choice:hover:not(:disabled) .quiz-letter {
@@ -472,7 +462,7 @@
 }
 
 .quiz-choice:active:not(:disabled) {
-  transform: scale(0.97);
+  transform: scale(0.99);
   transition-duration: 80ms;
 }
 
@@ -483,8 +473,7 @@
 /* Once solved, the other choices step back so the answer stands out. */
 .quiz.is-right .quiz-choice:not(.is-correct),
 .quiz.is-shown .quiz-choice:not(.is-correct) {
-  opacity: 0.38;
-  transform: scale(0.985);
+  opacity: 0.4;
 }
 
 .quiz-letter {
@@ -506,16 +495,13 @@
 /* Right and wrong each change the SYMBOL (✓ / ✕) as well as the color. */
 .quiz-choice.is-correct {
   border-color: var(--signal-ok);
-  background: rgba(79, 227, 176, 0.14);
-  box-shadow: 0 0 0 3px rgba(79, 227, 176, 0.14), 0 10px 28px -12px rgba(79, 227, 176, 0.7);
-  animation: quiz-pop 480ms var(--spring);
+  background: rgba(79, 227, 176, 0.1);
 }
 
 .quiz-choice.is-correct .quiz-letter {
   border-color: var(--signal-ok);
   background: var(--signal-ok);
   color: var(--accent-ink);
-  animation: letter-pop 420ms var(--spring) 60ms both;
 }
 
 /* ✓ and ✕ draw themselves with one stroke. */
@@ -533,12 +519,6 @@
 @keyframes draw {
   to {
     stroke-dashoffset: 0;
-  }
-}
-
-@keyframes letter-pop {
-  0% {
-    transform: scale(0.6);
   }
 }
 
@@ -571,7 +551,7 @@
   font-size: 14px;
   line-height: 1.55;
   color: var(--text-dim);
-  animation: quiz-rise 340ms var(--spring-soft) 90ms both;
+  animation: quiz-rise 240ms var(--ease) 60ms both;
 }
 
 .quiz-feedback-title {
@@ -607,36 +587,21 @@
 
 /* A gentle "no" shake: small, quick, settles fast. */
 @keyframes quiz-shake {
-  18% {
-    transform: translateX(-6px);
+  25% {
+    transform: translateX(-4px);
   }
-  42% {
-    transform: translateX(5px);
+  55% {
+    transform: translateX(3px);
   }
-  66% {
-    transform: translateX(-3px);
-  }
-  86% {
-    transform: translateX(1px);
-  }
-}
-
-@keyframes quiz-pop {
-  0% {
-    transform: scale(1);
-  }
-  35% {
-    transform: scale(1.035);
-  }
-  100% {
-    transform: scale(1);
+  80% {
+    transform: translateX(-1px);
   }
 }
 
 @keyframes quiz-rise {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(4px);
   }
 }
 

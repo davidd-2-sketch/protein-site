@@ -43,7 +43,6 @@
 
 .enz-card:hover {
   background: var(--bg-2);
-  transform: translateY(-1px);
 }
 
 .enz-card:active {
@@ -183,7 +182,6 @@
 .enz-chip:hover {
   background: var(--bg-2);
   border-color: var(--accent);
-  transform: translateY(-1px);
 }
 
 .enz-chip:active {

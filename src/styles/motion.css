@@ -18,27 +18,27 @@
 }
 /* Side panels and floating controls arrive with a short glide when a page opens. */
 .lesson {
-  animation: panel-in 420ms var(--spring-soft) both;
+  animation: panel-in 260ms var(--ease) both;
 }
 
 [class$='-toggles'].panel,
 .timeline.panel,
 .energy.panel,
 .pol-steps.panel {
-  animation: fade-up 380ms var(--ease) 80ms both;
+  animation: fade-up 260ms var(--ease) 60ms both;
 }
 
 @keyframes panel-in {
   from {
     opacity: 0;
-    transform: translateX(-8px);
+    transform: translateX(-4px);
   }
 }
 
 @keyframes fade-up {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(4px);
   }
 }
 
@@ -68,45 +68,41 @@
   transition: opacity var(--medium) var(--ease);
 }
 
-.btn:hover:not(:disabled) {
-  transform: translateY(-1px);
-}
-
 .btn:active:not(:disabled) {
   transform: scale(0.985);
   transition-duration: 80ms;
 }
 
+/* The main action: a flat light button, no gradient, no glow. */
 .btn-primary,
 .btn-primary:hover {
   background: var(--bg-1);
   border-color: transparent;
   color: var(--accent-ink);
-  box-shadow: 0 10px 28px -14px rgba(130, 170, 255, 0.8);
+  box-shadow: none;
 }
 
 .btn-primary::before {
+  background: var(--primary-bg);
   opacity: 1;
 }
 
-.btn-primary:hover:not(:disabled) {
-  box-shadow: 0 12px 30px -10px rgba(140, 160, 255, 0.85);
+.btn-primary:hover:not(:disabled)::before {
+  background: var(--primary-bg-hover);
 }
 
-.btn-primary:hover::before {
-  filter: brightness(1.08) saturate(1.1);
-}
-
-/* Small round play button on the reaction timeline gets the same gradient. */
+/* Small round play button on the reaction timeline: the same flat fill. */
 .play-btn {
-  background: var(--accent-grad) !important;
+  background: var(--primary-bg) !important;
   color: var(--accent-ink) !important;
-  box-shadow: 0 6px 18px -8px rgba(120, 170, 255, 0.7);
-  transition: transform 260ms var(--spring), box-shadow var(--medium) var(--ease);
+  box-shadow: none;
+  transition:
+    background var(--fast) var(--ease),
+    transform var(--fast) var(--ease);
 }
 
 .play-btn:hover {
-  transform: scale(1.06);
+  background: var(--primary-bg-hover) !important;
 }
 
 .play-btn:active {
@@ -149,14 +145,6 @@
 .reaction-step:active {
   transform: scale(0.985);
   transition-duration: 80ms;
-}
-
-/* Cards lift a little on hover. */
-.lesson-item:hover,
-.mol-btn:hover,
-.prop:hover,
-.pair-tab:hover {
-  transform: translateY(-1px);
 }
 
 .lesson-item:hover,
@@ -210,9 +198,9 @@
 
 .seg-pill.is-ready {
   transition:
-    transform 340ms var(--spring-soft),
-    width 340ms var(--spring-soft),
-    height 340ms var(--spring-soft),
+    transform 240ms var(--ease),
+    width 240ms var(--ease),
+    height 240ms var(--ease),
     opacity var(--medium) var(--ease);
 }
 
@@ -239,20 +227,21 @@
 }
 
 .step-in {
-  animation: step-in 300ms var(--spring-soft) both;
+  animation: step-in 240ms var(--ease) both;
 }
 
+/* Steps cross with a soft fade and a small nudge in the reading direction. */
 @keyframes step-out {
   to {
     opacity: 0;
-    transform: translateX(calc(var(--dir, 1) * -18px));
+    transform: translateX(calc(var(--dir, 1) * -6px));
   }
 }
 
 @keyframes step-in {
   from {
     opacity: 0;
-    transform: translateX(calc(var(--dir, 1) * 22px));
+    transform: translateX(calc(var(--dir, 1) * 8px));
   }
 }
 
@@ -261,7 +250,7 @@
    would break the pages' fixed positioning)
    ========================================================= */
 .page-fade {
-  animation: page-fade 320ms var(--ease) both;
+  animation: page-fade 220ms var(--ease) both;
 }
 
 @keyframes page-fade {
@@ -272,7 +261,7 @@
 
 /* 3D scenes fade in once their first frame is drawn, instead of popping in. */
 canvas {
-  animation: canvas-in 600ms var(--ease) both;
+  animation: canvas-in 400ms var(--ease) both;
 }
 
 @keyframes canvas-in {
@@ -292,8 +281,7 @@ canvas {
 .practice-dots li {
   transition:
     background var(--medium) var(--ease),
-    width 340ms var(--spring),
-    transform 260ms var(--spring);
+    width 260ms var(--ease);
 }
 
 .lesson-dot.is-current,
